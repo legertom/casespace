@@ -23,22 +23,13 @@ import { recordAiUsage } from "@/lib/ai/usage";
 import { getCurrentUser } from "@/lib/current-user";
 import {
   DEPARTMENTS,
-  DEPARTMENT_LABELS,
   STATUSES,
   documentedGatesComplete,
   etDateString,
   isQualifiedPlus,
   roiGaps,
-  TARGET_DOCUMENTED,
-  TARGET_ROI,
-  paceSummary,
 } from "@/lib/domain";
-import {
-  getAttentionFlags,
-  getEltProgress,
-  getProgramCounts,
-  getTeamCoverage,
-} from "@/server/dashboard-queries";
+import { buildProgressReport } from "@/server/progress-report";
 import { getUseCase, listUseCases } from "@/server/use-case-queries";
 
 export const maxDuration = 120;
@@ -164,52 +155,7 @@ export async function POST(req: Request) {
       description:
         "The program scoreboard: counts vs targets with pace, per-ELT-org splits, per-team coverage, and attention flags.",
       inputSchema: z.object({}),
-      execute: async () => {
-        const [counts, elt, coverage, attention] = await Promise.all([
-          getProgramCounts(),
-          getEltProgress(),
-          getTeamCoverage(),
-          getAttentionFlags(),
-        ]);
-        const today = etDateString(new Date());
-        return {
-          documented: {
-            actual: counts.qualified,
-            target: TARGET_DOCUMENTED,
-            pace: paceSummary(TARGET_DOCUMENTED, counts.qualified, today)
-              .sentence,
-          },
-          qualifiedPlus: {
-            actual: counts.qualifiedPlus,
-            target: TARGET_ROI,
-            pace: paceSummary(
-              TARGET_ROI,
-              counts.qualifiedPlus,
-              today,
-              "at Qualified+",
-            ).sentence,
-          },
-          pipeline: counts.byStatus,
-          byEltOrg: elt.map((o) => ({
-            name: o.name,
-            target: o.target,
-            qualifiedPlus: o.qualifiedPlus,
-            qualifiedAwaitingRoi: o.qualifiedInFlight,
-          })),
-          teams: coverage.map((t) => ({
-            team: t.teamName,
-            department: DEPARTMENT_LABELS[t.department],
-            leads: t.leadNames,
-            logged: t.useCaseCount,
-            targetTwoPerLead: t.target,
-          })),
-          attention: {
-            staleDays: attention.staleDays,
-            sittingStill: attention.stale,
-            launchedUnscored: attention.launchedUnscored,
-          },
-        };
-      },
+      execute: () => buildProgressReport(),
     }),
 
     // Proposal tools have NO execute — they surface as cards the human

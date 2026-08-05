@@ -1,9 +1,6 @@
 "use server";
 
 import { generateText, Output } from "ai";
-import { sql } from "drizzle-orm";
-import { getDb } from "@/db/client";
-import { teams } from "@/db/schema";
 import {
   AI_NOT_CONFIGURED_MESSAGE,
   MODELS,
@@ -11,6 +8,7 @@ import {
   gatewayOptions,
 } from "@/lib/ai/config";
 import {
+  proposalPatchToUpdateInput,
   proposalSchema,
   proposalToCreateInput,
   type Proposal,
@@ -25,26 +23,9 @@ import {
   createUseCase,
   ForbiddenError,
   NotFoundError,
+  resolveTeamId,
   updateUseCase,
 } from "./use-case-service";
-
-async function resolveTeamId(
-  teamName: string | null | undefined,
-  department: Department | null | undefined,
-): Promise<string | null> {
-  if (!teamName?.trim()) return null;
-  const db = getDb();
-  const rows = await db
-    .select({ id: teams.id, department: teams.department })
-    .from(teams)
-    .where(sql`lower(${teams.name}) = lower(${teamName.trim()})`);
-  if (rows.length === 0) return null;
-  if (department) {
-    const scoped = rows.find((r) => r.department === department);
-    if (scoped) return scoped.id;
-  }
-  return rows[0].id;
-}
 
 export interface ParseNotesResult {
   proposal?: Proposal;
@@ -145,58 +126,9 @@ export async function acceptUpdateProposalAction(
   if (!parsed.success) return { error: "That proposal didn't validate." };
   const c = parsed.data;
 
-  const patch: UseCaseUpdateInput = {};
-  if (c.title) patch.title = c.title;
-  if (c.description) patch.description = c.description;
-  if ("department" in c) patch.department = c.department ?? null;
+  const patch: UseCaseUpdateInput = proposalPatchToUpdateInput(c);
   if ("team" in c)
     patch.teamId = await resolveTeamId(c.team, c.department ?? null);
-  if ("authors" in c && c.authors)
-    patch.authors = c.authors.map((name) => ({
-      personId: null,
-      userId: null,
-      displayName: name,
-    }));
-  if ("owner" in c)
-    patch.owner = c.owner
-      ? { personId: null, userId: null, displayName: c.owner }
-      : null;
-  if ("aiTools" in c && c.aiTools) patch.aiTools = c.aiTools;
-  if ("approach" in c) patch.approach = c.approach ?? null;
-  if ("currentSteps" in c && c.currentSteps) patch.currentSteps = c.currentSteps;
-  for (const k of [
-    "ratingFrequency",
-    "ratingPain",
-    "ratingDataAvailability",
-    "ratingRisk",
-    "ratingOwnershipClarity",
-    "ratingEvaluationClarity",
-    "ratingMaintenanceBurden",
-  ] as const) {
-    if (k in c) patch[k] = c[k] ?? null;
-  }
-  if ("functionalLeaderSuccess" in c)
-    patch.functionalLeaderSuccess = c.functionalLeaderSuccess ?? null;
-  for (const k of ["gateNamed", "gateTool", "gateAdoption", "gateOwner"] as const) {
-    if (k in c && typeof c[k] === "boolean") patch[k] = c[k];
-  }
-  if ("adoptionEvidence" in c) patch.adoptionEvidence = c.adoptionEvidence ?? null;
-  if ("successCriterion" in c) patch.successCriterion = c.successCriterion ?? null;
-  if ("successCriterionMet" in c && c.successCriterionMet)
-    patch.successCriterionMet = c.successCriterionMet;
-  if ("baselineMetric" in c) patch.baselineMetric = c.baselineMetric ?? null;
-  if ("baselineValue" in c) patch.baselineValue = c.baselineValue ?? null;
-  if ("baselineUnit" in c) patch.baselineUnit = c.baselineUnit ?? null;
-  if ("postValue" in c) patch.postValue = c.postValue ?? null;
-  if ("measurementMethod" in c)
-    patch.measurementMethod = c.measurementMethod ?? null;
-  if ("netImpactStatement" in c)
-    patch.netImpactStatement = c.netImpactStatement ?? null;
-  if ("isPositive" in c) patch.isPositive = c.isPositive ?? null;
-  if ("roiStatus" in c && c.roiStatus) patch.roiStatus = c.roiStatus;
-  if ("revisitOn" in c) patch.revisitOn = c.revisitOn ?? null;
-  // Note: status is deliberately ignored — status moves through the logged
-  // transition controls, never through edit proposals.
 
   try {
     await updateUseCase({ id: user.id, role: user.role }, id, patch);

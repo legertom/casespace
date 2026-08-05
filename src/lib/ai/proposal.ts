@@ -101,6 +101,65 @@ export const updateProposalSchema = z.object({
 
 export type UpdateProposal = z.infer<typeof updateProposalSchema>;
 
+/**
+ * Map a partial proposal to a patch — only the provided keys change. Team
+ * name resolution happens at the caller (needs the database). Status is
+ * deliberately excluded: status moves through the logged transition flow.
+ */
+export function proposalPatchToUpdateInput(
+  c: Partial<Proposal>,
+): import("@/lib/use-case-input").UseCaseUpdateInput {
+  const patch: import("@/lib/use-case-input").UseCaseUpdateInput = {};
+  if (c.title) patch.title = c.title;
+  if (c.description) patch.description = c.description;
+  if ("department" in c) patch.department = c.department ?? null;
+  if ("authors" in c && c.authors)
+    patch.authors = c.authors.map((name) => ({
+      personId: null,
+      userId: null,
+      displayName: name,
+    }));
+  if ("owner" in c)
+    patch.owner = c.owner
+      ? { personId: null, userId: null, displayName: c.owner }
+      : null;
+  if ("aiTools" in c && c.aiTools) patch.aiTools = c.aiTools;
+  if ("approach" in c) patch.approach = c.approach ?? null;
+  if ("currentSteps" in c && c.currentSteps) patch.currentSteps = c.currentSteps;
+  for (const k of [
+    "ratingFrequency",
+    "ratingPain",
+    "ratingDataAvailability",
+    "ratingRisk",
+    "ratingOwnershipClarity",
+    "ratingEvaluationClarity",
+    "ratingMaintenanceBurden",
+  ] as const) {
+    if (k in c) patch[k] = c[k] ?? null;
+  }
+  if ("functionalLeaderSuccess" in c)
+    patch.functionalLeaderSuccess = c.functionalLeaderSuccess ?? null;
+  for (const k of ["gateNamed", "gateTool", "gateAdoption", "gateOwner"] as const) {
+    if (k in c && typeof c[k] === "boolean") patch[k] = c[k];
+  }
+  if ("adoptionEvidence" in c) patch.adoptionEvidence = c.adoptionEvidence ?? null;
+  if ("successCriterion" in c) patch.successCriterion = c.successCriterion ?? null;
+  if ("successCriterionMet" in c && c.successCriterionMet)
+    patch.successCriterionMet = c.successCriterionMet;
+  if ("baselineMetric" in c) patch.baselineMetric = c.baselineMetric ?? null;
+  if ("baselineValue" in c) patch.baselineValue = c.baselineValue ?? null;
+  if ("baselineUnit" in c) patch.baselineUnit = c.baselineUnit ?? null;
+  if ("postValue" in c) patch.postValue = c.postValue ?? null;
+  if ("measurementMethod" in c)
+    patch.measurementMethod = c.measurementMethod ?? null;
+  if ("netImpactStatement" in c)
+    patch.netImpactStatement = c.netImpactStatement ?? null;
+  if ("isPositive" in c) patch.isPositive = c.isPositive ?? null;
+  if ("roiStatus" in c && c.roiStatus) patch.roiStatus = c.roiStatus;
+  if ("revisitOn" in c) patch.revisitOn = c.revisitOn ?? null;
+  return patch;
+}
+
 /** Map a proposal to the shared create-input shape (people as display names). */
 export function proposalToCreateInput(p: Proposal): UseCaseCreateInput {
   return {
@@ -128,11 +187,13 @@ export function proposalToCreateInput(p: Proposal): UseCaseCreateInput {
     ratingEvaluationClarity: p.ratingEvaluationClarity ?? null,
     ratingMaintenanceBurden: p.ratingMaintenanceBurden ?? null,
     functionalLeaderSuccess: p.functionalLeaderSuccess ?? null,
-    gateNamed: p.gateNamed ?? Boolean(p.title && p.description),
-    gateTool: p.gateTool ?? Boolean(p.aiTools?.length && p.approach),
+    // Sparse is safe: gates stay unchecked unless the proposal explicitly
+    // established them — the emptiest honest value.
+    gateNamed: p.gateNamed ?? false,
+    gateTool: p.gateTool ?? false,
     gateAdoption: p.gateAdoption ?? false,
     adoptionEvidence: p.adoptionEvidence ?? null,
-    gateOwner: p.gateOwner ?? Boolean(p.owner),
+    gateOwner: p.gateOwner ?? false,
     successCriterion: p.successCriterion ?? null,
     successCriterionMet: p.successCriterionMet ?? "not_yet",
     baselineMetric: p.baselineMetric ?? null,

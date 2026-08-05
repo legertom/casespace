@@ -1,7 +1,7 @@
 import "server-only";
 import { eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { eltOrgs, people, statusChanges, useCaseAuthors, useCases, users } from "@/db/schema";
+import { eltOrgs, people, statusChanges, teams, useCaseAuthors, useCases, users } from "@/db/schema";
 import {
   canSetStatus,
   suggestEltOrg,
@@ -21,6 +21,25 @@ import { getOwnership } from "./use-case-queries";
 
 export class ForbiddenError extends Error {}
 export class NotFoundError extends Error {}
+
+/** Resolve a team by name (optionally scoped to a department). */
+export async function resolveTeamId(
+  teamName: string | null | undefined,
+  department: Department | null | undefined,
+): Promise<string | null> {
+  if (!teamName?.trim()) return null;
+  const db = getDb();
+  const rows = await db
+    .select({ id: teams.id, department: teams.department })
+    .from(teams)
+    .where(sql`lower(${teams.name}) = lower(${teamName.trim()})`);
+  if (rows.length === 0) return null;
+  if (department) {
+    const scoped = rows.find((r) => r.department === department);
+    if (scoped) return scoped.id;
+  }
+  return rows[0].id;
+}
 
 interface Actor {
   id: string;
