@@ -60,7 +60,7 @@ export async function POST(req: Request) {
   const tools = {
     search_use_cases: tool({
       description:
-        "Search the use-case ledger. All arguments optional; returns compact records.",
+        "Search the use-case casebook. All arguments optional; returns compact records.",
       inputSchema: z.object({
         q: z.string().nullish().describe("Text search in title/description/owner"),
         status: z.enum(STATUSES).nullish(),

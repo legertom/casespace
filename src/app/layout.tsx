@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     default: "Casespace",
     template: "%s · Casespace",
   },
-  description: "Clever's AI use-case ledger and program scoreboard.",
+  description: "Clever's AI use-case casebook and program scoreboard.",
 };
 
 export default function RootLayout({

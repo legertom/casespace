@@ -53,7 +53,7 @@ export async function parseNotesAction(notes: string): Promise<ParseNotesResult>
     const result = await generateText({
       model: MODELS.extract,
       output: Output.object({ schema: proposalSchema }),
-      instructions: `Extract a use-case record from the notes for Clever's AI Enablement ledger.
+      instructions: `Extract a use-case record from the notes for Clever's AI Enablement casebook.
 Rules:
 - Only fill fields the notes actually support. Leave everything else null/empty.
 - NEVER invent numbers, names, or dates. If ROI numbers aren't in the notes, leave them null and set roiStatus to "not_yet_measurable".

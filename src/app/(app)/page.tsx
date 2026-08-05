@@ -35,7 +35,7 @@ export default async function Home() {
           <p className="mt-2 max-w-prose text-ink-muted">
             {user.role === "contributor"
               ? "Your use cases, and the program one click away."
-              : "Browse everything — the whole ledger is open to you."}
+              : "Browse everything — the whole casebook is open to you."}
           </p>
         </div>
         {user.role === "contributor" && (

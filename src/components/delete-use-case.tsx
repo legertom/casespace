@@ -23,7 +23,7 @@ export function DeleteUseCase({ id, title }: { id: string; title: string }) {
   return (
     <div className="space-y-2 text-sm">
       <p>
-        Remove <strong>{title}</strong> from the ledger? It&rsquo;s a soft
+        Remove <strong>{title}</strong> from the casebook? It&rsquo;s a soft
         delete — an admin can restore it from the database.
       </p>
       <div className="flex gap-2">

@@ -48,7 +48,7 @@ const handler = createMcpHandler(
       {
         title: "Log a use case",
         description:
-          "File an AI use case into Clever's Casespace ledger. Only title and description are required — a half-filled record that exists beats a perfect record that doesn't. People are full names; the server links them to the directory.",
+          "File an AI use case into Casespace, Clever's casebook of AI workflows. Only title and description are required — a half-filled record that exists beats a perfect record that doesn't. People are full names; the server links them to the directory.",
         inputSchema: proposalSchema,
       },
       async (args, ctx) => {
@@ -135,7 +135,7 @@ const handler = createMcpHandler(
   {
     serverInfo: { name: "casespace", version: "1.0.0" },
     instructions:
-      "Casespace is Clever's AI use-case ledger. Log workflows as you build them — sparse records are welcome; the four documented gates and ROI scoring can come later in the app.",
+      "Casespace is Clever's AI use-case casebook. Log workflows as you build them — sparse records are welcome; the four documented gates and ROI scoring can come later in the app.",
   },
 );
 

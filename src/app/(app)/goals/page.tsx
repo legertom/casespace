@@ -27,7 +27,7 @@ export default async function GoalsPage() {
     <div>
       <h1 className="font-serif text-4xl">Goals &amp; adoption trends</h1>
       <p className="mt-2 max-w-prose text-ink-muted">
-        The two count goals compute live from the ledger. The three pulse
+        The two count goals compute live from the casebook. The three pulse
         metrics come from the survey — admins record each new reading, and the
         history stays.
       </p>

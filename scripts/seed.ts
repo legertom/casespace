@@ -170,31 +170,45 @@ async function linkAdminPeople(tomId: string, kateId: string) {
   console.log("· linked admin accounts to directory rows");
 }
 
-const ROSTER: { name: string; department: Department; teams: string[] }[] = [
-  { name: "Alex Armstead", department: "business_operations", teams: ["Business Operations"] },
-  { name: "Lotte Petersen-Buckley", department: "business_operations", teams: ["Business Analytics"] },
-  { name: "Yowan Ramchoreeter", department: "product_design", teams: ["Product & Design"] },
-  { name: "Justine Edrozo", department: "product_design", teams: ["Product & Design"] },
-  { name: "Vamsi Chunduru", department: "engineering", teams: ["Engineering"] },
-  { name: "Jen Kampf", department: "people", teams: ["POps", "Talent Acquisition"] },
-  { name: "David McGeary", department: "css", teams: ["Technical Pre-sales"] },
-  { name: "Victoria Crow Dog", department: "css", teams: ["Integration Engineering"] },
-  { name: "Meghana Gangadharswami Balihallimath", department: "css", teams: ["Integration Engineering"] },
-  { name: "Dotun Oni", department: "css", teams: ["Partner Engineering"] },
-  { name: "Sinclair Blackmon", department: "css", teams: ["Clever Core Onboarding"] },
-  { name: "Jonathan Boutin", department: "css", teams: ["Clever+ Onboarding"] },
-  { name: "Marley Koschel", department: "css", teams: ["Customer Education"] },
-  { name: "Arraine Siefert", department: "css", teams: ["Customer Support"] },
-  { name: "Katie Clarkson", department: "css", teams: ["Customer Support"] },
-  { name: "Shaun Hudgins", department: "css", teams: ["Technical Account Managers"] },
-  { name: "Melissa Pevitz", department: "mss", teams: ["School Partnerships – Domestic"] },
-  { name: "Aerin Bowers", department: "mss", teams: ["School Partnerships – International"] },
-  { name: "Lauren Raulerson", department: "mss", teams: ["School Success – Global"] },
-  { name: "Zachary Gladnick", department: "mss", teams: ["App Partnerships"] },
-  { name: "Jennifer Pluma", department: "mss", teams: ["App Success"] },
-  { name: "Evelyn Wong", department: "mss", teams: ["Marketing"] },
-  { name: "Kenton Lu", department: "finance_legal", teams: ["Finance"] },
-  { name: "Wendy Yu", department: "finance_legal", teams: ["Legal"] },
+/**
+ * Emails confirmed against the "AI Leads" Google Group (Aug 2026) — note the
+ * handful that differ from the first.last pattern (jennifer.kampf,
+ * meghana.balihallimath, zach.gladnick). Victoria Crow Dog was not in the
+ * group, so her placeholder stays flagged unverified until Tom confirms.
+ * Patricia Henriquez appears in the group and joins the roster.
+ */
+const ROSTER: {
+  name: string;
+  department: Department;
+  teams: string[];
+  email?: string;
+  emailUnverified?: boolean;
+}[] = [
+  { name: "Alex Armstead", department: "business_operations", teams: ["Business Operations"], email: "alex.armstead@clever.com" },
+  { name: "Lotte Petersen-Buckley", department: "business_operations", teams: ["Business Analytics"], email: "lotte.petersen-buckley@clever.com" },
+  { name: "Yowan Ramchoreeter", department: "product_design", teams: ["Product & Design"], email: "yowan.ramchoreeter@clever.com" },
+  { name: "Justine Edrozo", department: "product_design", teams: ["Product & Design"], email: "justine.edrozo@clever.com" },
+  { name: "Vamsi Chunduru", department: "engineering", teams: ["Engineering"], email: "vamsi.chunduru@clever.com" },
+  { name: "Jen Kampf", department: "people", teams: ["POps", "Talent Acquisition"], email: "jennifer.kampf@clever.com" },
+  { name: "David McGeary", department: "css", teams: ["Technical Pre-sales"], email: "david.mcgeary@clever.com" },
+  { name: "Victoria Crow Dog", department: "css", teams: ["Integration Engineering"], emailUnverified: true },
+  { name: "Meghana Gangadharswami Balihallimath", department: "css", teams: ["Integration Engineering"], email: "meghana.balihallimath@clever.com" },
+  { name: "Dotun Oni", department: "css", teams: ["Partner Engineering"], email: "dotun.oni@clever.com" },
+  { name: "Sinclair Blackmon", department: "css", teams: ["Clever Core Onboarding"], email: "sinclair.blackmon@clever.com" },
+  { name: "Jonathan Boutin", department: "css", teams: ["Clever+ Onboarding"], email: "jonathan.boutin@clever.com" },
+  { name: "Marley Koschel", department: "css", teams: ["Customer Education"], email: "marley.koschel@clever.com" },
+  { name: "Arraine Siefert", department: "css", teams: ["Customer Support"], email: "arraine.siefert@clever.com" },
+  { name: "Katie Clarkson", department: "css", teams: ["Customer Support"], email: "katie.clarkson@clever.com" },
+  { name: "Shaun Hudgins", department: "css", teams: ["Technical Account Managers"], email: "shaun.hudgins@clever.com" },
+  { name: "Melissa Pevitz", department: "mss", teams: ["School Partnerships – Domestic"], email: "melissa.pevitz@clever.com" },
+  { name: "Aerin Bowers", department: "mss", teams: ["School Partnerships – International"], email: "aerin.bowers@clever.com" },
+  { name: "Lauren Raulerson", department: "mss", teams: ["School Success – Global"], email: "lauren.raulerson@clever.com" },
+  { name: "Patricia Henriquez", department: "mss", teams: ["School Success – Global"], email: "patricia.henriquez@clever.com" },
+  { name: "Zachary Gladnick", department: "mss", teams: ["App Partnerships"], email: "zach.gladnick@clever.com" },
+  { name: "Jennifer Pluma", department: "mss", teams: ["App Success"], email: "jennifer.pluma@clever.com" },
+  { name: "Evelyn Wong", department: "mss", teams: ["Marketing"], email: "evelyn.wong@clever.com" },
+  { name: "Kenton Lu", department: "finance_legal", teams: ["Finance"], email: "kenton.lu@clever.com" },
+  { name: "Wendy Yu", department: "finance_legal", teams: ["Legal"], email: "wendy.yu@clever.com" },
 ];
 
 async function seedTeamsAndRoster() {
@@ -220,32 +234,52 @@ async function seedTeamsAndRoster() {
   }
 
   let missingPerson = 0;
+  let unverified = 0;
   for (const lead of ROSTER) {
     const [person] = await db
       .select()
       .from(people)
       .where(eq(people.name, lead.name));
     if (!person) missingPerson++;
-    const email = `${emailSlug(lead.name)}@clever.com`;
-    const [row] = await db
-      .insert(aiLeads)
-      .values({
-        name: lead.name,
-        email,
-        emailUnverified: true,
-        department: lead.department,
-        state: "assigned",
-        personId: person?.id ?? null,
-      })
-      .onConflictDoUpdate({
-        target: aiLeads.email,
-        set: {
-          name: lead.name,
+    const email = lead.email ?? `${emailSlug(lead.name)}@clever.com`;
+    const emailUnverified = lead.emailUnverified ?? !lead.email;
+    if (emailUnverified) unverified++;
+
+    // Upsert by name so email corrections update rows in place. An email a
+    // human already verified in-app is never clobbered.
+    const [existing] = await db
+      .select()
+      .from(aiLeads)
+      .where(eq(aiLeads.name, lead.name));
+    let row;
+    if (existing) {
+      const emailChanging = existing.emailUnverified && existing.email !== email;
+      [row] = await db
+        .update(aiLeads)
+        .set({
           department: lead.department,
           personId: person?.id ?? null,
-        },
-      })
-      .returning();
+          ...(existing.emailUnverified
+            ? { email, emailUnverified }
+            : {}),
+          // A changed address invalidates any login link made under the old one.
+          ...(emailChanging && existing.userId ? { userId: null } : {}),
+        })
+        .where(eq(aiLeads.id, existing.id))
+        .returning();
+    } else {
+      [row] = await db
+        .insert(aiLeads)
+        .values({
+          name: lead.name,
+          email,
+          emailUnverified,
+          department: lead.department,
+          state: "assigned",
+          personId: person?.id ?? null,
+        })
+        .returning();
+    }
     for (const t of lead.teams) {
       await db
         .insert(aiLeadTeams)
@@ -257,7 +291,7 @@ async function seedTeamsAndRoster() {
     }
   }
   console.log(
-    `· teams: ${teamPairs.size}, AI Leads: ${ROSTER.length} (emails placeholder-flagged)${missingPerson ? ` — ${missingPerson} not in directory` : ""}`,
+    `· teams: ${teamPairs.size}, AI Leads: ${ROSTER.length}${unverified ? ` (${unverified} email${unverified === 1 ? "" : "s"} still unverified)` : ""}${missingPerson ? ` — ${missingPerson} not in directory` : ""}`,
   );
 }
 

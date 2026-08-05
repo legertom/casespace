@@ -36,7 +36,7 @@ export default async function SignInPage({
       <div className="w-full max-w-sm">
         <h1 className="font-serif text-5xl tracking-tight">Casespace</h1>
         <p className="mt-3 text-ink-muted leading-relaxed">
-          Clever&rsquo;s ledger of AI use cases — and the live scoreboard for
+          Clever&rsquo;s casebook of AI use cases — and the live scoreboard for
           the H2 program.
         </p>
 

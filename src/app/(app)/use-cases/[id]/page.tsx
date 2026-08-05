@@ -285,7 +285,7 @@ export default async function UseCaseDetailPage({
                   </span>
                   <span>
                     {h.fromStatus === null ? (
-                      <>Logged into the ledger at {STATUS_LABELS[h.toStatus]}</>
+                      <>Logged into the casebook at {STATUS_LABELS[h.toStatus]}</>
                     ) : (
                       <>
                         {STATUS_LABELS[h.fromStatus]} →{" "}

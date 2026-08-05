@@ -1,6 +1,6 @@
 # Casespace — agent notes
 
-Casespace is Clever's internal AI use-case ledger and program scoreboard
+Casespace is Clever's internal AI use-case casebook and program scoreboard
 (H2 2026 AI Enablement program: 45 documented use cases, 15 with quantified
 positive ROI). Internal tool, Google-gated. **No dollar figures anywhere in
 the product. No gamification.**

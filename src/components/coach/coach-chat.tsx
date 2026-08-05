@@ -104,7 +104,7 @@ export function CoachChat({
                         </div>
                       );
                     case "tool-search_use_cases":
-                      return <ReadToolChip key={i} label="Searched the ledger" />;
+                      return <ReadToolChip key={i} label="Searched the casebook" />;
                     case "tool-get_use_case":
                       return <ReadToolChip key={i} label="Read the record" />;
                     case "tool-get_progress":

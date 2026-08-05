@@ -146,7 +146,7 @@ Voice: a well-edited internal newsletter. Observant, specific, zero hype. Plain 
 Structure (markdown):
 - Start with "# " and a specific, quiet headline (not "Weekly update").
 - An opening paragraph: the week in three sentences, anchored in the two numbers and their pace.
-- "## New in the ledger" — each new record with who logged it and which team it serves. Skip the section if empty ("A quiet week for new entries" belongs in the opener instead).
+- "## New in the casebook" — each new record with who logged it and which team it serves. Skip the section if empty ("A quiet week for new entries" belongs in the opener instead).
 - "## Movement" — promotions worth noting; call out anything reaching Qualified or Qualified+ by name with the people behind it. Include demotions/rejections plainly with their reason.
 - "## The 15" — per-ELT-org state in prose, including the honest unallocated bucket.
 - "## Pulse" — only if there are new readings this week; compare to baseline and target.

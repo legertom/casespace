@@ -58,7 +58,7 @@ export default async function UseCasesPage({
         <div>
           <h1 className="font-serif text-4xl">Use cases</h1>
           <p className="mt-2 text-ink-muted">
-            Every AI workflow in the ledger — everyone sees everything.
+            Every AI workflow in the casebook — everyone sees everything.
           </p>
         </div>
       </div>

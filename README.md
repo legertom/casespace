@@ -1,6 +1,6 @@
 # Casespace
 
-Clever's internal ledger of AI use cases — and the live scoreboard for the
+Clever's internal casebook of AI use cases — and the live scoreboard for the
 H2 2026 AI Enablement program.
 
 The program (KR 5 — AI Adoption, owned by Kate Schaff, run by Tom Leger):
@@ -133,9 +133,10 @@ Tools: `log_use_case` (title + description suffice), `update_use_case`,
   into `people` (admin-editable; not live HR data). Author/owner pickers,
   roster links, and ELT rollups resolve against it.
 - `scripts/seed.ts` — idempotent: admins (Tom with both aliases + Kate),
-  directory, 22 teams, 24 AI Leads (emails are `first.last@clever.com`
-  placeholders flagged **unverified** until Tom confirms them on
-  `/roster`), ELT orgs summing to 15, pulse baselines.
+  directory, 22 teams, 25 AI Leads with emails confirmed against the
+  AI Leads Google Group (any still-unverified address is flagged on
+  `/roster`; emails a human verified in-app are never clobbered by
+  re-seeding), ELT orgs summing to 15, pulse baselines.
 - `scripts/demo-data.ts` — dev-only sample records, clearly separated.
 
 ## Open questions for Tom / Kate (carried from the brief)
