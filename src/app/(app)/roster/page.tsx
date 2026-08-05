@@ -5,6 +5,7 @@ import {
   type Department,
 } from "@/lib/domain";
 import { listPeopleLite, listRoster, listTeams } from "@/server/reference";
+import { PersonLink } from "@/components/person-link";
 import { AddLeadForm, LeadRowAdmin } from "@/components/roster/roster-admin";
 
 export const metadata = { title: "AI Leads" };
@@ -40,7 +41,9 @@ export default async function RosterPage() {
                   <li key={l.id} className="py-3">
                     <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
                       <div>
-                        <span className="font-medium">{l.name}</span>
+                        <span className="font-medium">
+                          <PersonLink name={l.name} personId={l.personId} />
+                        </span>
                         <span className="ml-2 text-sm text-ink-muted">
                           {l.teams.map((t) => t.name).join(", ")}
                         </span>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/current-user";
 import {
+  APPROACH_LABELS,
   DEPARTMENT_LABELS,
   STATUS_LABELS,
   documentedGatesComplete,
@@ -12,6 +13,7 @@ import { fmtDate } from "@/lib/format";
 import { canEditUseCase } from "@/lib/permissions";
 import { getUseCase } from "@/server/use-case-queries";
 import { DeleteUseCase } from "@/components/delete-use-case";
+import { PersonLink, PersonLinks } from "@/components/person-link";
 import { QualifiedPlusBadge, StatusBadge } from "@/components/status-badge";
 import { StatusControls } from "@/components/status-controls";
 
@@ -145,7 +147,8 @@ export default async function UseCaseDetailPage({
                   <>
                     {" · "}
                     <strong className="text-ink">Approach:</strong>{" "}
-                    {uc.approach}
+                    {APPROACH_LABELS[uc.approach as keyof typeof APPROACH_LABELS] ??
+                      uc.approach}
                   </>
                 )}
               </p>
@@ -323,14 +326,21 @@ export default async function UseCaseDetailPage({
                   {uc.authors.length === 1 ? "Author" : "Authors"}
                 </dt>
                 <dd className="mt-0.5">
-                  {uc.authors.length
-                    ? uc.authors.map((a) => a.displayName).join(", ")
-                    : "—"}
+                  <PersonLinks people={uc.authors} />
                 </dd>
               </div>
               <div>
                 <dt className="text-ink-faint">Owner</dt>
-                <dd className="mt-0.5">{uc.ownerName ?? "—"}</dd>
+                <dd className="mt-0.5">
+                  {uc.ownerName ? (
+                    <PersonLink
+                      name={uc.ownerName}
+                      personId={uc.ownerPersonId}
+                    />
+                  ) : (
+                    "—"
+                  )}
+                </dd>
               </div>
               <div>
                 <dt className="text-ink-faint">Counts toward</dt>

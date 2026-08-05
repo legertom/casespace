@@ -17,6 +17,7 @@ import {
   getTeamCoverage,
 } from "@/server/dashboard-queries";
 import { STATUSES, type UcStatus } from "@/lib/domain";
+import { PersonLinks } from "@/components/person-link";
 
 /** Sequential one-hue ramp for the ordered pipeline (light → deep rust). */
 const PIPELINE_RAMP: Record<UcStatus, string> = {
@@ -238,7 +239,14 @@ export async function ProgramDashboard() {
                     </span>
                     <span className="block">{t.teamName}</span>
                   </td>
-                  <td className="py-2 pr-4">{t.leadNames.join(", ") || "—"}</td>
+                  <td className="py-2 pr-4">
+                    <PersonLinks
+                      people={t.leads.map((l) => ({
+                        displayName: l.name,
+                        personId: l.personId,
+                      }))}
+                    />
+                  </td>
                   <td className="py-2 pr-4 text-right tabular-nums">
                     {t.useCaseCount === 0 ? (
                       <span className="text-flag">0</span>

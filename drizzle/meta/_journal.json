@@ -8,6 +8,13 @@
       "when": 1785902721411,
       "tag": "0000_exotic_hex",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785934601523,
+      "tag": "0001_thin_silvermane",
+      "breakpoints": true
     }
   ]
 }

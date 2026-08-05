@@ -50,6 +50,7 @@ export const approachEnum = pgEnum("approach", [
   "prompt",
   "automation",
   "agentic",
+  "built",
 ]);
 
 export const ucSourceEnum = pgEnum("uc_source", [

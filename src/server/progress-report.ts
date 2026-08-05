@@ -45,7 +45,7 @@ export async function buildProgressReport() {
     teams: coverage.map((t) => ({
       team: t.teamName,
       department: DEPARTMENT_LABELS[t.department],
-      leads: t.leadNames,
+      leads: t.leads.map((l) => l.name),
       logged: t.useCaseCount,
       targetTwoPerLead: t.target,
     })),

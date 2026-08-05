@@ -21,6 +21,8 @@ export interface UseCaseFilters {
   createdById?: string;
   /** Restrict to records the given user created, owns, or authored. */
   mineUserId?: string;
+  /** Restrict to records the given person owns or authored. */
+  personId?: string;
 }
 
 export type UseCaseRow = typeof useCases.$inferSelect & {
@@ -96,6 +98,14 @@ export async function listUseCases(
         r.createdById === uid ||
         r.ownerUserId === uid ||
         r.authors.some((a) => a.userId === uid),
+    );
+  }
+
+  if (filters.personId) {
+    const pid = filters.personId;
+    result = result.filter(
+      (r) =>
+        r.ownerPersonId === pid || r.authors.some((a) => a.personId === pid),
     );
   }
 

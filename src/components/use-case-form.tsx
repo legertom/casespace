@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import type { ActionResult } from "@/server/actions";
 import {
+  APPROACHES,
+  APPROACH_LABELS,
   DEPARTMENTS,
   DEPARTMENT_LABELS,
   STATUSES,
@@ -308,8 +310,13 @@ export function UseCaseForm({
         </Field>
         <fieldset>
           <legend className="text-sm font-medium">Approach</legend>
-          <div className="mt-1.5 flex gap-5 text-sm">
-            {(["prompt", "automation", "agentic"] as const).map((a) => (
+          <p className="mt-0.5 text-xs text-ink-faint">
+            Prompt, automation, and agentic mean AI does the work at runtime.
+            AI-built means AI (e.g. Claude Code) built the tool, even if it
+            doesn't run AI itself.
+          </p>
+          <div className="mt-1.5 flex flex-wrap gap-5 text-sm">
+            {APPROACHES.map((a) => (
               <label key={a} className="inline-flex items-center gap-1.5">
                 <input
                   type="radio"
@@ -317,7 +324,7 @@ export function UseCaseForm({
                   checked={approach === a}
                   onChange={() => setApproach(a)}
                 />
-                {a[0].toUpperCase() + a.slice(1)}
+                {APPROACH_LABELS[a]}
               </label>
             ))}
             <label className="inline-flex items-center gap-1.5 text-ink-faint">

@@ -3,7 +3,13 @@ import { createHash, randomBytes } from "node:crypto";
 import { and, eq, isNull } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { pats, users } from "@/db/schema";
-import type { CurrentUser } from "@/lib/current-user";
+
+/**
+ * Token-authenticated actor. Deliberately the raw database row rather than
+ * CurrentUser: an API token carries the owner's real role, and is never
+ * subject to the browser-cookie "view as" preview.
+ */
+export type PatUser = typeof users.$inferSelect;
 
 export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
@@ -21,7 +27,7 @@ export function generateToken(): { token: string; prefix: string } {
  */
 export async function authenticatePat(
   req: Request,
-): Promise<CurrentUser | null> {
+): Promise<PatUser | null> {
   const header = req.headers.get("authorization") ?? "";
   const match = header.match(/^Bearer\s+(csp_[a-f0-9]{48})$/i);
   if (!match) return null;

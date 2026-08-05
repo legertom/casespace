@@ -311,8 +311,8 @@ const ELT_ORGS: {
     name: "Kate Schaff",
     person: "Kate Schaff",
     target: 3,
-    departments: [],
-    note: "Confirm semantics: Kate's own sponsored use cases, or a floating program-wide bucket? Modeled as a program-wide bucket (no department mapping) until confirmed.",
+    departments: ["css"],
+    note: "Covers CSS: Trent Matthews (Director of Customer Support & Services) reports to Kate. Business Operations and Business Analytics remain unmapped until Tom/Kate confirm owners.",
     sort: 5,
   },
   {
@@ -320,7 +320,7 @@ const ELT_ORGS: {
     person: "Trish Sparks",
     target: 2,
     departments: ["people"],
-    note: "Slide says “POps/GA” — mapped to the People grouping here; confirm. CSS, Business Operations, and Business Analytics deliberately remain unmapped until Tom/Kate confirm owners.",
+    note: "Slide says “POps/GA” — mapped to the People grouping here; confirm.",
     sort: 6,
   },
 ];

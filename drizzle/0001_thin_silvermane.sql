@@ -1,0 +1,1 @@
+ALTER TYPE "public"."approach" ADD VALUE 'built';

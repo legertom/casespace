@@ -41,6 +41,27 @@ export const DEPARTMENT_LABELS: Record<Department, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// Tool & approach
+// ---------------------------------------------------------------------------
+
+/**
+ * How AI shows up in a use case. "prompt" / "automation" / "agentic" describe
+ * AI doing the work at runtime (AI-enabled). "built" covers workflows where
+ * AI (e.g. Claude Code) built the tool but doesn't run at runtime (AI-built)
+ * — that still satisfies the "AI tool & approach identified" gate.
+ */
+export const APPROACHES = ["prompt", "automation", "agentic", "built"] as const;
+
+export type Approach = (typeof APPROACHES)[number];
+
+export const APPROACH_LABELS: Record<Approach, string> = {
+  prompt: "Prompt",
+  automation: "Automation",
+  agentic: "Agentic",
+  built: "AI-built",
+};
+
+// ---------------------------------------------------------------------------
 // Status pipeline
 // ---------------------------------------------------------------------------
 

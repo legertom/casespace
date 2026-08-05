@@ -4,7 +4,7 @@
  * and the form pickers re-link when the human edits first.
  */
 import { z } from "zod";
-import { DEPARTMENTS } from "@/lib/domain";
+import { APPROACHES, DEPARTMENTS } from "@/lib/domain";
 import type { UseCaseCreateInput } from "@/lib/use-case-input";
 
 const rating = z
@@ -33,7 +33,12 @@ export const proposalSchema = z.object({
     .nullish()
     .describe("Full name of the one person responsible going forward"),
   aiTools: z.array(z.string()).max(20).default([]),
-  approach: z.enum(["prompt", "automation", "agentic"]).nullish(),
+  approach: z
+    .enum(APPROACHES)
+    .nullish()
+    .describe(
+      "prompt/automation/agentic: AI does the work at runtime. built: AI (e.g. Claude Code) built the tool, which doesn't run AI itself.",
+    ),
   currentSteps: z
     .array(z.string())
     .max(50)

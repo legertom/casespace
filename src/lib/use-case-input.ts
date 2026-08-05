@@ -7,7 +7,7 @@
  * exists beats a perfect record that doesn't.
  */
 import { z } from "zod";
-import { DEPARTMENTS, STATUSES } from "./domain";
+import { APPROACHES, DEPARTMENTS, STATUSES } from "./domain";
 
 const rating = z.number().int().min(1).max(5);
 
@@ -36,7 +36,7 @@ export const useCaseCreateSchema = z.object({
   owner: personRefSchema.nullish(),
 
   aiTools: z.array(z.string().trim().min(1)).max(20).optional(),
-  approach: z.enum(["prompt", "automation", "agentic"]).nullish(),
+  approach: z.enum(APPROACHES).nullish(),
 
   currentSteps: z.array(z.string().trim().min(1)).max(50).optional(),
   ratingFrequency: rating.nullish(),

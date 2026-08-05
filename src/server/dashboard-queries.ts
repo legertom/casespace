@@ -92,11 +92,16 @@ export async function getEltProgress(): Promise<EltProgressRow[]> {
   return result;
 }
 
+export interface TeamCoverageLead {
+  name: string;
+  personId: string | null;
+}
+
 export interface TeamCoverageRow {
   teamId: string;
   teamName: string;
   department: Department;
-  leadNames: string[];
+  leads: TeamCoverageLead[];
   useCaseCount: number;
   target: number; // leads × 2 workflows each
 }
@@ -108,6 +113,7 @@ export async function getTeamCoverage(): Promise<TeamCoverageRow[]> {
     .select({
       teamId: aiLeadTeams.teamId,
       leadName: aiLeads.name,
+      leadPersonId: aiLeads.personId,
       state: aiLeads.state,
     })
     .from(aiLeadTeams)
@@ -118,12 +124,12 @@ export async function getTeamCoverage(): Promise<TeamCoverageRow[]> {
     .map((t) => {
       const leads = links
         .filter((l) => l.teamId === t.id && l.state === "assigned")
-        .map((l) => l.leadName);
+        .map((l) => ({ name: l.leadName, personId: l.leadPersonId }));
       return {
         teamId: t.id,
         teamName: t.name,
         department: t.department as Department,
-        leadNames: leads,
+        leads,
         useCaseCount: cases.filter((c) => c.teamId === t.id).length,
         target: leads.length * 2,
       };

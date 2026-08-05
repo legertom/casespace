@@ -10,6 +10,7 @@ import {
   type UcStatus,
 } from "@/lib/domain";
 import { listNames } from "@/lib/format";
+import { getPersonName } from "@/server/reference";
 import { listUseCases } from "@/server/use-case-queries";
 import { QualifiedPlusBadge, StatusBadge } from "@/components/status-badge";
 
@@ -20,6 +21,7 @@ interface Search {
   department?: string;
   q?: string;
   mine?: string;
+  person?: string;
 }
 
 export default async function UseCasesPage({
@@ -37,33 +39,47 @@ export default async function UseCasesPage({
     : undefined;
   const q = sp.q?.trim() || undefined;
   const mine = sp.mine === "1";
+  const personId = sp.person?.trim() || undefined;
+  const personName = personId ? await getPersonName(personId) : null;
 
   const rows = await listUseCases({
     status,
     department,
     q,
     mineUserId: mine ? user.id : undefined,
+    personId: personName ? personId : undefined,
   });
 
   const qualifiedPlus = sp.status === "qualified_plus";
   const visible = qualifiedPlus
-    ? (await listUseCases({ status: "qualified", department, q })).filter((r) =>
-        isQualifiedPlus(r),
-      )
+    ? (
+        await listUseCases({
+          status: "qualified",
+          department,
+          q,
+          mineUserId: mine ? user.id : undefined,
+          personId: personName ? personId : undefined,
+        })
+      ).filter((r) => isQualifiedPlus(r))
     : rows;
 
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-serif text-4xl">Use cases</h1>
+          <h1 className="font-serif text-4xl">
+            {personName ? `Use cases for ${personName}` : "Use cases"}
+          </h1>
           <p className="mt-2 text-ink-muted">
-            Every AI workflow in the casebook — everyone sees everything.
+            {personName
+              ? `Owned or authored by ${personName}.`
+              : "Every AI workflow in the casebook — everyone sees everything."}
           </p>
         </div>
       </div>
 
       <form className="mt-8 flex flex-wrap items-center gap-3" method="get">
+        {personId && <input type="hidden" name="person" value={personId} />}
         <input
           type="search"
           name="q"
@@ -109,7 +125,7 @@ export default async function UseCasesPage({
         >
           Filter
         </button>
-        {(q || status || department || mine || qualifiedPlus) && (
+        {(q || status || department || mine || qualifiedPlus || personId) && (
           <Link href="/use-cases" className="text-sm text-ink-faint hover:text-accent">
             Clear
           </Link>
@@ -122,7 +138,9 @@ export default async function UseCasesPage({
           <p className="mt-2 text-ink-muted">
             {mine
               ? "No use cases credit you yet. Built something with AI, however small? "
-              : "No use cases match these filters. Know of one that should exist? "}
+              : personName
+                ? `No use cases credit ${personName} yet. `
+                : "No use cases match these filters. Know of one that should exist? "}
             <Link href="/use-cases/new" className="text-accent underline underline-offset-2">
               Log it in five minutes.
             </Link>
