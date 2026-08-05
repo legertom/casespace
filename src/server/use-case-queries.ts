@@ -17,6 +17,8 @@ export interface UseCaseFilters {
   department?: Department;
   teamId?: string;
   eltOrgId?: string;
+  /** Records with no ELT owner at all — the dashboard's "Unallocated" bucket. */
+  eltUnallocated?: boolean;
   q?: string;
   createdById?: string;
   /** Restrict to records the given user created, owns, or authored. */
@@ -40,6 +42,7 @@ export async function listUseCases(
   if (filters.department) conds.push(eq(useCases.department, filters.department));
   if (filters.teamId) conds.push(eq(useCases.teamId, filters.teamId));
   if (filters.eltOrgId) conds.push(eq(useCases.eltOrgId, filters.eltOrgId));
+  if (filters.eltUnallocated) conds.push(isNull(useCases.eltOrgId));
   if (filters.createdById) conds.push(eq(useCases.createdById, filters.createdById));
   if (filters.q) {
     const pattern = `%${filters.q}%`;

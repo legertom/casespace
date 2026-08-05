@@ -13,6 +13,7 @@ import {
   getMovement,
   getProgramCounts,
   getTeamCoverage,
+  type EltProgressRow,
 } from "@/server/dashboard-queries";
 import { STATUSES, type UcStatus } from "@/lib/domain";
 import { PersonLinks } from "@/components/person-link";
@@ -80,6 +81,37 @@ function HeroNumber({
       )}
     </Link>
   );
+}
+
+/**
+ * Shade for one slot of an ELT owner's share, deepest first: counted toward
+ * the 15, then Qualified awaiting ROI, then still in the pipeline. Same hue
+ * throughout so the ramp reads as maturity rather than as categories.
+ */
+const ELT_SHADES = {
+  qualifiedPlus: "bg-st-qualifiedplus",
+  qualifiedInFlight: "bg-st-qualified",
+  inPipeline: "bg-st-qualified/45",
+  empty: "bg-hairline",
+} as const;
+
+function eltSlotClass(i: number, o: EltProgressRow, target: number): string {
+  const qp = Math.min(o.qualifiedPlus, target);
+  const q = Math.min(o.qualifiedInFlight, target - qp);
+  const p = Math.min(o.inPipeline, target - qp - q);
+  if (i < qp) return ELT_SHADES.qualifiedPlus;
+  if (i < qp + q) return ELT_SHADES.qualifiedInFlight;
+  if (i < qp + q + p) return ELT_SHADES.inPipeline;
+  return ELT_SHADES.empty;
+}
+
+/** "0 of 3 · 1 in the pipeline" — the detail after the count, or nothing. */
+function eltDetail(o: EltProgressRow): string | null {
+  const parts: string[] = [];
+  if (o.qualifiedInFlight > 0)
+    parts.push(`${o.qualifiedInFlight} Qualified awaiting ROI`);
+  if (o.inPipeline > 0) parts.push(`${o.inPipeline} in the pipeline`);
+  return parts.length ? parts.join(" · ") : null;
 }
 
 /** e.g. "1 in flight — 1 has all four gates met, waiting on the Qualified gate." */
@@ -185,58 +217,72 @@ export async function ProgramDashboard() {
       <section aria-label="The 15 by ELT org">
         <h2 className="font-serif text-2xl">The 15, by ELT owner</h2>
         <p className="mt-1 max-w-prose text-sm text-ink-muted">
-          Qualified+ counts against each owner&rsquo;s share of the 15.
+          Qualified+ counts against each owner&rsquo;s share of the 15. Shades
+          show how far along the rest is. Click an owner to see their records.
           {targetWarning && (
             <span className="text-flag"> {targetWarning}</span>
           )}
         </p>
-        <ul className="mt-5 space-y-4">
-          {elt.map((o) => (
-            <li key={o.name}>
-              <div className="flex items-baseline justify-between gap-4">
-                <span className="text-sm">
-                  {o.name}
-                  {o.note && (
-                    <span
-                      className="ml-1.5 cursor-help text-flag"
-                      title={o.note}
-                      aria-label={`Note: ${o.note}`}
-                    >
-                      ⚠
-                    </span>
-                  )}
-                </span>
-                <span className="text-sm tabular-nums text-ink-muted">
-                  {o.qualifiedPlus}
-                  {o.target !== null ? ` of ${o.target}` : ""}
-                  {o.qualifiedInFlight > 0 && (
-                    <span className="text-ink-faint">
-                      {" "}
-                      · {o.qualifiedInFlight} Qualified awaiting ROI
-                    </span>
-                  )}
-                </span>
-              </div>
-              {o.target !== null && (
-                <div
-                  role="img"
-                  aria-label={`${o.name}: ${o.qualifiedPlus} of ${o.target}`}
-                  className="mt-1.5 flex h-2 gap-0.5"
-                >
-                  {Array.from({ length: o.target }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={`h-full flex-1 rounded-[3px] ${
-                        i < o.qualifiedPlus
-                          ? "bg-st-qualifiedplus"
-                          : "bg-hairline"
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
+        <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-ink-faint">
+          {[
+            ["Counts toward the 15", ELT_SHADES.qualifiedPlus],
+            ["Qualified, ROI pending", ELT_SHADES.qualifiedInFlight],
+            ["In the pipeline", ELT_SHADES.inPipeline],
+          ].map(([caption, shade]) => (
+            <li key={caption} className="flex items-center gap-1.5">
+              <span className={`size-2.5 rounded-[3px] ${shade}`} />
+              {caption}
             </li>
           ))}
+        </ul>
+        <ul className="mt-5 space-y-1">
+          {elt.map((o) => {
+            const detail = eltDetail(o);
+            return (
+              <li key={o.name}>
+                <Link
+                  href={`/use-cases?elt=${o.id ?? "none"}`}
+                  className="block rounded-md py-2 transition-colors hover:bg-surface"
+                >
+                  <div className="flex items-baseline justify-between gap-4">
+                    <span className="text-sm">
+                      {o.name}
+                      {o.note && (
+                        <span
+                          className="ml-1.5 cursor-help text-flag"
+                          title={o.note}
+                          aria-label={`Note: ${o.note}`}
+                        >
+                          ⚠
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-sm tabular-nums text-ink-muted">
+                      {o.qualifiedPlus}
+                      {o.target !== null ? ` of ${o.target}` : ""}
+                      {detail && (
+                        <span className="text-ink-faint"> · {detail}</span>
+                      )}
+                    </span>
+                  </div>
+                  {o.target !== null && (
+                    <div
+                      role="img"
+                      aria-label={`${o.name}: ${o.qualifiedPlus} of ${o.target} counted${detail ? `, ${detail}` : ""}`}
+                      className="mt-1.5 flex h-2 gap-0.5"
+                    >
+                      {Array.from({ length: o.target }).map((_, i) => (
+                        <span
+                          key={i}
+                          className={`h-full flex-1 rounded-[3px] ${eltSlotClass(i, o, o.target!)}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </section>
 

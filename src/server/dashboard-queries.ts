@@ -65,13 +65,19 @@ export interface EltProgressRow {
   target: number | null;
   qualifiedPlus: number;
   qualifiedInFlight: number; // qualified but ROI not complete yet
+  inPipeline: number; // logged and moving, not yet Qualified
   note: string | null;
 }
 
+/**
+ * Every active record bucketed by ELT owner and maturity — not just Qualified
+ * work. An owner with a full pipeline and nothing Qualified yet should not
+ * look identical to an owner with nothing at all.
+ */
 export async function getEltProgress(): Promise<EltProgressRow[]> {
   const db = getDb();
   const orgs = await db.select().from(eltOrgs).orderBy(eltOrgs.sort);
-  const rows = (await activeUseCases()).filter((r) => r.status === "qualified");
+  const rows = await activeUseCases();
 
   const result: EltProgressRow[] = orgs.map((o) => ({
     id: o.id,
@@ -79,6 +85,7 @@ export async function getEltProgress(): Promise<EltProgressRow[]> {
     target: o.target,
     qualifiedPlus: 0,
     qualifiedInFlight: 0,
+    inPipeline: 0,
     note: o.note,
   }));
   const unallocated: EltProgressRow = {
@@ -87,15 +94,22 @@ export async function getEltProgress(): Promise<EltProgressRow[]> {
     target: null,
     qualifiedPlus: 0,
     qualifiedInFlight: 0,
-    note: "Qualified work in departments with no confirmed ELT owner (CSS, Business Operations, Business Analytics).",
+    inPipeline: 0,
+    note: "Work in departments with no confirmed ELT owner (Business Operations, Business Analytics).",
   };
 
   for (const r of rows) {
     const bucket = result.find((o) => o.id === r.eltOrgId) ?? unallocated;
-    if (isQualifiedPlus(r)) bucket.qualifiedPlus++;
+    if (r.status !== "qualified") bucket.inPipeline++;
+    else if (isQualifiedPlus(r)) bucket.qualifiedPlus++;
     else bucket.qualifiedInFlight++;
   }
-  if (unallocated.qualifiedPlus + unallocated.qualifiedInFlight > 0) {
+  if (
+    unallocated.qualifiedPlus +
+      unallocated.qualifiedInFlight +
+      unallocated.inPipeline >
+    0
+  ) {
     result.push(unallocated);
   }
   return result;

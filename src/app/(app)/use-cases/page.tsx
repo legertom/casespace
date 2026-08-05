@@ -11,7 +11,7 @@ import {
 } from "@/lib/domain";
 import { listNames } from "@/lib/format";
 import { canCreateUseCase } from "@/lib/permissions";
-import { getPersonName } from "@/server/reference";
+import { getPersonName, listEltOrgs } from "@/server/reference";
 import { listUseCases } from "@/server/use-case-queries";
 import { QualifiedPlusBadge, StatusBadge } from "@/components/status-badge";
 
@@ -23,6 +23,7 @@ interface Search {
   q?: string;
   mine?: string;
   person?: string;
+  elt?: string;
 }
 
 export default async function UseCasesPage({
@@ -43,29 +44,38 @@ export default async function UseCasesPage({
   const personId = sp.person?.trim() || undefined;
   const personName = personId ? await getPersonName(personId) : null;
 
-  const rows = await listUseCases({
-    status,
+  // "none" is the dashboard's Unallocated bucket. An id matching no real org
+  // is dropped entirely — the full list with no scope heading, rather than a
+  // page claiming to be filtered to something that doesn't exist.
+  const eltParam = sp.elt?.trim() || undefined;
+  const eltOrg =
+    eltParam && eltParam !== "none"
+      ? ((await listEltOrgs()).find((o) => o.id === eltParam) ?? null)
+      : null;
+  const eltUnallocated = eltParam === "none";
+  const eltLabel = eltUnallocated ? "Unallocated" : (eltOrg?.name ?? null);
+
+  // One filter set, shared by both queries below so they cannot drift apart.
+  const scope = {
     department,
     q,
     mineUserId: mine ? user.id : undefined,
     personId: personName ? personId : undefined,
-  });
+    eltOrgId: eltOrg?.id,
+    eltUnallocated,
+  };
+
+  const rows = await listUseCases({ status, ...scope });
 
   const qualifiedPlus = sp.status === "qualified_plus";
   const visible = qualifiedPlus
-    ? (
-        await listUseCases({
-          status: "qualified",
-          department,
-          q,
-          mineUserId: mine ? user.id : undefined,
-          personId: personName ? personId : undefined,
-        })
-      ).filter((r) => isQualifiedPlus(r))
+    ? (await listUseCases({ status: "qualified", ...scope })).filter((r) =>
+        isQualifiedPlus(r),
+      )
     : rows;
 
   const hasFilters = Boolean(
-    q || status || department || mine || qualifiedPlus || personId,
+    q || status || department || mine || qualifiedPlus || personId || eltLabel,
   );
   // A filter that matches nothing shouldn't read as "the casebook is empty" —
   // tell them what does exist and give them one click to it.
@@ -77,18 +87,29 @@ export default async function UseCasesPage({
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-serif text-4xl">
-            {personName ? `Use cases for ${personName}` : "Use cases"}
+            {personName
+              ? `Use cases for ${personName}`
+              : eltLabel
+                ? `Use cases counting toward ${eltLabel}`
+                : "Use cases"}
           </h1>
           <p className="mt-2 text-ink-muted">
             {personName
               ? `Owned or authored by ${personName}.`
-              : "Every AI workflow in the casebook — everyone sees everything."}
+              : eltUnallocated
+                ? "Logged in departments with no confirmed ELT owner."
+                : eltLabel
+                  ? `Everything counting toward ${eltLabel}'s share of the 15, at every stage.`
+                  : "Every AI workflow in the casebook — everyone sees everything."}
           </p>
         </div>
       </div>
 
       <form className="mt-8 flex flex-wrap items-center gap-3" method="get">
         {personId && <input type="hidden" name="person" value={personId} />}
+        {eltLabel && eltParam && (
+          <input type="hidden" name="elt" value={eltParam} />
+        )}
         <input
           type="search"
           name="q"
@@ -134,7 +155,7 @@ export default async function UseCasesPage({
         >
           Filter
         </button>
-        {(q || status || department || mine || qualifiedPlus || personId) && (
+        {hasFilters && (
           <Link href="/use-cases" className="text-sm text-ink-faint hover:text-accent">
             Clear
           </Link>
