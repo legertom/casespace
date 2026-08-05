@@ -1,0 +1,231 @@
+import "server-only";
+import { and, desc, eq, gte, isNull } from "drizzle-orm";
+import { getDb } from "@/db/client";
+import {
+  aiLeadTeams,
+  aiLeads,
+  eltOrgs,
+  statusChanges,
+  teams,
+  useCases,
+  users,
+} from "@/db/schema";
+import {
+  STATUSES,
+  isQualifiedPlus,
+  isStale,
+  type Department,
+  type UcStatus,
+} from "@/lib/domain";
+import { getStaleDays } from "./reference";
+
+export interface ProgramCounts {
+  qualified: number; // status = qualified (the 45 counts these)
+  qualifiedPlus: number; // derived subset (the 15)
+  byStatus: Record<UcStatus, number>;
+  total: number;
+}
+
+async function activeUseCases() {
+  const db = getDb();
+  return db.select().from(useCases).where(isNull(useCases.deletedAt));
+}
+
+export async function getProgramCounts(): Promise<ProgramCounts> {
+  const rows = await activeUseCases();
+  const byStatus = Object.fromEntries(STATUSES.map((s) => [s, 0])) as Record<
+    UcStatus,
+    number
+  >;
+  let qualifiedPlus = 0;
+  for (const r of rows) {
+    byStatus[r.status]++;
+    if (isQualifiedPlus(r)) qualifiedPlus++;
+  }
+  return {
+    qualified: byStatus.qualified,
+    qualifiedPlus,
+    byStatus,
+    total: rows.length,
+  };
+}
+
+export interface EltProgressRow {
+  id: string | null; // null = unallocated bucket
+  name: string;
+  target: number | null;
+  qualifiedPlus: number;
+  qualifiedInFlight: number; // qualified but ROI not complete yet
+  note: string | null;
+}
+
+export async function getEltProgress(): Promise<EltProgressRow[]> {
+  const db = getDb();
+  const orgs = await db.select().from(eltOrgs).orderBy(eltOrgs.sort);
+  const rows = (await activeUseCases()).filter((r) => r.status === "qualified");
+
+  const result: EltProgressRow[] = orgs.map((o) => ({
+    id: o.id,
+    name: o.name,
+    target: o.target,
+    qualifiedPlus: 0,
+    qualifiedInFlight: 0,
+    note: o.note,
+  }));
+  const unallocated: EltProgressRow = {
+    id: null,
+    name: "Unallocated",
+    target: null,
+    qualifiedPlus: 0,
+    qualifiedInFlight: 0,
+    note: "Qualified work in departments with no confirmed ELT owner (CSS, Business Operations, Business Analytics).",
+  };
+
+  for (const r of rows) {
+    const bucket = result.find((o) => o.id === r.eltOrgId) ?? unallocated;
+    if (isQualifiedPlus(r)) bucket.qualifiedPlus++;
+    else bucket.qualifiedInFlight++;
+  }
+  if (unallocated.qualifiedPlus + unallocated.qualifiedInFlight > 0) {
+    result.push(unallocated);
+  }
+  return result;
+}
+
+export interface TeamCoverageRow {
+  teamId: string;
+  teamName: string;
+  department: Department;
+  leadNames: string[];
+  useCaseCount: number;
+  target: number; // leads × 2 workflows each
+}
+
+export async function getTeamCoverage(): Promise<TeamCoverageRow[]> {
+  const db = getDb();
+  const allTeams = await db.select().from(teams);
+  const links = await db
+    .select({
+      teamId: aiLeadTeams.teamId,
+      leadName: aiLeads.name,
+      state: aiLeads.state,
+    })
+    .from(aiLeadTeams)
+    .innerJoin(aiLeads, eq(aiLeadTeams.leadId, aiLeads.id));
+  const cases = await activeUseCases();
+
+  return allTeams
+    .map((t) => {
+      const leads = links
+        .filter((l) => l.teamId === t.id && l.state === "assigned")
+        .map((l) => l.leadName);
+      return {
+        teamId: t.id,
+        teamName: t.name,
+        department: t.department as Department,
+        leadNames: leads,
+        useCaseCount: cases.filter((c) => c.teamId === t.id).length,
+        target: leads.length * 2,
+      };
+    })
+    .sort(
+      (a, b) =>
+        a.department.localeCompare(b.department) ||
+        a.teamName.localeCompare(b.teamName),
+    );
+}
+
+export interface MovementItem {
+  id: string;
+  useCaseId: string;
+  title: string;
+  fromStatus: UcStatus | null;
+  toStatus: UcStatus;
+  becameQualifiedPlus: boolean;
+  changedByName: string | null;
+  createdAt: Date;
+}
+
+export async function getMovement(days = 7): Promise<MovementItem[]> {
+  const db = getDb();
+  const since = new Date(Date.now() - days * 86_400_000);
+  const rows = await db
+    .select({
+      id: statusChanges.id,
+      useCaseId: statusChanges.useCaseId,
+      fromStatus: statusChanges.fromStatus,
+      toStatus: statusChanges.toStatus,
+      createdAt: statusChanges.createdAt,
+      changedByName: users.name,
+      uc: useCases,
+    })
+    .from(statusChanges)
+    .innerJoin(useCases, eq(statusChanges.useCaseId, useCases.id))
+    .leftJoin(users, eq(statusChanges.changedById, users.id))
+    .where(and(gte(statusChanges.createdAt, since), isNull(useCases.deletedAt)))
+    .orderBy(desc(statusChanges.createdAt));
+
+  return rows.map((r) => ({
+    id: r.id,
+    useCaseId: r.useCaseId,
+    title: r.uc.title,
+    fromStatus: r.fromStatus,
+    toStatus: r.toStatus,
+    becameQualifiedPlus: r.toStatus === "qualified" && isQualifiedPlus(r.uc),
+    changedByName: r.changedByName,
+    createdAt: r.createdAt,
+  }));
+}
+
+export interface AttentionFlags {
+  staleDays: number;
+  stale: {
+    id: string;
+    title: string;
+    status: UcStatus;
+    daysInStatus: number;
+  }[];
+  launchedUnscored: { id: string; title: string; roiStatus: string }[];
+}
+
+export async function getAttentionFlags(): Promise<AttentionFlags> {
+  const db = getDb();
+  const staleDays = await getStaleDays();
+  const cases = await activeUseCases();
+  const lastChange = new Map<string, Date>();
+  const changes = await db
+    .select({
+      useCaseId: statusChanges.useCaseId,
+      createdAt: statusChanges.createdAt,
+    })
+    .from(statusChanges)
+    .orderBy(desc(statusChanges.createdAt));
+  for (const c of changes) {
+    if (!lastChange.has(c.useCaseId)) lastChange.set(c.useCaseId, c.createdAt);
+  }
+
+  const now = new Date();
+  const stale = cases
+    .filter((c) => c.status !== "qualified")
+    .map((c) => {
+      const last = lastChange.get(c.id) ?? c.createdAt;
+      return {
+        id: c.id,
+        title: c.title,
+        status: c.status,
+        daysInStatus: Math.floor(
+          (now.getTime() - last.getTime()) / 86_400_000,
+        ),
+        isStale: isStale(last, now, staleDays),
+      };
+    })
+    .filter((c) => c.isStale)
+    .sort((a, b) => b.daysInStatus - a.daysInStatus)
+    .map(({ isStale: _isStale, ...rest }) => rest);
+
+  const launchedUnscored = cases
+    .filter((c) => c.status === "launched" && c.roiStatus !== "complete")
+    .map((c) => ({ id: c.id, title: c.title, roiStatus: c.roiStatus }));
+
+  return { staleDays, stale, launchedUnscored };
+}
