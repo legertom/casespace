@@ -18,6 +18,12 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-ink focus:px-3 focus:py-2 focus:text-paper"
+      >
+        Skip to content
+      </a>
       <header className="border-b border-hairline bg-paper">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <div className="flex items-baseline gap-8">
@@ -75,7 +81,7 @@ export default async function AppLayout({
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-10">{children}</main>
+      <main id="main" className="mx-auto max-w-6xl px-6 py-10">{children}</main>
       {aiConfigured() && <CoachLauncher />}
     </div>
   );
