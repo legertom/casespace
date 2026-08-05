@@ -12,6 +12,7 @@ import {
 } from "@/db/schema";
 import {
   STATUSES,
+  documentedGatesComplete,
   isQualifiedPlus,
   isStale,
   type Department,
@@ -24,6 +25,10 @@ export interface ProgramCounts {
   qualifiedPlus: number; // derived subset (the 15)
   byStatus: Record<UcStatus, number>;
   total: number;
+  /** Logged and moving, but not yet Qualified — real work the 45 can't show. */
+  inFlight: number;
+  /** All four documented gates met, still short of the Qualified gate. */
+  readyForGate: number;
 }
 
 async function activeUseCases() {
@@ -38,15 +43,19 @@ export async function getProgramCounts(): Promise<ProgramCounts> {
     number
   >;
   let qualifiedPlus = 0;
+  let readyForGate = 0;
   for (const r of rows) {
     byStatus[r.status]++;
     if (isQualifiedPlus(r)) qualifiedPlus++;
+    if (r.status !== "qualified" && documentedGatesComplete(r)) readyForGate++;
   }
   return {
     qualified: byStatus.qualified,
     qualifiedPlus,
     byStatus,
     total: rows.length,
+    inFlight: rows.length - byStatus.qualified,
+    readyForGate,
   };
 }
 

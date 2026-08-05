@@ -35,14 +35,23 @@ function HeroNumber({
   target,
   sentence,
   href,
+  inFlight = 0,
+  footnote,
 }: {
   label: string;
   actual: number;
   target: number;
   sentence: string;
   href: string;
+  /** Counted toward nothing yet, but real — drawn as a ghost segment so a
+   *  headline of 0 never reads as "nothing is happening". */
+  inFlight?: number;
+  footnote?: string;
 }) {
   const pct = Math.min(100, Math.round((actual / target) * 100));
+  const inFlightPct = inFlight
+    ? Math.max(2, Math.min(100 - pct, Math.round((inFlight / target) * 100)))
+    : 0;
   return (
     <Link
       href={href}
@@ -55,17 +64,38 @@ function HeroNumber({
       </p>
       <div
         role="img"
-        aria-label={`${actual} of ${target}`}
-        className="mt-4 h-1.5 overflow-hidden rounded-full bg-hairline"
+        aria-label={
+          inFlight
+            ? `${actual} of ${target}, plus ${inFlight} in flight`
+            : `${actual} of ${target}`
+        }
+        className="mt-4 flex h-1.5 overflow-hidden rounded-full bg-hairline"
       >
-        <div
-          className="h-full rounded-full bg-accent"
-          style={{ width: `${pct}%` }}
-        />
+        <div className="h-full shrink-0 bg-accent" style={{ width: `${pct}%` }} />
+        {inFlightPct > 0 && (
+          <div
+            className="h-full shrink-0 bg-accent/25"
+            style={{ width: `${inFlightPct}%` }}
+          />
+        )}
       </div>
       <p className="mt-3 text-sm leading-relaxed text-ink-muted">{sentence}</p>
+      {footnote && (
+        <p className="mt-1.5 text-sm leading-relaxed text-ink-faint">
+          {footnote}
+        </p>
+      )}
     </Link>
   );
+}
+
+/** e.g. "1 in flight — 1 has all four gates met, waiting on the Qualified gate." */
+function inFlightNote(inFlight: number, readyForGate: number): string | undefined {
+  if (inFlight === 0) return undefined;
+  const lead = `${inFlight} in flight`;
+  if (readyForGate === 0) return `${lead}, none through the four gates yet.`;
+  const subject = readyForGate === 1 ? "1 has" : `${readyForGate} have`;
+  return `${lead} — ${subject} all four gates met, waiting on the Qualified gate.`;
 }
 
 export async function ProgramDashboard() {
@@ -78,13 +108,21 @@ export async function ProgramDashboard() {
   ]);
 
   const today = etDateString(new Date());
-  const docPace = paceSummary(TARGET_DOCUMENTED, counts.qualified, today);
+  // "logged" would be wrong here — records can be logged without being
+  // Qualified, which is exactly the gap the in-flight note explains.
+  const docPace = paceSummary(
+    TARGET_DOCUMENTED,
+    counts.qualified,
+    today,
+    "at Qualified",
+  );
   const roiPace = paceSummary(
     TARGET_ROI,
     counts.qualifiedPlus,
     today,
     "at Qualified+",
   );
+  const awaitingRoi = counts.qualified - counts.qualifiedPlus;
   const maxStatusCount = Math.max(1, ...Object.values(counts.byStatus));
   const targetWarning = targetSumWarning(
     elt.filter((o) => o.target !== null).map((o) => ({ target: o.target! })),
@@ -102,14 +140,31 @@ export async function ProgramDashboard() {
             actual={counts.qualified}
             target={TARGET_DOCUMENTED}
             sentence={docPace.sentence}
-            href="/use-cases?status=qualified"
+            inFlight={counts.inFlight}
+            footnote={inFlightNote(counts.inFlight, counts.readyForGate)}
+            // An empty filter is a dead end; send them to the real work instead.
+            href={
+              counts.qualified > 0 ? "/use-cases?status=qualified" : "/use-cases"
+            }
           />
           <HeroNumber
             label="Quantified, positive ROI — Qualified+"
             actual={counts.qualifiedPlus}
             target={TARGET_ROI}
             sentence={roiPace.sentence}
-            href="/use-cases?status=qualified_plus"
+            inFlight={awaitingRoi}
+            footnote={
+              awaitingRoi
+                ? `${awaitingRoi} Qualified ${awaitingRoi === 1 ? "record is" : "records are"} still short of complete ROI scoring.`
+                : undefined
+            }
+            href={
+              counts.qualifiedPlus > 0
+                ? "/use-cases?status=qualified_plus"
+                : counts.qualified > 0
+                  ? "/use-cases?status=qualified"
+                  : "/use-cases"
+            }
           />
         </div>
       </section>

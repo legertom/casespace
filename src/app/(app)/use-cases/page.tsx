@@ -10,6 +10,7 @@ import {
   type UcStatus,
 } from "@/lib/domain";
 import { listNames } from "@/lib/format";
+import { canCreateUseCase } from "@/lib/permissions";
 import { getPersonName } from "@/server/reference";
 import { listUseCases } from "@/server/use-case-queries";
 import { QualifiedPlusBadge, StatusBadge } from "@/components/status-badge";
@@ -62,6 +63,14 @@ export default async function UseCasesPage({
         })
       ).filter((r) => isQualifiedPlus(r))
     : rows;
+
+  const hasFilters = Boolean(
+    q || status || department || mine || qualifiedPlus || personId,
+  );
+  // A filter that matches nothing shouldn't read as "the casebook is empty" —
+  // tell them what does exist and give them one click to it.
+  const totalUnfiltered =
+    visible.length === 0 && hasFilters ? (await listUseCases({})).length : 0;
 
   return (
     <div>
@@ -134,17 +143,38 @@ export default async function UseCasesPage({
 
       {visible.length === 0 ? (
         <div className="mt-16 max-w-md">
-          <p className="font-serif text-xl">Nothing here yet.</p>
+          <p className="font-serif text-xl">
+            {hasFilters ? "Nothing matches this view." : "Nothing here yet."}
+          </p>
           <p className="mt-2 text-ink-muted">
             {mine
-              ? "No use cases credit you yet. Built something with AI, however small? "
+              ? "No use cases credit you yet."
               : personName
-                ? `No use cases credit ${personName} yet. `
-                : "No use cases match these filters. Know of one that should exist? "}
-            <Link href="/use-cases/new" className="text-accent underline underline-offset-2">
-              Log it in five minutes.
-            </Link>
+                ? `No use cases credit ${personName} yet.`
+                : hasFilters
+                  ? "The casebook has records, just none in this slice."
+                  : "Know of one that should exist?"}{" "}
+            {totalUnfiltered > 0 && (
+              <Link
+                href="/use-cases"
+                className="text-accent underline underline-offset-2"
+              >
+                See all {totalUnfiltered} use{" "}
+                {totalUnfiltered === 1 ? "case" : "cases"}.
+              </Link>
+            )}
           </p>
+          {canCreateUseCase(user.role) && (
+            <p className="mt-2 text-ink-muted">
+              Built something with AI, however small?{" "}
+              <Link
+                href="/use-cases/new"
+                className="text-accent underline underline-offset-2"
+              >
+                Log it in five minutes.
+              </Link>
+            </p>
+          )}
         </div>
       ) : (
         <ul className="mt-8 divide-y divide-hairline border-y border-hairline">
