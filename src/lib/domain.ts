@@ -194,13 +194,8 @@ export function countsTowardDocumented(status: UcStatus): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Pace math (program window Jul 1 – Dec 31, 2026, ET calendar days)
+// Dates
 // ---------------------------------------------------------------------------
-
-function utcOfDateString(d: string): number {
-  const [y, m, day] = d.split("-").map(Number);
-  return Date.UTC(y, m - 1, day);
-}
 
 /** Calendar date in America/New_York for a given instant, as YYYY-MM-DD. */
 export function etDateString(now: Date): string {
@@ -213,61 +208,6 @@ export function etDateString(now: Date): string {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-export function totalProgramDays(): number {
-  return (
-    (utcOfDateString(PROGRAM_END) - utcOfDateString(PROGRAM_START)) / DAY_MS + 1
-  );
-}
-
-/** Days of the program elapsed through the given ET date, inclusive. Clamped to [0, total]. */
-export function elapsedProgramDays(etDate: string): number {
-  const elapsed =
-    (utcOfDateString(etDate) - utcOfDateString(PROGRAM_START)) / DAY_MS + 1;
-  return Math.max(0, Math.min(totalProgramDays(), elapsed));
-}
-
-/** Linear on-pace count for a target as of the given ET date. */
-export function onPaceCount(target: number, etDate: string): number {
-  return Math.round((target * elapsedProgramDays(etDate)) / totalProgramDays());
-}
-
-export type PacePosition = "ahead" | "behind" | "on pace";
-
-export interface PaceSummary {
-  target: number;
-  actual: number;
-  needed: number;
-  position: PacePosition;
-  sentence: string;
-}
-
-/** e.g. "Aug 4: 12 of 45 logged — on pace needs 9. You're ahead." */
-export function paceSummary(
-  target: number,
-  actual: number,
-  etDate: string,
-  noun = "logged",
-): PaceSummary {
-  const needed = onPaceCount(target, etDate);
-  const position: PacePosition =
-    actual > needed ? "ahead" : actual < needed ? "behind" : "on pace";
-  const [y, m, d] = etDate.split("-").map(Number);
-  const dateLabel = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(y, m - 1, d)));
-  const tail =
-    position === "on pace" ? "You're right on pace." : `You're ${position}.`;
-  return {
-    target,
-    actual,
-    needed,
-    position,
-    sentence: `${dateLabel}: ${actual} of ${target} ${noun} — on pace needs ${needed}. ${tail}`,
-  };
-}
 
 // ---------------------------------------------------------------------------
 // ELT allocation

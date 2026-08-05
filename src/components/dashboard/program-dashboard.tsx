@@ -4,8 +4,6 @@ import {
   STATUS_LABELS,
   TARGET_DOCUMENTED,
   TARGET_ROI,
-  etDateString,
-  paceSummary,
   targetSumWarning,
 } from "@/lib/domain";
 import { fmtDateShort } from "@/lib/format";
@@ -33,7 +31,6 @@ function HeroNumber({
   label,
   actual,
   target,
-  sentence,
   href,
   inFlight = 0,
   footnote,
@@ -41,7 +38,6 @@ function HeroNumber({
   label: string;
   actual: number;
   target: number;
-  sentence: string;
   href: string;
   /** Counted toward nothing yet, but real — drawn as a ghost segment so a
    *  headline of 0 never reads as "nothing is happening". */
@@ -79,11 +75,8 @@ function HeroNumber({
           />
         )}
       </div>
-      <p className="mt-3 text-sm leading-relaxed text-ink-muted">{sentence}</p>
       {footnote && (
-        <p className="mt-1.5 text-sm leading-relaxed text-ink-faint">
-          {footnote}
-        </p>
+        <p className="mt-3 text-sm leading-relaxed text-ink-muted">{footnote}</p>
       )}
     </Link>
   );
@@ -107,21 +100,6 @@ export async function ProgramDashboard() {
     getAttentionFlags(),
   ]);
 
-  const today = etDateString(new Date());
-  // "logged" would be wrong here — records can be logged without being
-  // Qualified, which is exactly the gap the in-flight note explains.
-  const docPace = paceSummary(
-    TARGET_DOCUMENTED,
-    counts.qualified,
-    today,
-    "at Qualified",
-  );
-  const roiPace = paceSummary(
-    TARGET_ROI,
-    counts.qualifiedPlus,
-    today,
-    "at Qualified+",
-  );
   const awaitingRoi = counts.qualified - counts.qualifiedPlus;
   const maxStatusCount = Math.max(1, ...Object.values(counts.byStatus));
   const targetWarning = targetSumWarning(
@@ -139,7 +117,6 @@ export async function ProgramDashboard() {
             label="Documented use cases — Qualified or better"
             actual={counts.qualified}
             target={TARGET_DOCUMENTED}
-            sentence={docPace.sentence}
             inFlight={counts.inFlight}
             footnote={inFlightNote(counts.inFlight, counts.readyForGate)}
             // An empty filter is a dead end; send them to the real work instead.
@@ -151,7 +128,6 @@ export async function ProgramDashboard() {
             label="Quantified, positive ROI — Qualified+"
             actual={counts.qualifiedPlus}
             target={TARGET_ROI}
-            sentence={roiPace.sentence}
             inFlight={awaitingRoi}
             footnote={
               awaitingRoi

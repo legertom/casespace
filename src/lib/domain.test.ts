@@ -3,17 +3,13 @@ import {
   canSetStatus,
   countsTowardDocumented,
   documentedGatesComplete,
-  elapsedProgramDays,
   etDateString,
   isQualifiedPlus,
   isStale,
-  onPaceCount,
-  paceSummary,
   roiComplete,
   roiGaps,
   suggestEltOrg,
   targetSumWarning,
-  totalProgramDays,
   type QualifiedPlusFields,
 } from "./domain";
 
@@ -120,36 +116,7 @@ describe("status transitions", () => {
   });
 });
 
-describe("pace math", () => {
-  it("program is 184 days", () => {
-    expect(totalProgramDays()).toBe(184);
-  });
-
-  it("matches the spec example for Aug 4", () => {
-    // "Aug 4: 12 of 45 logged — on pace needs 9. You're ahead."
-    expect(elapsedProgramDays("2026-08-04")).toBe(35);
-    expect(onPaceCount(45, "2026-08-04")).toBe(9);
-    const s = paceSummary(45, 12, "2026-08-04");
-    expect(s.sentence).toBe(
-      "Aug 4: 12 of 45 logged — on pace needs 9. You're ahead.",
-    );
-  });
-
-  it("needs the full target on the last day", () => {
-    expect(onPaceCount(45, "2026-12-31")).toBe(45);
-    expect(onPaceCount(15, "2026-12-31")).toBe(15);
-  });
-
-  it("clamps before the program starts and after it ends", () => {
-    expect(onPaceCount(45, "2026-06-15")).toBe(0);
-    expect(onPaceCount(45, "2027-02-01")).toBe(45);
-  });
-
-  it("reports behind and on-pace positions", () => {
-    expect(paceSummary(45, 4, "2026-08-04").position).toBe("behind");
-    expect(paceSummary(45, 9, "2026-08-04").position).toBe("on pace");
-  });
-
+describe("dates", () => {
   it("converts instants to ET calendar dates", () => {
     // 03:00 UTC on Aug 5 is still Aug 4 in New York (EDT, UTC-4).
     expect(etDateString(new Date("2026-08-05T03:00:00Z"))).toBe("2026-08-04");

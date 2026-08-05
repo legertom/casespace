@@ -1,7 +1,7 @@
 /**
  * Dev-only demo data — clearly separated from real seeds. Inserts a spread of
  * sample use cases across departments and statuses (with backdated history so
- * the movement feed, pace lines, and attention flags have texture).
+ * the movement feed and attention flags have texture).
  *
  * Idempotent: demo records are keyed by title; existing ones are replaced.
  */

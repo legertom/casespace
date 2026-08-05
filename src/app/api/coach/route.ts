@@ -153,7 +153,7 @@ export async function POST(req: Request) {
 
     get_progress: tool({
       description:
-        "The program scoreboard: counts vs targets with pace, per-ELT-org splits, per-team coverage, and attention flags.",
+        "The program scoreboard: counts vs targets, what is in flight behind them, per-ELT-org splits, per-team coverage, and attention flags.",
       inputSchema: z.object({}),
       execute: () => buildProgressReport(),
     }),

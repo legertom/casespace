@@ -1,10 +1,5 @@
 import { requireUser } from "@/lib/current-user";
-import {
-  TARGET_DOCUMENTED,
-  TARGET_ROI,
-  etDateString,
-  paceSummary,
-} from "@/lib/domain";
+import { TARGET_DOCUMENTED, TARGET_ROI } from "@/lib/domain";
 import { fmtDate } from "@/lib/format";
 import { getProgramCounts } from "@/server/dashboard-queries";
 import { getPulseSeries } from "@/server/goals-queries";
@@ -19,10 +14,6 @@ export default async function GoalsPage() {
     getProgramCounts(),
     getPulseSeries(),
   ]);
-  const today = etDateString(new Date());
-  const docPace = paceSummary(TARGET_DOCUMENTED, counts.qualified, today);
-  const roiPace = paceSummary(TARGET_ROI, counts.qualifiedPlus, today, "at Qualified+");
-
   return (
     <div>
       <h1 className="font-serif text-4xl">Goals &amp; adoption trends</h1>
@@ -38,13 +29,11 @@ export default async function GoalsPage() {
             label: "Documented use cases (Qualified or better)",
             actual: counts.qualified,
             target: TARGET_DOCUMENTED,
-            sentence: docPace.sentence,
           },
           {
             label: "Quantified positive ROI (Qualified+)",
             actual: counts.qualifiedPlus,
             target: TARGET_ROI,
-            sentence: roiPace.sentence,
           },
         ].map((g) => (
           <div key={g.label} className="rounded-md border border-hairline bg-surface p-5">
@@ -53,7 +42,6 @@ export default async function GoalsPage() {
               {g.actual}
               <span className="text-xl text-ink-faint"> of {g.target}</span>
             </p>
-            <p className="mt-2 text-sm text-ink-muted">{g.sentence}</p>
           </div>
         ))}
       </section>

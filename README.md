@@ -47,8 +47,9 @@ any roster email like `vamsi.chunduru@clever.com` (contributor), any other
 `clever.com` address (viewer).
 
 `pnpm test` runs the domain suite — status transitions, Qualified+
-derivation, pace math, permissions, sparse-create defaults, target-sum
-warnings. `pnpm typecheck` and `pnpm build` should both stay green.
+derivation, permissions, sparse-create defaults, target-sum warnings,
+view-as role resolution. `pnpm typecheck` and `pnpm build` should both
+stay green.
 
 ## Deploying to Vercel
 
@@ -108,7 +109,7 @@ Tools: `log_use_case` (title + description suffice), `update_use_case`,
 | `/api/v1/use-cases` | POST | sparse create — only `title` + `description` required |
 | `/api/v1/use-cases/:id` | GET / PATCH | patch semantics; permissions enforced |
 | `/api/v1/roster` | GET | AI Leads roster |
-| `/api/v1/progress` | GET | the scoreboard with pace sentences |
+| `/api/v1/progress` | GET | the scoreboard: counts, targets, what's in flight |
 
 ## How the numbers work
 
@@ -118,8 +119,10 @@ Tools: `log_use_case` (title + description suffice), `update_use_case`,
 - **The 15** counts Qualified+ — derived, never set: Qualified **and**
   success criterion defined & met, baseline + post measured with the same
   methodology, a plain-English net-impact statement, and a positive outcome.
-- **Pace** is linear across Jul 1 – Dec 31 (ET):
-  "Aug 4: 12 of 45 logged — on pace needs 9. You're ahead."
+- **In flight** sits beside the two numbers but is never folded into them:
+  records logged but not yet Qualified, and how many already have all four
+  documented gates met (waiting only on the Qualified gate). The program
+  does not track linear pace, so nothing computes ahead/behind.
 - **ELT allocation** is data (`elt_orgs`), editable by admins; departments
   with no confirmed owner (CSS, Business Operations, Business Analytics)
   stay honestly **unallocated** on the dashboard. Targets warn (never block)

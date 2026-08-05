@@ -126,7 +126,7 @@ const handler = createMcpHandler(
       {
         title: "Get program progress",
         description:
-          "The program scoreboard: documented (45) and Qualified+ (15) counts with pace, pipeline, per-ELT-org and per-team splits, and attention flags.",
+          "The program scoreboard: documented (45) and Qualified+ (15) counts, what is in flight behind them, pipeline, per-ELT-org and per-team splits, and attention flags.",
         inputSchema: z.object({}),
       },
       async () => json(await buildProgressReport()),

@@ -307,12 +307,14 @@ const ELT_ORGS: {
   { name: "Eric Krugler (CTO)", person: "Eric Krugler", target: 3, departments: ["engineering"], note: null, sort: 2 },
   { name: "Jamie Reffell (CPO)", person: "Jamie Reffell", target: 2, departments: ["product_design"], note: null, sort: 3 },
   { name: "Phillip Mikula (CRO)", person: "Phillip Mikula", target: 3, departments: ["mss"], note: null, sort: 4 },
+  // Kate owns CSS — Trent Matthews (Director of Customer Support & Services)
+  // reports to her. Confirmed, so no caveat note.
   {
     name: "Kate Schaff",
     person: "Kate Schaff",
     target: 3,
     departments: ["css"],
-    note: "Covers CSS: Trent Matthews (Director of Customer Support & Services) reports to Kate. Business Operations and Business Analytics remain unmapped until Tom/Kate confirm owners.",
+    note: null,
     sort: 5,
   },
   {
@@ -320,7 +322,7 @@ const ELT_ORGS: {
     person: "Trish Sparks",
     target: 2,
     departments: ["people"],
-    note: "Slide says “POps/GA” — mapped to the People grouping here; confirm.",
+    note: null,
     sort: 6,
   },
 ];

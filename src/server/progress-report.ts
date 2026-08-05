@@ -4,7 +4,6 @@ import {
   TARGET_DOCUMENTED,
   TARGET_ROI,
   etDateString,
-  paceSummary,
 } from "@/lib/domain";
 import {
   getAttentionFlags,
@@ -27,13 +26,13 @@ export async function buildProgressReport() {
     documented: {
       actual: counts.qualified,
       target: TARGET_DOCUMENTED,
-      pace: paceSummary(TARGET_DOCUMENTED, counts.qualified, today).sentence,
+      inFlight: counts.inFlight,
+      readyForGate: counts.readyForGate,
     },
     qualifiedPlus: {
       actual: counts.qualifiedPlus,
       target: TARGET_ROI,
-      pace: paceSummary(TARGET_ROI, counts.qualifiedPlus, today, "at Qualified+")
-        .sentence,
+      awaitingRoi: counts.qualified - counts.qualifiedPlus,
     },
     pipeline: counts.byStatus,
     byEltOrg: elt.map((o) => ({

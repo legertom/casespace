@@ -23,8 +23,8 @@ an API you have not verified in this repo, read the bundled docs for the
 
 - TypeScript strict; Server Components by default, `'use client'` only where
   interactivity requires it.
-- All program/domain logic (status transitions, Qualified+ derivation, pace
-  math, permissions, sparse API defaults) lives in pure modules under
+- All program/domain logic (status transitions, Qualified+ derivation,
+  permissions, sparse API defaults) lives in pure modules under
   `src/lib/` and is covered by Vitest — change logic there, keep tests green.
 - Every write to a use case's status goes through the transition helpers so
   the status-change log stays complete.
