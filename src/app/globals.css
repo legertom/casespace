@@ -48,3 +48,79 @@ body {
   outline-offset: 2px;
   border-radius: 2px;
 }
+
+/* Markdown inside Coach messages and What's New posts */
+.coach-md > * + *,
+.post-md > * + * {
+  margin-top: 0.6em;
+}
+.coach-md a,
+.post-md a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.coach-md ul,
+.post-md ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.coach-md ol,
+.post-md ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.coach-md h1,
+.coach-md h2,
+.coach-md h3 {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.coach-md code,
+.post-md code {
+  background: var(--color-accent-wash);
+  border-radius: 3px;
+  padding: 0 0.25em;
+  font-size: 0.9em;
+}
+.coach-md table,
+.post-md table {
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+.coach-md th,
+.coach-md td,
+.post-md th,
+.post-md td {
+  border: 1px solid var(--color-hairline);
+  padding: 0.3em 0.6em;
+  text-align: left;
+}
+.coach-md blockquote,
+.post-md blockquote {
+  border-left: 2px solid var(--color-hairline-strong);
+  padding-left: 0.9em;
+  color: var(--color-ink-muted);
+}
+
+/* What's New editorial column */
+.post-md {
+  max-width: 65ch;
+  line-height: 1.75;
+}
+.post-md h1,
+.post-md h2,
+.post-md h3 {
+  font-family: var(--font-serif);
+  margin-top: 1.4em;
+}
+.post-md h1 {
+  font-size: 1.6rem;
+}
+.post-md h2 {
+  font-size: 1.3rem;
+}
+.post-md h3 {
+  font-size: 1.1rem;
+}

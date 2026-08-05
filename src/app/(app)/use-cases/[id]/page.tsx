@@ -101,14 +101,25 @@ export default async function UseCaseDetailPage({
             )}
           </div>
         </div>
-        {editable && (
-          <Link
-            href={`/use-cases/${uc.id}/edit`}
-            className="rounded-md border border-hairline-strong px-3.5 py-1.5 text-sm hover:bg-surface"
-          >
-            Edit
-          </Link>
-        )}
+        <div className="flex gap-2">
+          {(editable || user.role === "admin") &&
+            (uc.status === "launched" || uc.status === "qualified") && (
+              <Link
+                href={`/coach?review=${uc.id}`}
+                className="rounded-md border border-hairline-strong px-3.5 py-1.5 text-sm hover:bg-surface"
+              >
+                Run ROI review
+              </Link>
+            )}
+          {editable && (
+            <Link
+              href={`/use-cases/${uc.id}/edit`}
+              className="rounded-md border border-hairline-strong px-3.5 py-1.5 text-sm hover:bg-surface"
+            >
+              Edit
+            </Link>
+          )}
+        </div>
       </div>
 
       {uc.rejectionReason && editable && (

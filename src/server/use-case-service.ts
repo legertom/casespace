@@ -1,7 +1,7 @@
 import "server-only";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { eltOrgs, statusChanges, useCaseAuthors, useCases, users } from "@/db/schema";
+import { eltOrgs, people, statusChanges, useCaseAuthors, useCases, users } from "@/db/schema";
 import {
   canSetStatus,
   suggestEltOrg,
@@ -27,19 +27,36 @@ interface Actor {
   role: Role;
 }
 
-/** Link author/owner refs to user accounts via their directory row. */
+/**
+ * Link author/owner refs to directory rows and user accounts. Refs that carry
+ * only a display name (proposals from the Coach or notes parser) resolve to a
+ * person by exact, case-insensitive name match — never fuzzy; credit must not
+ * guess.
+ */
 async function resolveUserLinks(refs: PersonRef[]): Promise<PersonRef[]> {
   const db = getDb();
-  const personIds = refs
+  const resolved: PersonRef[] = [];
+  for (const r of refs) {
+    let personId = r.personId ?? null;
+    if (!personId && r.displayName.trim()) {
+      const [match] = await db
+        .select({ id: people.id })
+        .from(people)
+        .where(sql`lower(${people.name}) = lower(${r.displayName.trim()})`);
+      personId = match?.id ?? null;
+    }
+    resolved.push({ ...r, personId });
+  }
+  const personIds = resolved
     .map((r) => r.personId)
     .filter((x): x is string => !!x);
-  if (personIds.length === 0) return refs;
+  if (personIds.length === 0) return resolved;
   const linked = await db
     .select({ id: users.id, personId: users.personId })
     .from(users)
     .where(inArray(users.personId, personIds));
   const byPerson = new Map(linked.map((u) => [u.personId!, u.id]));
-  return refs.map((r) => ({
+  return resolved.map((r) => ({
     ...r,
     userId: r.userId ?? (r.personId ? byPerson.get(r.personId) ?? null : null),
   }));

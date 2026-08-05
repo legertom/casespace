@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/current-user";
 import { signOut } from "@/auth";
+import { aiConfigured } from "@/lib/ai/config";
+import { CoachLauncher } from "@/components/coach/coach-launcher";
 
 export default async function AppLayout({
   children,
@@ -74,6 +76,7 @@ export default async function AppLayout({
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-6 py-10">{children}</main>
+      {aiConfigured() && <CoachLauncher />}
     </div>
   );
 }
