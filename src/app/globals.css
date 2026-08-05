@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+/*
+ * Casespace design tokens — editorial, adult, approachable.
+ * Warm paper/ink neutrals, one confident accent (rust), semantic status
+ * colors used sparingly. No finance-ticker red/green.
+ */
+@theme {
+  --color-paper: #faf8f3;
+  --color-surface: #fffdf9;
+  --color-ink: #22201c;
+  --color-ink-muted: #5c564c;
+  --color-ink-faint: #8b8377;
+  --color-hairline: #e5ded1;
+  --color-hairline-strong: #d4caba;
+
+  --color-accent: #9a4520;
+  --color-accent-deep: #7a3418;
+  --color-accent-wash: #f6e9e1;
+
+  /* status scale — quiet, distinguishable, never neon */
+  --color-st-discovery: #8b8377;
+  --color-st-approved: #a08050;
+  --color-st-construction: #7d6a9e;
+  --color-st-testing: #4f7d9e;
+  --color-st-launched: #3d8578;
+  --color-st-qualified: #48713f;
+  --color-st-qualifiedplus: #2e5527;
+
+  --color-flag: #8f6a1e; /* attention, not alarm */
+}
+
+@theme inline {
+  --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible focus everywhere — accessibility is not optional */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}

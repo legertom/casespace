@@ -1,0 +1,426 @@
+import {
+  boolean,
+  date,
+  doublePrecision,
+  integer,
+  jsonb,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  smallint,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+export const roleEnum = pgEnum("role", ["viewer", "contributor", "admin"]);
+
+/** The program's 7 groupings — not HRIS department names (those live on people.hrisDepartment). */
+export const departmentEnum = pgEnum("department", [
+  "business_operations",
+  "product_design",
+  "engineering",
+  "people",
+  "css",
+  "mss",
+  "finance_legal",
+]);
+
+export const leadStateEnum = pgEnum("lead_state", [
+  "assigned",
+  "unassigned",
+  "pending",
+]);
+
+export const ucStatusEnum = pgEnum("uc_status", [
+  "in_discovery",
+  "approved_by_fl",
+  "under_construction",
+  "in_testing",
+  "launched",
+  "qualified",
+]);
+
+export const approachEnum = pgEnum("approach", [
+  "prompt",
+  "automation",
+  "agentic",
+]);
+
+export const ucSourceEnum = pgEnum("uc_source", [
+  "form",
+  "wizard",
+  "notes",
+  "api",
+  "mcp",
+]);
+
+export const successMetEnum = pgEnum("success_met", ["yes", "no", "not_yet"]);
+
+export const roiStatusEnum = pgEnum("roi_status", [
+  "not_yet_measurable",
+  "in_progress",
+  "complete",
+]);
+
+// ---------------------------------------------------------------------------
+// Identity & access
+// ---------------------------------------------------------------------------
+
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  primaryEmail: text("primary_email").notNull().unique(),
+  role: roleEnum("role").notNull().default("viewer"),
+  image: text("image"),
+  personId: uuid("person_id").references(() => people.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+/** One user can own multiple sign-in email aliases (e.g. Tom's clever.com + gmail). */
+export const userEmails = pgTable("user_emails", {
+  email: text("email").primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/** Non-clever.com addresses allowed to sign in. */
+export const allowedLoginEmails = pgTable("allowed_login_emails", {
+  email: text("email").primaryKey(),
+  note: text("note"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/** Small key→JSON settings store (admin_emails, stale_days, …). */
+export const appSettings = pgTable("app_settings", {
+  key: text("key").primaryKey(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+// ---------------------------------------------------------------------------
+// People directory (org-chart snapshot; admin-editable, not live HR data)
+// ---------------------------------------------------------------------------
+
+export const people = pgTable(
+  "people",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    title: text("title"),
+    /** HRIS department naming from the snapshot — reference only; program views use departmentEnum. */
+    hrisDepartment: text("hris_department"),
+    site: text("site"),
+    level: integer("level"),
+    reportsToId: uuid("reports_to_id"),
+    /** Raw manager name from the snapshot (kept even when unresolvable, e.g. parent-company CEO). */
+    reportsToName: text("reports_to_name"),
+    directReports: integer("direct_reports").notNull().default(0),
+    totalReports: integer("total_reports").notNull().default(0),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [uniqueIndex("people_name_idx").on(t.name)],
+);
+
+// ---------------------------------------------------------------------------
+// Program structure: teams, AI Leads roster, ELT orgs
+// ---------------------------------------------------------------------------
+
+export const teams = pgTable(
+  "teams",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    department: departmentEnum("department").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [uniqueIndex("teams_name_dept_idx").on(t.name, t.department)],
+);
+
+export const aiLeads = pgTable("ai_leads", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  /** True until Tom confirms the real address (seed uses firstname.lastname pattern). */
+  emailUnverified: boolean("email_unverified").notNull().default(true),
+  department: departmentEnum("department").notNull(),
+  state: leadStateEnum("state").notNull().default("assigned"),
+  personId: uuid("person_id").references(() => people.id),
+  /** Set when the lead signs in and their login links to this roster row. */
+  userId: uuid("user_id").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const aiLeadTeams = pgTable(
+  "ai_lead_teams",
+  {
+    leadId: uuid("lead_id")
+      .notNull()
+      .references(() => aiLeads.id, { onDelete: "cascade" }),
+    teamId: uuid("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+  },
+  (t) => [primaryKey({ columns: [t.leadId, t.teamId] })],
+);
+
+/** The allocation of the 15 ROI-quantified use cases across ELT owners. */
+export const eltOrgs = pgTable("elt_orgs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull().unique(),
+  ownerPersonId: uuid("owner_person_id").references(() => people.id),
+  target: integer("target").notNull().default(0),
+  /** Program departments whose use cases roll up here. May be empty (e.g. Kate's program-wide bucket). */
+  departments: departmentEnum("departments").array().notNull().default([]),
+  /** ⚠ CONFIRM annotations and mapping caveats, surfaced in the admin UI. */
+  note: text("note"),
+  sort: integer("sort").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+// ---------------------------------------------------------------------------
+// The core object: use cases
+// ---------------------------------------------------------------------------
+
+export const useCases = pgTable("use_cases", {
+  id: uuid("id").primaryKey().defaultRandom(),
+
+  // Identity & description
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  department: departmentEnum("department"),
+  teamId: uuid("team_id").references(() => teams.id),
+  eltOrgId: uuid("elt_org_id").references(() => eltOrgs.id),
+
+  // Owner — exactly one named person responsible going forward.
+  ownerPersonId: uuid("owner_person_id").references(() => people.id),
+  ownerUserId: uuid("owner_user_id").references(() => users.id),
+  ownerName: text("owner_name"),
+
+  aiTools: text("ai_tools").array().notNull().default([]),
+  approach: approachEnum("approach"),
+  source: ucSourceEnum("source").notNull().default("form"),
+
+  // Workflow discovery (intake worksheet)
+  currentSteps: jsonb("current_steps").$type<string[]>().notNull().default([]),
+  ratingFrequency: smallint("rating_frequency"),
+  ratingPain: smallint("rating_pain"),
+  ratingDataAvailability: smallint("rating_data_availability"),
+  ratingRisk: smallint("rating_risk"),
+  ratingOwnershipClarity: smallint("rating_ownership_clarity"),
+  ratingEvaluationClarity: smallint("rating_evaluation_clarity"),
+  ratingMaintenanceBurden: smallint("rating_maintenance_burden"),
+  functionalLeaderSuccess: text("functional_leader_success"),
+
+  // The four "Documented" gates
+  gateNamed: boolean("gate_named").notNull().default(false),
+  gateTool: boolean("gate_tool").notNull().default(false),
+  gateAdoption: boolean("gate_adoption").notNull().default(false),
+  adoptionEvidence: text("adoption_evidence"),
+  gateOwner: boolean("gate_owner").notNull().default(false),
+
+  // Success criterion (first-class)
+  successCriterion: text("success_criterion"),
+  successCriterionMet: successMetEnum("success_criterion_met")
+    .notNull()
+    .default("not_yet"),
+
+  // ROI (the bar for the 15) — counts and rates, never dollars.
+  baselineMetric: text("baseline_metric"),
+  baselineValue: doublePrecision("baseline_value"),
+  baselineUnit: text("baseline_unit"),
+  postValue: doublePrecision("post_value"),
+  measurementMethod: text("measurement_method"),
+  netImpactStatement: text("net_impact_statement"),
+  isPositive: boolean("is_positive"),
+  roiStatus: roiStatusEnum("roi_status").notNull().default("not_yet_measurable"),
+  revisitOn: date("revisit_on"),
+
+  // Lifecycle
+  status: ucStatusEnum("status").notNull().default("in_discovery"),
+  qualifiedAt: timestamp("qualified_at", { withTimezone: true }),
+  approvedById: uuid("approved_by_id").references(() => users.id),
+  /** Reason from the most recent rejection at the Qualified gate; cleared on promotion. */
+  rejectionReason: text("rejection_reason"),
+
+  createdById: uuid("created_by_id")
+    .notNull()
+    .references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});
+
+/** One or more builders credited on a use case. Linked to real people wherever possible. */
+export const useCaseAuthors = pgTable("use_case_authors", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  useCaseId: uuid("use_case_id")
+    .notNull()
+    .references(() => useCases.id, { onDelete: "cascade" }),
+  personId: uuid("person_id").references(() => people.id),
+  userId: uuid("user_id").references(() => users.id),
+  displayName: text("display_name").notNull(),
+  position: integer("position").notNull().default(0),
+});
+
+/** Full history of status movement — feeds the movement feed and What's New. */
+export const statusChanges = pgTable("status_changes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  useCaseId: uuid("use_case_id")
+    .notNull()
+    .references(() => useCases.id, { onDelete: "cascade" }),
+  /** Null when the record was created (birth event). */
+  fromStatus: ucStatusEnum("from_status"),
+  toStatus: ucStatusEnum("to_status").notNull(),
+  changedById: uuid("changed_by_id").references(() => users.id),
+  note: text("note"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
+// Goals & adoption trends
+// ---------------------------------------------------------------------------
+
+export const pulseMetrics = pgTable("pulse_metrics", {
+  key: text("key").primaryKey(),
+  label: text("label").notNull(),
+  baselineValue: doublePrecision("baseline_value").notNull(),
+  baselineDate: date("baseline_date").notNull(),
+  targetValue: doublePrecision("target_value").notNull(),
+  unit: text("unit").notNull().default("%"),
+  sort: integer("sort").notNull().default(0),
+});
+
+export const pulseSnapshots = pgTable(
+  "pulse_snapshots",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    metricKey: text("metric_key")
+      .notNull()
+      .references(() => pulseMetrics.key, { onDelete: "cascade" }),
+    value: doublePrecision("value").notNull(),
+    takenOn: date("taken_on").notNull(),
+    enteredById: uuid("entered_by_id").references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [uniqueIndex("pulse_metric_date_idx").on(t.metricKey, t.takenOn)],
+);
+
+// ---------------------------------------------------------------------------
+// What's New (admin-only weekly blog)
+// ---------------------------------------------------------------------------
+
+export const posts = pgTable("posts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  /** Monday of the week the post covers (the prior week). */
+  weekStart: date("week_start").notNull().unique(),
+  title: text("title").notNull(),
+  /** Markdown body. */
+  body: text("body").notNull(),
+  model: text("model"),
+  generatedAt: timestamp("generated_at", { withTimezone: true }),
+  editedAt: timestamp("edited_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+// ---------------------------------------------------------------------------
+// API access & AI accounting
+// ---------------------------------------------------------------------------
+
+export const pats = pgTable("pats", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  /** SHA-256 of the token; the token itself is shown once at creation. */
+  tokenHash: text("token_hash").notNull().unique(),
+  /** First characters (e.g. "csp_ab12…") for recognizability in the UI. */
+  tokenPrefix: text("token_prefix").notNull(),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+});
+
+export const aiUsage = pgTable("ai_usage", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => users.id),
+  feature: text("feature").notNull(),
+  model: text("model").notNull(),
+  inputTokens: integer("input_tokens").notNull().default(0),
+  outputTokens: integer("output_tokens").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/** Coach conversations (per user). Messages stored as AI SDK UIMessage JSON. */
+export const coachChats = pgTable("coach_chats", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull().default("New conversation"),
+  messages: jsonb("messages").notNull().default([]),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});

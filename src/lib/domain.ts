@@ -1,0 +1,295 @@
+/**
+ * Casespace domain logic — pure functions only, no I/O.
+ * Everything the program's numbers depend on lives here and is unit-tested.
+ */
+
+// ---------------------------------------------------------------------------
+// Program constants (H2 2026)
+// ---------------------------------------------------------------------------
+
+export const PROGRAM_START = "2026-07-01";
+export const PROGRAM_END = "2026-12-31";
+export const TARGET_DOCUMENTED = 45; // Qualified or better
+export const TARGET_ROI = 15; // Qualified+
+export const DEFAULT_STALE_DAYS = 21;
+export const WORKFLOWS_PER_LEAD = 2;
+
+// ---------------------------------------------------------------------------
+// Departments (program groupings, not HRIS)
+// ---------------------------------------------------------------------------
+
+export const DEPARTMENTS = [
+  "business_operations",
+  "product_design",
+  "engineering",
+  "people",
+  "css",
+  "mss",
+  "finance_legal",
+] as const;
+
+export type Department = (typeof DEPARTMENTS)[number];
+
+export const DEPARTMENT_LABELS: Record<Department, string> = {
+  business_operations: "Business Operations",
+  product_design: "Product / Design",
+  engineering: "Engineering",
+  people: "People",
+  css: "CSS",
+  mss: "MSS",
+  finance_legal: "Finance / Legal",
+};
+
+// ---------------------------------------------------------------------------
+// Status pipeline
+// ---------------------------------------------------------------------------
+
+export const STATUSES = [
+  "in_discovery",
+  "approved_by_fl",
+  "under_construction",
+  "in_testing",
+  "launched",
+  "qualified",
+] as const;
+
+export type UcStatus = (typeof STATUSES)[number];
+
+export const STATUS_LABELS: Record<UcStatus, string> = {
+  in_discovery: "In Discovery",
+  approved_by_fl: "Approved by Functional Leader",
+  under_construction: "Under Construction",
+  in_testing: "In Testing",
+  launched: "Launched",
+  qualified: "Qualified",
+};
+
+export const STATUS_SHORT_LABELS: Record<UcStatus, string> = {
+  in_discovery: "Discovery",
+  approved_by_fl: "FL Approved",
+  under_construction: "Building",
+  in_testing: "Testing",
+  launched: "Launched",
+  qualified: "Qualified",
+};
+
+export function statusRank(s: UcStatus): number {
+  return STATUSES.indexOf(s);
+}
+
+export type Role = "viewer" | "contributor" | "admin";
+
+/**
+ * Who may move a record from one status to another.
+ * - Editors move records freely among the five pre-Qualified statuses
+ *   (forward or back — people fix mistakes).
+ * - Anything entering or leaving Qualified is admin-only: Qualified records
+ *   Kate's approval, and demotions from it are equally consequential.
+ */
+export function canSetStatus(role: Role, from: UcStatus, to: UcStatus): boolean {
+  if (role === "viewer") return false;
+  if (from === to) return false;
+  if (from === "qualified" || to === "qualified") return role === "admin";
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Documented gates & Qualified+ derivation
+// ---------------------------------------------------------------------------
+
+export interface GateFields {
+  gateNamed: boolean;
+  gateTool: boolean;
+  gateAdoption: boolean;
+  gateOwner: boolean;
+}
+
+export function documentedGatesComplete(uc: GateFields): boolean {
+  return uc.gateNamed && uc.gateTool && uc.gateAdoption && uc.gateOwner;
+}
+
+export interface RoiFields {
+  successCriterion: string | null;
+  successCriterionMet: "yes" | "no" | "not_yet";
+  baselineMetric: string | null;
+  baselineValue: number | null;
+  postValue: number | null;
+  measurementMethod: string | null;
+  netImpactStatement: string | null;
+  isPositive: boolean | null;
+  roiStatus: "not_yet_measurable" | "in_progress" | "complete";
+}
+
+/**
+ * ROI scoring is complete when: success criterion defined and met, baseline +
+ * post measured with a stated (same) methodology, a net-impact statement
+ * written, the outcome positive, and the record marked complete.
+ */
+export function roiComplete(uc: RoiFields): boolean {
+  return Boolean(
+    uc.successCriterion?.trim() &&
+      uc.successCriterionMet === "yes" &&
+      uc.baselineMetric?.trim() &&
+      uc.baselineValue !== null &&
+      uc.postValue !== null &&
+      uc.measurementMethod?.trim() &&
+      uc.netImpactStatement?.trim() &&
+      uc.isPositive === true &&
+      uc.roiStatus === "complete",
+  );
+}
+
+/** What still stands between this record and complete ROI scoring. */
+export function roiGaps(uc: RoiFields): string[] {
+  const gaps: string[] = [];
+  if (!uc.successCriterion?.trim()) gaps.push("No success criterion defined");
+  else if (uc.successCriterionMet === "not_yet")
+    gaps.push("Success criterion not yet evaluated");
+  else if (uc.successCriterionMet === "no") gaps.push("Success criterion not met");
+  if (!uc.baselineMetric?.trim() || uc.baselineValue === null)
+    gaps.push("No baseline measurement");
+  if (uc.postValue === null) gaps.push("No post-measurement");
+  if (!uc.measurementMethod?.trim())
+    gaps.push("Measurement method not stated (must match the baseline's)");
+  if (!uc.netImpactStatement?.trim()) gaps.push("No net-impact statement");
+  if (uc.isPositive === null) gaps.push("Net outcome not assessed");
+  else if (uc.isPositive === false) gaps.push("Net outcome is not positive");
+  if (uc.roiStatus !== "complete") gaps.push("ROI scoring not marked complete");
+  return gaps;
+}
+
+export interface QualifiedPlusFields extends RoiFields {
+  status: UcStatus;
+}
+
+/** Qualified+ is derived, never hand-set: Qualified AND ROI scoring complete. */
+export function isQualifiedPlus(uc: QualifiedPlusFields): boolean {
+  return uc.status === "qualified" && roiComplete(uc);
+}
+
+/** The 45 counts records at Qualified or better. */
+export function countsTowardDocumented(status: UcStatus): boolean {
+  return status === "qualified";
+}
+
+// ---------------------------------------------------------------------------
+// Pace math (program window Jul 1 – Dec 31, 2026, ET calendar days)
+// ---------------------------------------------------------------------------
+
+function utcOfDateString(d: string): number {
+  const [y, m, day] = d.split("-").map(Number);
+  return Date.UTC(y, m - 1, day);
+}
+
+/** Calendar date in America/New_York for a given instant, as YYYY-MM-DD. */
+export function etDateString(now: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function totalProgramDays(): number {
+  return (
+    (utcOfDateString(PROGRAM_END) - utcOfDateString(PROGRAM_START)) / DAY_MS + 1
+  );
+}
+
+/** Days of the program elapsed through the given ET date, inclusive. Clamped to [0, total]. */
+export function elapsedProgramDays(etDate: string): number {
+  const elapsed =
+    (utcOfDateString(etDate) - utcOfDateString(PROGRAM_START)) / DAY_MS + 1;
+  return Math.max(0, Math.min(totalProgramDays(), elapsed));
+}
+
+/** Linear on-pace count for a target as of the given ET date. */
+export function onPaceCount(target: number, etDate: string): number {
+  return Math.round((target * elapsedProgramDays(etDate)) / totalProgramDays());
+}
+
+export type PacePosition = "ahead" | "behind" | "on pace";
+
+export interface PaceSummary {
+  target: number;
+  actual: number;
+  needed: number;
+  position: PacePosition;
+  sentence: string;
+}
+
+/** e.g. "Aug 4: 12 of 45 logged — on pace needs 9. You're ahead." */
+export function paceSummary(
+  target: number,
+  actual: number,
+  etDate: string,
+  noun = "logged",
+): PaceSummary {
+  const needed = onPaceCount(target, etDate);
+  const position: PacePosition =
+    actual > needed ? "ahead" : actual < needed ? "behind" : "on pace";
+  const [y, m, d] = etDate.split("-").map(Number);
+  const dateLabel = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(y, m - 1, d)));
+  const tail =
+    position === "on pace" ? "You're right on pace." : `You're ${position}.`;
+  return {
+    target,
+    actual,
+    needed,
+    position,
+    sentence: `${dateLabel}: ${actual} of ${target} ${noun} — on pace needs ${needed}. ${tail}`,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// ELT allocation
+// ---------------------------------------------------------------------------
+
+export interface EltOrgLike {
+  id: string;
+  name: string;
+  target: number;
+  departments: Department[];
+}
+
+/** Suggest the ELT org a use case counts toward, from its program department. */
+export function suggestEltOrg<T extends EltOrgLike>(
+  department: Department | null,
+  orgs: T[],
+): T | null {
+  if (!department) return null;
+  return orgs.find((o) => o.departments.includes(department)) ?? null;
+}
+
+/** Per-org targets should sum to 15 by design — warn (never block) when they don't. */
+export function targetSumWarning(orgs: { target: number }[]): string | null {
+  const sum = orgs.reduce((a, o) => a + o.target, 0);
+  if (sum === TARGET_ROI) return null;
+  return `Per-org targets sum to ${sum}, not ${TARGET_ROI}. The allocation is out of step with the program target.`;
+}
+
+// ---------------------------------------------------------------------------
+// Attention flags
+// ---------------------------------------------------------------------------
+
+/** A record is stale when it has sat in its current status too long. */
+export function isStale(
+  lastStatusChangeAt: Date,
+  now: Date,
+  staleDays: number = DEFAULT_STALE_DAYS,
+): boolean {
+  return now.getTime() - lastStatusChangeAt.getTime() >= staleDays * DAY_MS;
+}
+
+export function daysInStatus(lastStatusChangeAt: Date, now: Date): number {
+  return Math.floor(
+    (now.getTime() - lastStatusChangeAt.getTime()) / DAY_MS,
+  );
+}
