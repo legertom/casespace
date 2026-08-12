@@ -28,7 +28,10 @@ export function StatusBadge({ status }: { status: UcStatus }) {
 /** Derived top-tier marker: Qualified with complete, positive ROI. */
 export function QualifiedPlusBadge() {
   return (
-    <span className="inline-flex items-center rounded-sm bg-st-qualifiedplus px-1.5 py-0.5 text-xs font-semibold text-white">
+    <span
+      title="Qualified with complete, positive ROI scoring — derived automatically, never hand-set."
+      className="inline-flex items-center rounded-sm bg-st-qualifiedplus px-1.5 py-0.5 text-xs font-semibold text-white"
+    >
       Qualified+
     </span>
   );

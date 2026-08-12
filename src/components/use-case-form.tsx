@@ -221,7 +221,10 @@ export function UseCaseForm({
           />
         </Field>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Department">
+          <Field
+            label="Department"
+            hint="The function this workflow serves. Picking one narrows the Team list."
+          >
             <select
               value={department}
               onChange={(e) => {
@@ -260,7 +263,7 @@ export function UseCaseForm({
           hint={
             suggestedOrg && !eltOrgId
               ? `Left blank, this will count toward ${suggestedOrg.name} based on the department.`
-              : "Which ELT owner's target this counts toward. Unmapped departments stay honestly unallocated."
+              : "ELT is Clever's executive leadership team — this is whose target the record counts toward. Unmapped departments stay honestly unallocated."
           }
         >
           <select
@@ -360,6 +363,11 @@ export function UseCaseForm({
           <legend className="text-sm font-medium">
             Worksheet ratings <span className="font-normal text-ink-faint">(1 low – 5 high, all optional)</span>
           </legend>
+          <p className="text-xs text-ink-faint">
+            Seven lenses from the use-case scoping worksheet, for sizing up a
+            workflow and comparing candidates. Rate what you know; skip what
+            you don&rsquo;t. Click a number again to clear it.
+          </p>
           {RATING_FIELDS.map(([key, label, hint]) => (
             <div
               key={key}
@@ -397,7 +405,7 @@ export function UseCaseForm({
         </fieldset>
         <Field
           label="Functional leader's view of success"
-          hint="What does the functional leader say success looks like?"
+          hint="The functional leader is the head of the department this serves. What would they call success?"
         >
           <textarea
             rows={2}
@@ -423,6 +431,12 @@ export function UseCaseForm({
           />
           <span>
             <strong>Named workflow</strong> with a clear description
+            <span className="mt-0.5 block text-xs text-ink-faint">
+              The title names one specific workflow a colleague would
+              recognize, and the description says what it does in plain
+              language. If your title and description above do that, this
+              gate is met.
+            </span>
           </span>
         </label>
         <label className="flex items-start gap-2.5 text-sm">
@@ -434,6 +448,10 @@ export function UseCaseForm({
           />
           <span>
             <strong>AI tool &amp; approach</strong> identified
+            <span className="mt-0.5 block text-xs text-ink-faint">
+              The record says which AI tool does the work, and how &mdash;
+              the Tool &amp; approach section above.
+            </span>
           </span>
         </label>
         <label className="flex items-start gap-2.5 text-sm">
@@ -469,6 +487,10 @@ export function UseCaseForm({
           />
           <span>
             <strong>A named owner</strong> going forward
+            <span className="mt-0.5 block text-xs text-ink-faint">
+              One specific person is on the hook for keeping it running
+              &mdash; the Owner field above.
+            </span>
           </span>
         </label>
       </section>
@@ -487,7 +509,10 @@ export function UseCaseForm({
             className={inputCls}
           />
         </Field>
-        <Field label="Success criterion met?">
+        <Field
+          label="Success criterion met?"
+          hint="Leave on Not yet until there's a real measurement behind the answer."
+        >
           <select
             value={successMet}
             onChange={(e) => setSuccessMet(e.target.value as typeof successMet)}
@@ -529,7 +554,10 @@ export function UseCaseForm({
               </Field>
             )}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <Field label="Baseline metric" hint="e.g. Hours per onboarding">
+              <Field
+                label="Baseline metric"
+                hint="What you measured before the AI workflow, e.g. hours per onboarding."
+              >
                 <input
                   value={baselineMetric}
                   onChange={(e) => setBaselineMetric(e.target.value)}
@@ -556,7 +584,7 @@ export function UseCaseForm({
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field
                 label="Post value"
-                hint="Measured with the same methodology."
+                hint="The same metric after the workflow, measured the same way."
               >
                 <input
                   type="number"
@@ -566,7 +594,11 @@ export function UseCaseForm({
                   className={inputCls}
                 />
               </Field>
-              <Field label="Measurement method" className="sm:col-span-2">
+              <Field
+                label="Measurement method"
+                hint="How the numbers were captured, e.g. a Zendesk report or time tracking. Baseline and post must use the same method."
+                className="sm:col-span-2"
+              >
                 <input
                   value={method}
                   onChange={(e) => setMethod(e.target.value)}

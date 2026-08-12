@@ -37,9 +37,17 @@ interface RatingSource {
   ratingMaintenanceBurden: number | null;
 }
 
-function Gate({ ok, children }: { ok: boolean; children: React.ReactNode }) {
+function Gate({
+  ok,
+  help,
+  children,
+}: {
+  ok: boolean;
+  help?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <li className="flex items-start gap-2 text-sm">
+    <li className="flex items-start gap-2 text-sm" title={help}>
       <span
         aria-hidden
         className={`mt-0.5 inline-flex size-4 items-center justify-center rounded-sm border text-[10px] ${
@@ -343,7 +351,12 @@ export default async function UseCaseDetailPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-ink-faint">Counts toward</dt>
+                <dt
+                  className="text-ink-faint"
+                  title="The ELT (executive leadership team) owner whose target this record counts toward."
+                >
+                  Counts toward
+                </dt>
                 <dd className="mt-0.5">{uc.eltOrgName ?? "Unallocated"}</dd>
               </div>
               <div>
@@ -372,9 +385,22 @@ export default async function UseCaseDetailPage({
               Documented gates {gates ? "· all four met" : ""}
             </h2>
             <ul className="mt-3 space-y-2">
-              <Gate ok={uc.gateNamed}>Named workflow, clear description</Gate>
-              <Gate ok={uc.gateTool}>AI tool &amp; approach identified</Gate>
-              <Gate ok={uc.gateAdoption}>
+              <Gate
+                ok={uc.gateNamed}
+                help="The title names one specific workflow and the description explains it in plain language."
+              >
+                Named workflow, clear description
+              </Gate>
+              <Gate
+                ok={uc.gateTool}
+                help="The record says which AI tool does the work, and how it is applied."
+              >
+                AI tool &amp; approach identified
+              </Gate>
+              <Gate
+                ok={uc.gateAdoption}
+                help="Someone beyond the author(s) actively uses it."
+              >
                 Adoption beyond the author(s)
                 {uc.adoptionEvidence && (
                   <span className="mt-0.5 block text-xs text-ink-faint">
@@ -382,7 +408,12 @@ export default async function UseCaseDetailPage({
                   </span>
                 )}
               </Gate>
-              <Gate ok={uc.gateOwner}>A named owner</Gate>
+              <Gate
+                ok={uc.gateOwner}
+                help="One specific person is responsible for keeping it running."
+              >
+                A named owner
+              </Gate>
             </ul>
           </div>
 
