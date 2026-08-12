@@ -32,8 +32,9 @@ an API you have not verified in this repo, read the bundled docs for the
   confirms. Keep it that way.
 - Model choices live in `src/lib/ai/config.ts` only. Log token usage to
   `ai_usage` for every model call.
-- What's New is the only admin-gated surface; everything else is visible to
-  every authenticated user. Enforce server-side, not just in nav.
+- Every page is visible to every authenticated user — What's New included.
+  Admin gating is for writes (drafting/editing posts, program controls);
+  enforce it server-side, not just in nav.
 - Seeds (`pnpm db:seed`) are idempotent; demo data (`pnpm db:demo`) is
   dev-only and clearly separated.
 

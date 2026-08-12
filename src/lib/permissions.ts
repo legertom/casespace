@@ -1,8 +1,9 @@
 /**
  * Permission rules — pure functions, unit-tested.
  *
- * Visibility rule: everyone sees everything except What's New (admin-only).
- * These helpers govern writes.
+ * Visibility rule: every page is visible to every authenticated user.
+ * These helpers govern writes (What's New drafting/editing goes through
+ * canManageProgram-style admin checks in the server actions).
  */
 import type { Role } from "./domain";
 
@@ -41,10 +42,5 @@ export function canQualify(role: Role): boolean {
 }
 
 export function canManageProgram(role: Role): boolean {
-  return role === "admin";
-}
-
-/** What's New is the one gated surface in the app. */
-export function canViewWhatsNew(role: Role): boolean {
   return role === "admin";
 }

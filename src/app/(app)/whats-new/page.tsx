@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getDb } from "@/db/client";
 import { posts } from "@/db/schema";
-import { requireAdmin } from "@/lib/current-user";
+import { requireUser } from "@/lib/current-user";
 import { etDateString } from "@/lib/domain";
 import { fmtDate } from "@/lib/format";
 import { priorWeekStart } from "@/server/whats-new";
@@ -17,7 +17,8 @@ export default async function WhatsNewPage({
 }: {
   searchParams: Promise<{ post?: string }>;
 }) {
-  await requireAdmin(); // everyone else 404s — the one gated surface
+  const user = await requireUser(); // open to every role; drafting/editing is admin-only
+  const isAdmin = user.role === "admin";
   const { post: postParam } = await searchParams;
   const db = getDb();
   const all = await db.select().from(posts).orderBy(desc(posts.weekStart));
@@ -32,9 +33,9 @@ export default async function WhatsNewPage({
       <aside>
         <h1 className="font-serif text-3xl">What&rsquo;s New</h1>
         <p className="mt-2 text-sm text-ink-muted">
-          The weekly program note, drafted every Monday morning. Admin-only.
+          The weekly program note, drafted every Monday morning.
         </p>
-        {lastWeekMissing && (
+        {isAdmin && lastWeekMissing && (
           <div className="mt-4">
             <RegenerateButton
               weekStart={lastWeek}
@@ -78,18 +79,20 @@ export default async function WhatsNewPage({
             {selected.generatedAt ? ` on ${fmtDate(selected.generatedAt)}` : ""}
             {selected.editedAt ? ` · edited ${fmtDate(selected.editedAt)}` : ""}
           </p>
-          <div className="mt-4 flex gap-2">
-            <Link
-              href={`/whats-new/${selected.id}/edit`}
-              className="rounded-md border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface"
-            >
-              Edit
-            </Link>
-            <RegenerateButton
-              weekStart={selected.weekStart}
-              label="Regenerate draft"
-            />
-          </div>
+          {isAdmin && (
+            <div className="mt-4 flex gap-2">
+              <Link
+                href={`/whats-new/${selected.id}/edit`}
+                className="rounded-md border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface"
+              >
+                Edit
+              </Link>
+              <RegenerateButton
+                weekStart={selected.weekStart}
+                label="Regenerate draft"
+              />
+            </div>
+          )}
           <div className="post-md mt-8 border-t border-hairline pt-8">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {selected.body}
@@ -100,8 +103,8 @@ export default async function WhatsNewPage({
         <div className="max-w-md py-10">
           <p className="font-serif text-xl">Nothing published yet.</p>
           <p className="mt-2 text-ink-muted">
-            The first post drafts itself next Monday morning — or draft last
-            week&rsquo;s now.
+            The first post drafts itself next Monday morning
+            {isAdmin ? <> &mdash; or draft last week&rsquo;s now.</> : "."}
           </p>
         </div>
       )}

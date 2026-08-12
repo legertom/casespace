@@ -3,7 +3,6 @@ import {
   canCreateUseCase,
   canEditUseCase,
   canQualify,
-  canViewWhatsNew,
 } from "./permissions";
 
 const uc = {
@@ -46,11 +45,5 @@ describe("role gates", () => {
   it("only admins qualify", () => {
     expect(canQualify("contributor")).toBe(false);
     expect(canQualify("admin")).toBe(true);
-  });
-
-  it("What's New is admin-only", () => {
-    expect(canViewWhatsNew("viewer")).toBe(false);
-    expect(canViewWhatsNew("contributor")).toBe(false);
-    expect(canViewWhatsNew("admin")).toBe(true);
   });
 });

@@ -139,7 +139,7 @@ async function gatherWeekData(weekStart: string) {
   };
 }
 
-const EDITORIAL_INSTRUCTIONS = `You write "What's New in Casespace" — the weekly internal note on Clever's AI Enablement program. Audience: Tom (program lead) and Kate (VP sponsor).
+const EDITORIAL_INSTRUCTIONS = `You write "What's New in Casespace" — the weekly internal note on Clever's AI Enablement program. Audience: everyone in the program — the AI Leads, their leaders, and the sponsors (Tom runs the program; Kate is the VP sponsor).
 
 Voice: a well-edited internal newsletter. Observant, specific, zero hype. Plain words, short sentences, sentence case. Recognition means naming people and teams on real work — no badges, no cheerleading, no emoji, no exclamation marks. NEVER mention dollar figures; the program measures counts, rates, and hours only.
 

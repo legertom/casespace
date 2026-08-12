@@ -47,11 +47,9 @@ export default async function AppLayout({
               <Link href="/roster" className="hover:text-ink">
                 AI Leads
               </Link>
-              {user.role === "admin" && (
-                <Link href="/whats-new" className="hover:text-ink">
-                  What&rsquo;s New
-                </Link>
-              )}
+              <Link href="/whats-new" className="hover:text-ink">
+                What&rsquo;s New
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">
