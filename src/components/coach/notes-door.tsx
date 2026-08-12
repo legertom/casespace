@@ -30,7 +30,7 @@ export function NotesDoor() {
                 source: "notes",
               }),
             );
-            router.push("/use-cases/new?prefill=1");
+            router.push("/use-cases/new/review");
           }
         });
       }}

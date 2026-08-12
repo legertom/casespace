@@ -103,7 +103,7 @@ export default async function CoachPage({
             <p className="mt-4 text-sm text-ink-muted">
               Meanwhile, the{" "}
               <Link
-                href="/use-cases/new"
+                href="/use-cases/new/form"
                 className="text-accent underline underline-offset-2"
               >
                 form door

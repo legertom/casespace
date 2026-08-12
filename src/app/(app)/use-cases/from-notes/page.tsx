@@ -26,7 +26,7 @@ export default async function FromNotesPage() {
       ) : (
         <div className="mt-8 rounded-md border border-hairline bg-surface p-4 text-sm text-ink-muted">
           {AI_NOT_CONFIGURED_MESSAGE} The{" "}
-          <Link href="/use-cases/new" className="text-accent underline underline-offset-2">
+          <Link href="/use-cases/new/form" className="text-accent underline underline-offset-2">
             form door
           </Link>{" "}
           works without it.

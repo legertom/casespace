@@ -59,7 +59,7 @@ export function ProposalCard({
     onDecision(
       "The human chose to review and edit it in the form before saving.",
     );
-    router.push("/use-cases/new?prefill=1");
+    router.push("/use-cases/new/review");
   }
 
   function dismiss() {
