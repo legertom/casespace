@@ -3,6 +3,7 @@ import {
   canCreateUseCase,
   canEditUseCase,
   canQualify,
+  canViewPulse,
 } from "./permissions";
 
 const uc = {
@@ -45,5 +46,11 @@ describe("role gates", () => {
   it("only admins qualify", () => {
     expect(canQualify("contributor")).toBe(false);
     expect(canQualify("admin")).toBe(true);
+  });
+
+  it("pulse charts are admin-only", () => {
+    expect(canViewPulse("viewer")).toBe(false);
+    expect(canViewPulse("contributor")).toBe(false);
+    expect(canViewPulse("admin")).toBe(true);
   });
 });

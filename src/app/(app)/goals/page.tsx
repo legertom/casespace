@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/current-user";
 import { TARGET_DOCUMENTED, TARGET_ROI } from "@/lib/domain";
 import { fmtDate } from "@/lib/format";
+import { canViewPulse } from "@/lib/permissions";
 import { getProgramCounts } from "@/server/dashboard-queries";
 import { getPulseSeries } from "@/server/goals-queries";
 import { PulseChart } from "@/components/goals/pulse-chart";
@@ -10,17 +11,20 @@ export const metadata = { title: "Goals & trends" };
 
 export default async function GoalsPage() {
   const user = await requireUser();
+  const showPulse = canViewPulse(user.role);
   const [counts, pulse] = await Promise.all([
     getProgramCounts(),
-    getPulseSeries(),
+    showPulse ? getPulseSeries() : Promise.resolve([]),
   ]);
   return (
     <div>
-      <h1 className="font-serif text-4xl">Goals &amp; adoption trends</h1>
+      <h1 className="font-serif text-4xl">
+        {showPulse ? <>Goals &amp; adoption trends</> : "Goals"}
+      </h1>
       <p className="mt-2 max-w-prose text-ink-muted">
-        The two count goals compute live from the casebook. The three pulse
-        metrics come from the survey — admins record each new reading, and the
-        history stays.
+        The two count goals compute live from the casebook.
+        {showPulse &&
+          " The three pulse metrics come from the survey — admins record each new reading, and the history stays."}
       </p>
 
       <section aria-label="Count goals" className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -46,6 +50,7 @@ export default async function GoalsPage() {
         ))}
       </section>
 
+      {showPulse && (
       <section aria-label="Pulse metrics" className="mt-12 space-y-10">
         {pulse.map((m) => (
           <div key={m.key} className="rounded-md border border-hairline bg-surface p-5">
@@ -103,6 +108,7 @@ export default async function GoalsPage() {
           </div>
         ))}
       </section>
+      )}
     </div>
   );
 }

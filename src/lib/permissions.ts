@@ -1,8 +1,9 @@
 /**
  * Permission rules — pure functions, unit-tested.
  *
- * Visibility rule: every page is visible to every authenticated user.
- * These helpers govern writes (What's New drafting/editing goes through
+ * Visibility rule: every page is visible to every authenticated user, with
+ * one read exception — the adoption pulse charts on Goals (canViewPulse).
+ * The other helpers govern writes (What's New drafting/editing goes through
  * canManageProgram-style admin checks in the server actions).
  */
 import type { Role } from "./domain";
@@ -42,5 +43,13 @@ export function canQualify(role: Role): boolean {
 }
 
 export function canManageProgram(role: Role): boolean {
+  return role === "admin";
+}
+
+/**
+ * The adoption pulse charts (survey readings on Goals) are admin-only.
+ * The casebook — every use case and where it stands — stays open to all.
+ */
+export function canViewPulse(role: Role): boolean {
   return role === "admin";
 }
