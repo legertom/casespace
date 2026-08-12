@@ -40,6 +40,19 @@ and comments/notifications asks.
   clobbering explicit allocations once the form field is removed. See the
   revised prerequisite.
 
+**Decisions, 2026-08-12, third round (Tom):**
+
+- The chooser page **shipped** (`ef80395`): three cards at `/use-cases/new`,
+  the manual form at `/use-cases/new/form`, the AI review screen at
+  `/use-cases/new/review` (`?prefill=1` redirects there). The quiet
+  developer line points at `/profile` until Part 4 ships `/developers` —
+  retarget it then. The Option B step-1 split is still to come; `/form`
+  carries the full form meanwhile.
+- The **adoption pulse charts on Goals are admin-only** (shipped `dc7a6b7`,
+  `canViewPulse`). AI Leads keep the whole casebook and every record's
+  status; only the survey readings are withheld. `AGENTS.md`'s visibility
+  rule names the exception.
+
 ## Summary
 
 Seven pieces of work:
@@ -777,9 +790,10 @@ one is worth landing on its own merits. **All four shipped 2026-08-12
 
 Then, in any order:
 
-5. **Part 1 restructure (Option B)** — the chooser page, the split form, the
-   ELT field's removal, and notes #3 and #4. The biggest piece; needs the copy
-   in Tom/Kate's voice.
+5. **Part 1 restructure (Option B)** — the chooser page **shipped
+   2026-08-12** (`ef80395`); still open: the step-1 "basics" split, the ELT
+   field's removal, the record-page gap list, and the note #3/#4 copy in
+   Tom/Kate's voice.
 6. **Part 2, approach → array** — do it while the table is effectively empty.
 7. **Part 4, `/developers`** — mostly moving existing content and linking it.
 8. **Part 5, comments + notifications** — two new tables, all new surface; no
