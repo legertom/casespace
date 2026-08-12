@@ -51,13 +51,15 @@ function Field({
   label,
   hint,
   children,
+  className,
 }: {
   label: string;
   hint?: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <label className="block">
+    <label className={`block ${className ?? ""}`}>
       <span className="block text-sm font-medium">{label}</span>
       {hint && <span className="mt-0.5 block text-xs text-ink-faint">{hint}</span>}
       <span className="mt-1.5 block">{children}</span>
@@ -551,7 +553,7 @@ export function UseCaseForm({
                 />
               </Field>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Field
                 label="Post value"
                 hint="Measured with the same methodology."
@@ -564,7 +566,7 @@ export function UseCaseForm({
                   className={inputCls}
                 />
               </Field>
-              <Field label="Measurement method">
+              <Field label="Measurement method" className="sm:col-span-2">
                 <input
                   value={method}
                   onChange={(e) => setMethod(e.target.value)}
