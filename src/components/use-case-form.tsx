@@ -31,6 +31,8 @@ interface Props {
   teams: TeamOption[];
   eltOrgs: EltOrgOption[];
   initial?: Partial<UseCaseCreateInput>;
+  /** Create sends status and shows the status section; edit defers to the record page. */
+  mode: "create" | "edit";
   submitLabel: string;
   onSubmit: (input: UseCaseCreateInput) => Promise<ActionResult>;
 }
@@ -75,6 +77,7 @@ export function UseCaseForm({
   teams,
   eltOrgs,
   initial = {},
+  mode,
   submitLabel,
   onSubmit,
 }: Props) {
@@ -140,7 +143,7 @@ export function UseCaseForm({
   );
   const [revisitOn, setRevisitOn] = useState(initial.revisitOn ?? "");
   const [status, setStatus] = useState(initial.status ?? "in_discovery");
-  const isEdit = submitLabel !== "Log use case";
+  const isEdit = mode === "edit";
 
   const visibleTeams = department
     ? teams.filter((t) => t.department === department)

@@ -106,6 +106,7 @@ export default async function EditUseCasePage({
             departments: o.departments as Department[],
           }))}
           initial={initial}
+          mode="edit"
           submitLabel="Save changes"
           onSubmit={submit}
         />

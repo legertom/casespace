@@ -35,7 +35,7 @@ export default async function AppLayout({
               Casespace
             </Link>
             <nav aria-label="Primary" className="flex gap-5 text-sm text-ink-muted">
-              <Link href="/" className="hover:text-ink">
+              <Link href="/dashboard" className="hover:text-ink">
                 Dashboard
               </Link>
               <Link href="/use-cases" className="hover:text-ink">

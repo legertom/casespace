@@ -92,6 +92,7 @@ export function PrefillUseCaseForm({ people, teams, eltOrgs, onSubmit }: Props) 
         teams={teams}
         eltOrgs={eltOrgs}
         initial={initial}
+        mode="create"
         submitLabel="Log use case"
         onSubmit={(input) => onSubmit(input, source)}
       />

@@ -215,9 +215,8 @@ export async function updateUseCase(
     patch.ownerName = owner?.displayName ?? null;
   }
 
-  if ("department" in input && !("eltOrgId" in input)) {
-    patch.eltOrgId = await suggestedEltOrgId(input.department, null);
-  }
+  // eltOrgId derives from department at create only. Re-deriving on update
+  // would silently overwrite an explicit admin re-allocation.
 
   if (Object.keys(patch).length > 0) {
     await db.update(useCases).set(patch).where(eq(useCases.id, id));

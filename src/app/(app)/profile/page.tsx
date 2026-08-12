@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { pats, userEmails } from "@/db/schema";
@@ -7,8 +8,18 @@ import { PatManager } from "@/components/profile/pat-manager";
 
 export const metadata = { title: "Profile & API tokens" };
 
+/** The deployment's origin, from the request — NEXT_PUBLIC_APP_URL overrides. */
+async function appOrigin(): Promise<string> {
+  if (process.env.NEXT_PUBLIC_APP_URL) return process.env.NEXT_PUBLIC_APP_URL;
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  return `${proto}://${host}`;
+}
+
 export default async function ProfilePage() {
   const user = await requireUser();
+  const origin = await appOrigin();
   const db = getDb();
   const [aliases, tokens] = await Promise.all([
     db.select().from(userEmails).where(eq(userEmails.userId, user.id)),
@@ -56,14 +67,14 @@ export default async function ProfilePage() {
           </p>
           <pre className="mt-2 overflow-x-auto rounded-md border border-hairline bg-surface p-3 text-xs leading-relaxed">
             {`claude mcp add --transport http casespace \\
-  ${process.env.NEXT_PUBLIC_APP_URL ?? "https://your-deployment"}/api/mcp \\
+  ${origin}/api/mcp \\
   --header "Authorization: Bearer csp_…"`}
           </pre>
         </div>
         <div>
           <h3 className="font-semibold">REST</h3>
           <pre className="mt-2 overflow-x-auto rounded-md border border-hairline bg-surface p-3 text-xs leading-relaxed">
-            {`curl -X POST ${process.env.NEXT_PUBLIC_APP_URL ?? "https://your-deployment"}/api/v1/use-cases \\
+            {`curl -X POST ${origin}/api/v1/use-cases \\
   -H "Authorization: Bearer csp_…" -H "Content-Type: application/json" \\
   -d '{"title": "…", "description": "…"}'`}
           </pre>

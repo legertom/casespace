@@ -86,6 +86,7 @@ export default async function NewUseCasePage({
           people={people}
           teams={teamOptions}
           eltOrgs={orgOptions}
+          mode="create"
           submitLabel="Log use case"
           onSubmit={submit}
         />
