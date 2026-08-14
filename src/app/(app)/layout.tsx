@@ -34,7 +34,10 @@ export default async function AppLayout({
             <Link href="/" className="font-serif text-xl tracking-tight">
               Casespace
             </Link>
-            <nav aria-label="Primary" className="flex gap-5 text-sm text-ink-muted">
+            <nav
+              aria-label="Primary"
+              className="hidden gap-5 text-sm text-ink-muted md:flex"
+            >
               <Link href="/dashboard" className="hover:text-ink">
                 Dashboard
               </Link>
@@ -57,15 +60,68 @@ export default async function AppLayout({
               </Link>
             </nav>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
             {canCreateUseCase(user.role) && (
               <Link
                 href="/use-cases/new"
-                className="rounded-md bg-accent px-3.5 py-1.5 text-sm text-white transition-colors hover:bg-accent-deep"
+                className="hidden rounded-md bg-accent px-3.5 py-1.5 text-sm text-white transition-colors hover:bg-accent-deep md:inline-block"
               >
                 Log a use case
               </Link>
             )}
+            <details className="relative md:hidden">
+              <summary
+                aria-label="Open menu"
+                className="flex cursor-pointer list-none items-center justify-center rounded-md border border-hairline p-1.5 text-ink-muted hover:text-ink"
+              >
+                <svg
+                  aria-hidden
+                  viewBox="0 0 20 20"
+                  className="size-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                >
+                  <path d="M3 5.5h14M3 10h14M3 14.5h14" />
+                </svg>
+              </summary>
+              <div className="absolute right-0 z-20 mt-2 w-52 rounded-md border border-hairline bg-surface p-3 shadow-sm">
+                <nav
+                  aria-label="Primary"
+                  className="flex flex-col text-sm text-ink-muted"
+                >
+                  <Link href="/dashboard" className="py-1.5 hover:text-ink">
+                    Dashboard
+                  </Link>
+                  <Link href="/use-cases" className="py-1.5 hover:text-ink">
+                    Use cases
+                  </Link>
+                  <Link href="/goals" className="py-1.5 hover:text-ink">
+                    Goals
+                  </Link>
+                  {canViewWins(user.role) && (
+                    <Link href="/wins" className="py-1.5 hover:text-ink">
+                      Wins
+                    </Link>
+                  )}
+                  <Link href="/roster" className="py-1.5 hover:text-ink">
+                    AI Leads
+                  </Link>
+                  <Link href="/whats-new" className="py-1.5 hover:text-ink">
+                    What&rsquo;s New
+                  </Link>
+                </nav>
+                {canCreateUseCase(user.role) && (
+                  <Link
+                    href="/use-cases/new"
+                    className="mt-2 block rounded-md bg-accent px-3 py-1.5 text-center text-sm text-white transition-colors hover:bg-accent-deep"
+                  >
+                    Log a use case
+                  </Link>
+                )}
+              </div>
+            </details>
             <details className="relative">
               <summary className="cursor-pointer list-none text-sm text-ink-muted hover:text-ink">
                 {user.name}
