@@ -31,6 +31,14 @@ an API you have not verified in this repo, read the bundled docs for the
   the status-change log stays complete.
 - The AI never writes records directly: Coach tools emit proposals; a human
   confirms. Keep it that way.
+- Records carry **comments** (`use_case_comments`, threaded six deep) and
+  comments raise in-app **notifications** (the header bell). **The Coach
+  neither reads nor writes them** — they are not in `get_use_case`, the MCP
+  surface, or What's New generation, and that is a decision, not an
+  oversight. If the AI is ever given a voice here it must be a proposal card
+  a human confirms, like every other AI write. Comments are public to every
+  authenticated user and writable by every role — `canComment` is true for
+  viewers too, the one deliberate exception to viewers being read-only.
 - Model choices live in `src/lib/ai/config.ts` only. Log token usage to
   `ai_usage` for every model call.
 - Every page is visible to every authenticated user — What's New included.

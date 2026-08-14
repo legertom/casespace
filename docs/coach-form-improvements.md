@@ -586,6 +586,22 @@ front of 22 mostly non-technical leads costs more attention than it returns.
 
 ## Part 5 — Comments on records: Jira-style, threaded, with in-app notifications
 
+**Shipped 2026-08-13** (`d03e826` the data and the rules, `505ee78` the two
+surfaces), built from `docs/comments-execution-plan.md`. What landed matches
+what is described below, with three details worth writing down:
+
+- The depth rule lives in one tested function, `canReplyAtDepth`
+  (`src/lib/domain.ts`), which the Reply control and the server action both
+  ask — the client is a courtesy, the server is the rule.
+- Editing a comment does not re-open the mention picker, so an `@name` typed
+  during an edit is text, not a notification. Mentions are made in the
+  composer.
+- Below `md:` the bell's dropdown spans the header rather than hanging off
+  the bell, which would run past the left edge of a phone.
+
+Email is still deferred, and the Coach still neither reads nor writes
+comments (`AGENTS.md` says so now).
+
 ### What this is, and what it is not
 
 Kate — and any user — needs a way to leave words on a record: feedback,
@@ -796,8 +812,9 @@ Then, in any order:
    Tom/Kate's voice.
 6. **Part 2, approach → array** — do it while the table is effectively empty.
 7. **Part 4, `/developers`** — mostly moving existing content and linking it.
-8. **Part 5, comments + notifications** — two new tables, all new surface; no
-   overlap with the form work.
+8. ~~**Part 5, comments + notifications**~~ — **shipped 2026-08-13**
+   (`d03e826`, `505ee78`). Two new tables, the record-page section, and the
+   header bell. Email stays deferred.
 9. **Part 3, feedback** — a new table and a new AI tool. Coordinate its
    `AGENTS.md` amendment with Part 7's visibility decision.
 10. **Part 7, What's New deltas** — the release-notes source, the visibility
@@ -807,10 +824,11 @@ Then, in any order:
 
 All the blocking ones are answered. What's left:
 
-1. **Copy** for the editability statements, the chooser cards, the
-   feedback-goes-to-admins line, and now the comment/notification strings.
-   Needs Tom/Kate's voice — I can draft in the Coach's register (measured,
-   plain, sentence case) for editing rather than leaving blanks.
+1. **Copy** for the editability statements, the chooser cards, and the
+   feedback-goes-to-admins line. Needs Tom/Kate's voice — I can draft in the
+   Coach's register (measured, plain, sentence case) for editing rather than
+   leaving blanks. The comment and notification strings shipped 2026-08-13 in
+   that register; they are edits in place now, not blanks.
 2. ~~Does a derived `eltOrgId` follow a later department change?~~ Answered
    in code as "yes" since this was drafted — and this plan's call is to
    change that to create-only before the field leaves the form. See the
