@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   doublePrecision,
+  index,
   integer,
   jsonb,
   pgEnum,
@@ -12,6 +13,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 // ---------------------------------------------------------------------------
@@ -68,6 +70,13 @@ export const roiStatusEnum = pgEnum("roi_status", [
   "not_yet_measurable",
   "in_progress",
   "complete",
+]);
+
+/** Why a notification exists, most specific first — see commentNotifications(). */
+export const notificationKindEnum = pgEnum("notification_kind", [
+  "comment",
+  "reply",
+  "mention",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -429,3 +438,76 @@ export const coachChats = pgTable("coach_chats", {
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
+
+// ---------------------------------------------------------------------------
+// Comments & notifications
+// ---------------------------------------------------------------------------
+
+/**
+ * Public discussion on a use case — visible to anyone who can see the record,
+ * writable by every role including viewer (see canComment). Distinct from
+ * status-change notes, which move or judge the record; comments do neither.
+ * Threads nest to MAX_COMMENT_DEPTH levels (depth 0–5).
+ */
+export const useCaseComments = pgTable(
+  "use_case_comments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    useCaseId: uuid("use_case_id")
+      .notNull()
+      .references(() => useCases.id, { onDelete: "cascade" }),
+    authorId: uuid("author_id")
+      .notNull()
+      .references(() => users.id),
+    /** Null for a top-level comment. */
+    parentId: uuid("parent_id").references((): AnyPgColumn => useCaseComments.id, {
+      onDelete: "cascade",
+    }),
+    /** 0-based, set server-side to parent.depth + 1; capped at MAX_COMMENT_DEPTH - 1. */
+    depth: integer("depth").notNull().default(0),
+    /** Markdown, rendered with the same react-markdown + remark-gfm stack as posts. */
+    body: text("body").notNull(),
+    /** Ids of @-mentioned users — the picker writes these; names are never parsed back out. */
+    mentionedUserIds: uuid("mentioned_user_ids").array().notNull().default([]),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    /** Set on edit; renders as "edited" beside the timestamp. */
+    editedAt: timestamp("edited_at", { withTimezone: true }),
+    /** Soft delete — a removed comment with replies leaves a placeholder. */
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (t) => [index("comment_use_case_idx").on(t.useCaseId)],
+);
+
+/**
+ * In-app notifications. Email is deliberately deferred: with ~22 users,
+ * page-load freshness is enough — there is no queue, no cron, no polling.
+ * Rows are written inline by the comment action that causes them.
+ */
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** Recipient. */
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: notificationKindEnum("kind").notNull(),
+    useCaseId: uuid("use_case_id")
+      .notNull()
+      .references(() => useCases.id, { onDelete: "cascade" }),
+    commentId: uuid("comment_id")
+      .notNull()
+      .references(() => useCaseComments.id, { onDelete: "cascade" }),
+    /** Who caused it. Never the recipient. */
+    actorId: uuid("actor_id")
+      .notNull()
+      .references(() => users.id),
+    readAt: timestamp("read_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("notification_user_idx").on(t.userId, t.readAt)],
+);

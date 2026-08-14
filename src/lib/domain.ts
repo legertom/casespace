@@ -13,6 +13,12 @@ export const TARGET_DOCUMENTED = 45; // Qualified or better
 export const TARGET_ROI = 15; // Confirmed Positive ROI
 export const DEFAULT_STALE_DAYS = 21;
 export const WORKFLOWS_PER_LEAD = 2;
+/**
+ * How deep comment threads nest, counting the top level. Jira's comments are
+ * flat; ours thread — deliberately, and only this far. depth is 0-based, so
+ * the deepest comment is depth 5 and the Reply control stops rendering there.
+ */
+export const MAX_COMMENT_DEPTH = 6;
 
 // ---------------------------------------------------------------------------
 // Departments (program groupings, not HRIS)

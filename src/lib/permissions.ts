@@ -56,6 +56,17 @@ export function canViewPulse(role: Role): boolean {
 }
 
 /**
+ * Everyone comments, viewers included — the app's first viewer-permitted
+ * write, and a deliberate one. Commentary is not record data, and the point
+ * of comments is that people who don't build workflows still get a voice on
+ * them. Editing a comment is the author's alone; deleting is the author's or
+ * an admin's (moderation, via canManageProgram).
+ */
+export function canComment(_role: Role): boolean {
+  return true;
+}
+
+/**
  * The Wins report is admin-only: annual-ROI confirmation notes may contain
  * dollar figures, and dollars never appear on an open surface.
  */

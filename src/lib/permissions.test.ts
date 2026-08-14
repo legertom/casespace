@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canComment,
   canCreateUseCase,
   canEditUseCase,
   canQualify,
@@ -52,5 +53,11 @@ describe("role gates", () => {
     expect(canViewPulse("viewer")).toBe(false);
     expect(canViewPulse("contributor")).toBe(false);
     expect(canViewPulse("admin")).toBe(true);
+  });
+
+  it("every role comments — viewers included, on purpose", () => {
+    expect(canComment("viewer")).toBe(true);
+    expect(canComment("contributor")).toBe(true);
+    expect(canComment("admin")).toBe(true);
   });
 });
