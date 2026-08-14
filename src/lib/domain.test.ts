@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   MAX_COMMENT_DEPTH,
+  canReplyAtDepth,
   canSetStatus,
   countsTowardDocumented,
   countsTowardRoi,
@@ -194,10 +195,13 @@ describe("attention flags", () => {
 describe("comment threading", () => {
   it("allows 6 levels — depth 0 through 5", () => {
     expect(MAX_COMMENT_DEPTH).toBe(6);
-    const deepest = MAX_COMMENT_DEPTH - 1;
-    expect(deepest).toBe(5);
-    // A reply to the deepest comment would land past the cap, so Reply stops there.
-    expect(deepest + 1 < MAX_COMMENT_DEPTH).toBe(false);
-    expect(deepest - 1 + 1 < MAX_COMMENT_DEPTH).toBe(true);
+  });
+
+  it("stops offering Reply at the deepest level", () => {
+    expect(canReplyAtDepth(0)).toBe(true);
+    expect(canReplyAtDepth(4)).toBe(true);
+    expect(canReplyAtDepth(5)).toBe(false);
+    // Defensive: a forged deeper parent is refused too.
+    expect(canReplyAtDepth(6)).toBe(false);
   });
 });

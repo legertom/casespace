@@ -6,6 +6,7 @@ import { canCreateUseCase, canViewWins } from "@/lib/permissions";
 import { VIEW_AS_LABELS, VIEW_AS_PROSE, VIEW_AS_ROLES } from "@/lib/view-as";
 import { startViewAsAction, stopViewAsAction } from "@/server/actions-view-as";
 import { CoachLauncher } from "@/components/coach/coach-launcher";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 export default async function AppLayout({
   children,
@@ -122,6 +123,7 @@ export default async function AppLayout({
                 )}
               </div>
             </details>
+            <NotificationBell userId={user.id} />
             <details className="relative">
               <summary className="cursor-pointer list-none text-sm text-ink-muted hover:text-ink">
                 {user.name}

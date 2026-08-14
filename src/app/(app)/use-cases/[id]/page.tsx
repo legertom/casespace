@@ -10,7 +10,9 @@ import {
 } from "@/lib/domain";
 import { fmtDate } from "@/lib/format";
 import { canEditUseCase } from "@/lib/permissions";
+import { listComments, listMentionableUsers } from "@/server/comment-queries";
 import { getUseCase } from "@/server/use-case-queries";
+import { CommentThread } from "@/components/comments/comment-thread";
 import { DeleteUseCase } from "@/components/delete-use-case";
 import { PersonLink, PersonLinks } from "@/components/person-link";
 import { ConfirmedRoiBadge, StatusBadge } from "@/components/status-badge";
@@ -74,6 +76,11 @@ export default async function UseCaseDetailPage({
   const { id } = await params;
   const uc = await getUseCase(id).catch(() => null);
   if (!uc) notFound();
+
+  const [comments, mentionable] = await Promise.all([
+    listComments(uc.id),
+    listMentionableUsers(),
+  ]);
 
   const editable = canEditUseCase(
     { id: user.id, role: user.role },
@@ -315,6 +322,14 @@ export default async function UseCaseDetailPage({
               ))}
             </ol>
           </section>
+
+          <CommentThread
+            useCaseId={uc.id}
+            comments={comments}
+            people={mentionable}
+            currentUserId={user.id}
+            isAdmin={user.role === "admin"}
+          />
 
           {editable && (
             <div className="border-t border-hairline pt-6">

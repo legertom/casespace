@@ -20,6 +20,15 @@ export const WORKFLOWS_PER_LEAD = 2;
  */
 export const MAX_COMMENT_DEPTH = 6;
 
+/**
+ * Whether a comment at this depth can take a reply. The Reply control asks
+ * this before rendering and the server asks it again before inserting — the
+ * client is a courtesy, the server is the rule.
+ */
+export function canReplyAtDepth(parentDepth: number): boolean {
+  return parentDepth + 1 < MAX_COMMENT_DEPTH;
+}
+
 // ---------------------------------------------------------------------------
 // Departments (program groupings, not HRIS)
 // ---------------------------------------------------------------------------
