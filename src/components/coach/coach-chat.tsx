@@ -58,6 +58,7 @@ export function CoachChat({
   const kickoffSent = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const seededNonce = useRef<number | null>(null);
 
   useEffect(() => {
     if (kickoff && !kickoffSent.current && messages.length === 0) {
@@ -71,9 +72,11 @@ export function CoachChat({
   }, [messages, status]);
 
   // A seeded ask lands in the composer with the caret after it, so the user
-  // types their question onto the end and sends when they're ready.
+  // types their question onto the end and sends when they're ready. Applied
+  // once per nonce — asking twice appends, a re-run of this effect doesn't.
   useEffect(() => {
-    if (!seed) return;
+    if (!seed || seededNonce.current === seed.nonce) return;
+    seededNonce.current = seed.nonce;
     setInput((prev) => (prev.trim() ? `${prev.trim()}\n\n${seed.text}` : seed.text));
     const el = inputRef.current;
     if (el) {
