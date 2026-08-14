@@ -20,7 +20,9 @@ export function toApiUseCase(uc: UseCaseRow) {
     owner: uc.ownerName,
     authors: uc.authors.map((a) => a.displayName),
     aiTools: uc.aiTools,
-    approach: uc.approach,
+    approaches: uc.approaches,
+    /** @deprecated Singular until 2026-08-14; first of `approaches` for one release. */
+    approach: uc.approaches[0] ?? null,
     source: uc.source,
     currentSteps: uc.currentSteps,
     ratings: {

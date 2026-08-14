@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { DEPARTMENTS, STATUSES, type Department, type UcStatus } from "@/lib/domain";
-import { useCaseCreateSchema } from "@/lib/use-case-input";
+import { useCaseCreateApiSchema } from "@/lib/use-case-input";
 import { toApiUseCase } from "@/server/api-serializers";
 import { authenticatePat } from "@/server/pat";
 import { listUseCases } from "@/server/use-case-queries";
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
-  const parsed = useCaseCreateSchema.safeParse(body);
+  const parsed = useCaseCreateApiSchema.safeParse(body);
   if (!parsed.success) {
     return Response.json(
       { error: "Validation failed", issues: z.treeifyError(parsed.error) },

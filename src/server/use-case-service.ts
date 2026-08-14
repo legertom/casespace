@@ -165,7 +165,7 @@ export async function updateUseCase(
     "teamId",
     "eltOrgId",
     "aiTools",
-    "approach",
+    "approaches",
     "currentSteps",
     "ratingFrequency",
     "ratingPain",
@@ -199,6 +199,7 @@ export async function updateUseCase(
   if (patch.title === null) delete patch.title;
   if (patch.description === null) delete patch.description;
   if (patch.aiTools === null) patch.aiTools = [];
+  if (patch.approaches === null) patch.approaches = [];
   if (patch.currentSteps === null) patch.currentSteps = [];
   if (patch.gateNamed === null) delete patch.gateNamed;
   if (patch.gateTool === null) delete patch.gateTool;

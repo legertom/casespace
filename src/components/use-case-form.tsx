@@ -7,9 +7,12 @@ import {
   APPROACH_LABELS,
   DEPARTMENTS,
   DEPARTMENT_LABELS,
+  RATING_FIELDS,
   STATUSES,
   STATUS_LABELS,
+  type Approach,
   type Department,
+  type RatingKey,
 } from "@/lib/domain";
 import type { PersonRef, UseCaseCreateInput } from "@/lib/use-case-input";
 import { PeoplePicker, type PersonOption } from "./people-picker";
@@ -37,18 +40,6 @@ interface Props {
   onSubmit: (input: UseCaseCreateInput) => Promise<ActionResult>;
 }
 
-const RATING_FIELDS = [
-  ["ratingFrequency", "Frequency", "How often the workflow runs"],
-  ["ratingPain", "Pain", "How painful it is today"],
-  ["ratingDataAvailability", "Data availability", "Is the needed data accessible?"],
-  ["ratingRisk", "Risk", "Cost of getting it wrong"],
-  ["ratingOwnershipClarity", "Ownership clarity", "Is it clear who owns it?"],
-  ["ratingEvaluationClarity", "Evaluation clarity", "Is it clear how to judge output?"],
-  ["ratingMaintenanceBurden", "Maintenance burden", "Effort to keep it working"],
-] as const;
-
-type RatingKey = (typeof RATING_FIELDS)[number][0];
-
 function Field({
   label,
   hint,
@@ -60,17 +51,21 @@ function Field({
   children: React.ReactNode;
   className?: string;
 }) {
+  // Full-height column with the control pushed to the bottom, so side-by-side
+  // fields line up on their inputs however many lines their hints wrap to.
   return (
-    <label className={`block ${className ?? ""}`}>
-      <span className="block text-sm font-medium">{label}</span>
-      {hint && <span className="mt-0.5 block text-xs text-ink-faint">{hint}</span>}
-      <span className="mt-1.5 block">{children}</span>
+    <label className={`flex h-full flex-col ${className ?? ""}`}>
+      <span className="text-sm font-medium">{label}</span>
+      {hint && <span className="mt-0.5 text-xs text-ink-faint">{hint}</span>}
+      <span className="mt-auto block pt-1.5">{children}</span>
     </label>
   );
 }
 
 const inputCls =
   "w-full rounded-md border border-hairline-strong bg-surface px-3 py-2 text-sm";
+/** Textareas resize vertically only — dragging one wider would break the column. */
+const textareaCls = `${inputCls} resize-y`;
 
 export function UseCaseForm({
   people,
@@ -96,7 +91,9 @@ export function UseCaseForm({
     initial.owner ? [initial.owner] : [],
   );
   const [aiTools, setAiTools] = useState((initial.aiTools ?? []).join(", "));
-  const [approach, setApproach] = useState(initial.approach ?? "");
+  const [approaches, setApproaches] = useState<Approach[]>(
+    initial.approaches ?? [],
+  );
   const [steps, setSteps] = useState((initial.currentSteps ?? []).join("\n"));
   const [ratings, setRatings] = useState<Record<RatingKey, number | null>>({
     ratingFrequency: initial.ratingFrequency ?? null,
@@ -145,6 +142,13 @@ export function UseCaseForm({
   const [status, setStatus] = useState(initial.status ?? "in_discovery");
   const isEdit = mode === "edit";
 
+  /** Rebuilt from APPROACHES so the stored order is always the canonical one. */
+  function toggleApproach(approach: Approach, on: boolean) {
+    setApproaches((prev) =>
+      APPROACHES.filter((a) => (a === approach ? on : prev.includes(a))),
+    );
+  }
+
   const visibleTeams = department
     ? teams.filter((t) => t.department === department)
     : teams;
@@ -167,7 +171,7 @@ export function UseCaseForm({
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean),
-      approach: (approach || null) as UseCaseCreateInput["approach"],
+      approaches,
       currentSteps: steps
         .split("\n")
         .map((s) => s.trim())
@@ -220,7 +224,7 @@ export function UseCaseForm({
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className={inputCls}
+            className={textareaCls}
           />
         </Field>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -245,7 +249,10 @@ export function UseCaseForm({
               ))}
             </select>
           </Field>
-          <Field label="Team">
+          <Field
+            label="Team"
+            hint="The specific team inside that department. Optional."
+          >
             <select
               value={teamId}
               onChange={(e) => setTeamId(e.target.value)}
@@ -319,31 +326,25 @@ export function UseCaseForm({
         <fieldset>
           <legend className="text-sm font-medium">Approach</legend>
           <p className="mt-0.5 text-xs text-ink-faint">
+            Check every one that applies — one workflow can be several at once.
             Prompt, automation, and agentic mean AI does the work at runtime.
             AI-built means AI (e.g. Claude Code) built the tool, even if it
-            doesn't run AI itself.
+            doesn&rsquo;t run AI itself. Leave them all unchecked if you&rsquo;re
+            not sure yet.
           </p>
-          <div className="mt-1.5 flex flex-wrap gap-5 text-sm">
+          <div className="mt-1.5 flex flex-wrap gap-x-5 gap-y-2 text-sm">
             {APPROACHES.map((a) => (
               <label key={a} className="inline-flex items-center gap-1.5">
                 <input
-                  type="radio"
-                  name="approach"
-                  checked={approach === a}
-                  onChange={() => setApproach(a)}
+                  type="checkbox"
+                  name="approaches"
+                  value={a}
+                  checked={approaches.includes(a)}
+                  onChange={(e) => toggleApproach(a, e.target.checked)}
                 />
                 {APPROACH_LABELS[a]}
               </label>
             ))}
-            <label className="inline-flex items-center gap-1.5 text-ink-faint">
-              <input
-                type="radio"
-                name="approach"
-                checked={approach === ""}
-                onChange={() => setApproach("")}
-              />
-              Not sure yet
-            </label>
           </div>
         </fieldset>
       </section>
@@ -359,7 +360,7 @@ export function UseCaseForm({
             rows={5}
             value={steps}
             onChange={(e) => setSteps(e.target.value)}
-            className={inputCls}
+            className={textareaCls}
           />
         </Field>
         <fieldset className="space-y-2">
@@ -414,7 +415,7 @@ export function UseCaseForm({
             rows={2}
             value={flSuccess}
             onChange={(e) => setFlSuccess(e.target.value)}
-            className={inputCls}
+            className={textareaCls}
           />
         </Field>
       </section>
@@ -476,7 +477,7 @@ export function UseCaseForm({
                 rows={2}
                 value={adoptionEvidence}
                 onChange={(e) => setAdoptionEvidence(e.target.value)}
-                className={inputCls}
+                className={textareaCls}
               />
             </Field>
           </div>
@@ -509,7 +510,7 @@ export function UseCaseForm({
             rows={2}
             value={successCriterion}
             onChange={(e) => setSuccessCriterion(e.target.value)}
-            className={inputCls}
+            className={textareaCls}
           />
         </Field>
         <Field
@@ -567,7 +568,7 @@ export function UseCaseForm({
                   className={inputCls}
                 />
               </Field>
-              <Field label="Baseline value">
+              <Field label="Baseline value" hint="The number, before.">
                 <input
                   type="number"
                   step="any"
@@ -617,7 +618,7 @@ export function UseCaseForm({
                 rows={2}
                 value={netImpact}
                 onChange={(e) => setNetImpact(e.target.value)}
-                className={inputCls}
+                className={textareaCls}
               />
             </Field>
             <fieldset>

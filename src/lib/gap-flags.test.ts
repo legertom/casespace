@@ -22,7 +22,7 @@ describe("gap flags", () => {
       owner: { personId: null, userId: null, displayName: "Katie Clarkson" },
       authors: [{ personId: null, userId: null, displayName: "A" }],
       aiTools: ["Claude"],
-      approach: "prompt",
+      approaches: ["prompt"],
       successCriterion: "First response under 2 hours",
       roiStatus: "in_progress",
       baselineValue: 6,

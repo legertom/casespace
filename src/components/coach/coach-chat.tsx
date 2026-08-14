@@ -17,6 +17,12 @@ interface Props {
   initialMessages?: UIMessage[];
   /** Auto-sent as the first user message when the conversation is empty. */
   kickoff?: string;
+  /**
+   * Text dropped into the composer from elsewhere in the app (a field's Coach
+   * button, the selection tooltip). `nonce` changes per ask so the same text
+   * twice still lands.
+   */
+  seed?: { text: string; nonce: number };
   /** Where accepted create-proposals report their source. */
   source?: "wizard" | "notes";
   compact?: boolean;
@@ -35,6 +41,7 @@ export function CoachChat({
   chatId,
   initialMessages,
   kickoff,
+  seed,
   source = "wizard",
   compact = false,
 }: Props) {
@@ -50,6 +57,7 @@ export function CoachChat({
   const [input, setInput] = useState("");
   const kickoffSent = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (kickoff && !kickoffSent.current && messages.length === 0) {
@@ -62,7 +70,29 @@ export function CoachChat({
     bottomRef.current?.scrollIntoView({ block: "end" });
   }, [messages, status]);
 
+  // A seeded ask lands in the composer with the caret after it, so the user
+  // types their question onto the end and sends when they're ready.
+  useEffect(() => {
+    if (!seed) return;
+    setInput((prev) => (prev.trim() ? `${prev.trim()}\n\n${seed.text}` : seed.text));
+    const el = inputRef.current;
+    if (el) {
+      el.focus();
+      requestAnimationFrame(() => {
+        el.selectionStart = el.selectionEnd = el.value.length;
+        el.scrollTop = el.scrollHeight;
+      });
+    }
+  }, [seed]);
+
   const busy = status === "submitted" || status === "streaming";
+
+  function send() {
+    const text = input.trim();
+    if (!text || busy) return;
+    sendMessage({ text });
+    setInput("");
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -187,21 +217,27 @@ export function CoachChat({
       </div>
 
       <form
-        className={`flex shrink-0 gap-2 border-t border-hairline pt-3 ${compact ? "px-4 pb-4" : "pb-2"}`}
+        className={`flex shrink-0 items-end gap-2 border-t border-hairline pt-3 ${compact ? "px-4 pb-4" : "pb-2"}`}
         onSubmit={(e) => {
           e.preventDefault();
-          const text = input.trim();
-          if (!text || busy) return;
-          sendMessage({ text });
-          setInput("");
+          send();
         }}
       >
-        <input
+        <textarea
+          ref={inputRef}
+          rows={input.includes("\n") ? 4 : 1}
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            // Enter sends; Shift+Enter is a newline, which quoted asks need.
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              send();
+            }
+          }}
           placeholder="Ask the Coach…"
           aria-label="Message the Coach"
-          className="min-w-0 flex-1 rounded-md border border-hairline-strong bg-surface px-3 py-2 text-sm"
+          className="min-w-0 flex-1 resize-y rounded-md border border-hairline-strong bg-surface px-3 py-2 text-sm"
         />
         <button
           type="submit"

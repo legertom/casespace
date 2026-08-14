@@ -32,7 +32,7 @@ interface DemoUc {
   authors: string[];
   owner: string;
   aiTools: string[];
-  approach: "prompt" | "automation" | "agentic";
+  approaches: ("prompt" | "automation" | "agentic")[];
   status: UcStatus;
   daysAgoLogged: number;
   /** [status, daysAgo] after birth, in order. */
@@ -83,7 +83,7 @@ const DEMO: DemoUc[] = [
     authors: ["Katie Clarkson", "Arraine Siefert"],
     owner: "Katie Clarkson",
     aiTools: ["Claude"],
-    approach: "prompt",
+    approaches: ["prompt"],
     status: "confirmed_positive_roi",
     daysAgoLogged: 30,
     moves: [
@@ -137,7 +137,7 @@ const DEMO: DemoUc[] = [
     authors: ["Vamsi Chunduru", "Garrett Gordon"],
     owner: "Vamsi Chunduru",
     aiTools: ["Claude Code", "Linear MCP"],
-    approach: "agentic",
+    approaches: ["agentic"],
     status: "qualified",
     daysAgoLogged: 27,
     moves: [
@@ -177,7 +177,7 @@ const DEMO: DemoUc[] = [
     authors: ["Wendy Yu"],
     owner: "Wendy Yu",
     aiTools: ["Claude"],
-    approach: "prompt",
+    approaches: ["prompt"],
     status: "qualified",
     daysAgoLogged: 24,
     moves: [
@@ -206,7 +206,7 @@ const DEMO: DemoUc[] = [
     authors: ["Sinclair Blackmon"],
     owner: "Sinclair Blackmon",
     aiTools: ["Claude", "Zapier"],
-    approach: "automation",
+    approaches: ["automation"],
     status: "launched",
     daysAgoLogged: 21,
     moves: [
@@ -230,7 +230,7 @@ const DEMO: DemoUc[] = [
     authors: ["Alex Armstead", "Darcy Grabski"],
     owner: "Alex Armstead",
     aiTools: ["Claude", "Google Drive"],
-    approach: "prompt",
+    approaches: ["prompt"],
     status: "launched",
     daysAgoLogged: 19,
     moves: [["launched", 8]],
@@ -250,7 +250,7 @@ const DEMO: DemoUc[] = [
     authors: ["Evelyn Wong"],
     owner: "Evelyn Wong",
     aiTools: ["Claude"],
-    approach: "prompt",
+    approaches: ["prompt"],
     status: "launched",
     daysAgoLogged: 16,
     moves: [["launched", 5]],
@@ -267,7 +267,7 @@ const DEMO: DemoUc[] = [
     authors: ["Jen Kampf", "Lizzy Dawson"],
     owner: "Jen Kampf",
     aiTools: ["Claude", "Ashby"],
-    approach: "prompt",
+    approaches: ["prompt"],
     status: "in_testing",
     daysAgoLogged: 13,
     moves: [["in_testing", 4]],
@@ -283,7 +283,7 @@ const DEMO: DemoUc[] = [
     authors: ["Victoria Crow Dog", "Meghana Gangadharswami Balihallimath"],
     owner: "Victoria Crow Dog",
     aiTools: ["Claude Code"],
-    approach: "agentic",
+    approaches: ["agentic"],
     status: "in_testing",
     daysAgoLogged: 11,
     moves: [["in_testing", 3]],
@@ -299,7 +299,7 @@ const DEMO: DemoUc[] = [
     authors: ["Justine Edrozo"],
     owner: "Justine Edrozo",
     aiTools: ["Granola", "Claude"],
-    approach: "automation",
+    approaches: ["automation"],
     status: "under_construction",
     daysAgoLogged: 9,
     moves: [["under_construction", 2]],
@@ -314,7 +314,7 @@ const DEMO: DemoUc[] = [
     authors: ["Lotte Petersen-Buckley"],
     owner: "Lotte Petersen-Buckley",
     aiTools: ["Claude", "Hex"],
-    approach: "automation",
+    approaches: ["automation"],
     status: "under_construction",
     daysAgoLogged: 8,
     moves: [["under_construction", 3]],
@@ -329,7 +329,7 @@ const DEMO: DemoUc[] = [
     authors: ["Lauren Raulerson"],
     owner: "Lauren Raulerson",
     aiTools: ["Claude", "Salesforce"],
-    approach: "automation",
+    approaches: ["automation"],
     status: "approved_by_fl",
     daysAgoLogged: 7,
     moves: [["approved_by_fl", 2]],
@@ -344,7 +344,7 @@ const DEMO: DemoUc[] = [
     authors: ["Melissa Pevitz"],
     owner: "Melissa Pevitz",
     aiTools: ["Gong", "Claude"],
-    approach: "prompt",
+    approaches: ["prompt"],
     status: "in_discovery",
     daysAgoLogged: 32,
     gates: { gateNamed: true, gateTool: false, gateAdoption: false, gateOwner: false },
@@ -358,7 +358,7 @@ const DEMO: DemoUc[] = [
     authors: ["Kenton Lu"],
     owner: "Kenton Lu",
     aiTools: ["Claude"],
-    approach: "automation",
+    approaches: ["automation"],
     status: "in_discovery",
     daysAgoLogged: 5,
     gates: { gateNamed: true, gateTool: false, gateAdoption: false, gateOwner: false },
@@ -372,7 +372,7 @@ const DEMO: DemoUc[] = [
     authors: ["David McGeary"],
     owner: "David McGeary",
     aiTools: ["Claude"],
-    approach: "prompt",
+    approaches: ["prompt"],
     status: "in_discovery",
     daysAgoLogged: 3,
     gates: { gateNamed: true, gateTool: false, gateAdoption: false, gateOwner: false },
@@ -451,7 +451,7 @@ async function main() {
         ownerUserId: ownerUser ?? null,
         ownerName: d.owner,
         aiTools: d.aiTools,
-        approach: d.approach,
+        approaches: d.approaches,
         source: "form",
         currentSteps: d.currentSteps ?? [],
         ratingFrequency: d.ratings?.frequency ?? null,

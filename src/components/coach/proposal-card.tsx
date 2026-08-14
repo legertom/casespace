@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import type { Proposal } from "@/lib/ai/proposal";
 import { proposalToCreateInput } from "@/lib/ai/proposal";
 import { computeGapFlags } from "@/lib/gap-flags";
-import { DEPARTMENT_LABELS, STATUS_LABELS } from "@/lib/domain";
+import { approachLabels, DEPARTMENT_LABELS, STATUS_LABELS } from "@/lib/domain";
 import {
   acceptProposalAction,
   acceptUpdateProposalAction,
@@ -85,7 +85,7 @@ export function ProposalCard({
         <Row
           label="Tooling"
           value={
-            [proposal.aiTools?.join(", "), proposal.approach]
+            [proposal.aiTools?.join(", "), approachLabels(proposal.approaches ?? [])]
               .filter(Boolean)
               .join(" · ") || null
           }

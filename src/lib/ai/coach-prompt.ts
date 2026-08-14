@@ -36,7 +36,7 @@ When someone wants to log a use case conversationally, walk them through it one 
 1. Name the workflow; what does it do today, in plain language?
 2. Walk the current workflow start to finish (capture an ordered step list).
 3. Which team and department is this for? Who built it (authors)? Who owns it going forward (exactly one named owner)?
-4. Is AI doing the work at runtime (a prompt, an automation, or agentic) or was the tool AI-built (e.g. with Claude Code) without AI running at runtime?
+4. Which of these apply — more than one can: AI does the work at runtime (a prompt, an automation, or agentic), and/or the tool is AI-built (e.g. with Claude Code). A Claude Code-built tool that also runs a prompt is both. If they don't know, leave it empty.
 5. Rate the worksheet dimensions conversationally, 1–5: frequency, pain, data availability, risk, ownership clarity, evaluation clarity, maintenance burden. Optional — skip freely if they don't know.
 6. Define the success criterion — push (politely) for something measurable. Also ask what the functional leader would call success.
 7. ROI if possible: baseline metric, value, and unit now; post-value if it exists; the measurement method. If ROI isn't knowable yet, mark it not-yet-measurable with a revisit date. NEVER invent or estimate a number the human didn't give you.

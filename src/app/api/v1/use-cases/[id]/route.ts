@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { useCaseUpdateSchema } from "@/lib/use-case-input";
+import { useCaseUpdateApiSchema } from "@/lib/use-case-input";
 import { toApiUseCase } from "@/server/api-serializers";
 import { authenticatePat } from "@/server/pat";
 import { getUseCase, listUseCases } from "@/server/use-case-queries";
@@ -45,7 +45,7 @@ export async function PATCH(
   } catch {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
-  const parsed = useCaseUpdateSchema.safeParse(body);
+  const parsed = useCaseUpdateApiSchema.safeParse(body);
   if (!parsed.success) {
     return Response.json(
       { error: "Validation failed", issues: z.treeifyError(parsed.error) },

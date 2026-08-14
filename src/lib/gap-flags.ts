@@ -10,7 +10,7 @@ export function computeGapFlags(input: Partial<UseCaseCreateInput>): string[] {
   if (!input.authors?.length) gaps.push("No authors credited");
   if (!input.department) gaps.push("No department chosen");
   if (!input.successCriterion?.trim()) gaps.push("No success criterion");
-  if (!input.aiTools?.length && !input.approach)
+  if (!input.aiTools?.length && !input.approaches?.length)
     gaps.push("AI tool & approach not identified");
   if (
     input.roiStatus !== "not_yet_measurable" &&

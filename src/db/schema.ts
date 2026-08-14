@@ -216,7 +216,7 @@ export const eltOrgs = pgTable("elt_orgs", {
   name: text("name").notNull().unique(),
   ownerPersonId: uuid("owner_person_id").references(() => people.id),
   target: integer("target").notNull().default(0),
-  /** Program departments whose use cases roll up here. May be empty (e.g. Kate's program-wide bucket). */
+  /** Program departments whose use cases roll up here. May be empty, and may hold several — Kate Schaff owns both CSS and Business Operations. */
   departments: departmentEnum("departments").array().notNull().default([]),
   /** ⚠ CONFIRM annotations and mapping caveats, surfaced in the admin UI. */
   note: text("note"),
@@ -250,7 +250,8 @@ export const useCases = pgTable("use_cases", {
   ownerName: text("owner_name"),
 
   aiTools: text("ai_tools").array().notNull().default([]),
-  approach: approachEnum("approach"),
+  /** One workflow can be several at once — a prompt inside an automation, say. Empty means "not sure yet". */
+  approaches: approachEnum("approaches").array().notNull().default([]),
   source: ucSourceEnum("source").notNull().default("form"),
 
   // Workflow discovery (intake worksheet)

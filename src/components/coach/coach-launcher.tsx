@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { onAskCoach } from "@/lib/coach-bus";
 import { CoachChat } from "./coach-chat";
 
 /**
@@ -13,7 +14,19 @@ export function CoachLauncher() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
+  const [seed, setSeed] = useState<{ text: string; nonce: number } | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // "Ask the Coach" from anywhere on the page opens the panel with the text
+  // waiting in the composer.
+  useEffect(
+    () =>
+      onAskCoach(({ text }) => {
+        setOpen(true);
+        setSeed({ text, nonce: Date.now() });
+      }),
+    [],
+  );
 
   useEffect(() => {
     const key = "casespace-coach-panel-chat";
@@ -80,7 +93,7 @@ export function CoachLauncher() {
               </Link>
             </div>
           </div>
-          <CoachChat key={chatId} chatId={chatId} compact />
+          <CoachChat key={chatId} chatId={chatId} seed={seed ?? undefined} compact />
         </div>
       )}
     </>

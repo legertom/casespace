@@ -36,7 +36,7 @@ export const useCaseCreateSchema = z.object({
   owner: personRefSchema.nullish(),
 
   aiTools: z.array(z.string().trim().min(1)).max(20).optional(),
-  approach: z.enum(APPROACHES).nullish(),
+  approaches: z.array(z.enum(APPROACHES)).max(APPROACHES.length).optional(),
 
   currentSteps: z.array(z.string().trim().min(1)).max(50).optional(),
   ratingFrequency: rating.nullish(),
@@ -75,8 +75,28 @@ export const useCaseCreateSchema = z.object({
 
 export type UseCaseCreateInput = z.infer<typeof useCaseCreateSchema>;
 
+/**
+ * `approach` was a single enum until 2026-08-14. REST and MCP callers have
+ * live tokens and scripts written against it, so a singular value still
+ * arrives as a one-item `approaches` — an explicit `approaches` wins.
+ */
+function acceptLegacyApproach<T extends z.ZodTypeAny>(schema: T) {
+  return z.preprocess((raw) => {
+    if (!raw || typeof raw !== "object") return raw;
+    const { approach, ...rest } = raw as Record<string, unknown>;
+    if (approach === undefined) return raw;
+    return "approaches" in rest
+      ? rest
+      : { ...rest, approaches: approach === null ? [] : [approach] };
+  }, schema);
+}
+
+export const useCaseCreateApiSchema = acceptLegacyApproach(useCaseCreateSchema);
+
 /** Every field editable after creation; all optional (patch semantics). */
 export const useCaseUpdateSchema = useCaseCreateSchema.partial();
+
+export const useCaseUpdateApiSchema = acceptLegacyApproach(useCaseUpdateSchema);
 
 export type UseCaseUpdateInput = z.infer<typeof useCaseUpdateSchema>;
 
@@ -100,7 +120,7 @@ export function applyCreateDefaults(
     ownerUserId: input.owner?.userId ?? null,
     ownerName: input.owner?.displayName ?? null,
     aiTools: input.aiTools ?? [],
-    approach: input.approach ?? null,
+    approaches: input.approaches ?? [],
     source: ctx.source,
     currentSteps: input.currentSteps ?? [],
     ratingFrequency: input.ratingFrequency ?? null,

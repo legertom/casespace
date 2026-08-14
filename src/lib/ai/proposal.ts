@@ -33,11 +33,12 @@ export const proposalSchema = z.object({
     .nullish()
     .describe("Full name of the one person responsible going forward"),
   aiTools: z.array(z.string()).max(20).default([]),
-  approach: z
-    .enum(APPROACHES)
-    .nullish()
+  approaches: z
+    .array(z.enum(APPROACHES))
+    .max(APPROACHES.length)
+    .default([])
     .describe(
-      "prompt/automation/agentic: AI does the work at runtime. built: AI (e.g. Claude Code) built the tool, which doesn't run AI itself.",
+      "All that apply. prompt/automation/agentic: AI does the work at runtime. built: AI (e.g. Claude Code) built the tool, which may or may not run AI itself. Empty if the notes don't say.",
     ),
   currentSteps: z
     .array(z.string())
@@ -129,7 +130,7 @@ export function proposalPatchToUpdateInput(
       ? { personId: null, userId: null, displayName: c.owner }
       : null;
   if ("aiTools" in c && c.aiTools) patch.aiTools = c.aiTools;
-  if ("approach" in c) patch.approach = c.approach ?? null;
+  if ("approaches" in c && c.approaches) patch.approaches = c.approaches;
   if ("currentSteps" in c && c.currentSteps) patch.currentSteps = c.currentSteps;
   for (const k of [
     "ratingFrequency",
@@ -182,7 +183,7 @@ export function proposalToCreateInput(p: Proposal): UseCaseCreateInput {
       ? { personId: null, userId: null, displayName: p.owner }
       : null,
     aiTools: p.aiTools ?? [],
-    approach: p.approach ?? null,
+    approaches: p.approaches ?? [],
     currentSteps: p.currentSteps ?? [],
     ratingFrequency: p.ratingFrequency ?? null,
     ratingPain: p.ratingPain ?? null,

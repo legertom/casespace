@@ -69,6 +69,27 @@ export async function updateUseCaseAction(
   redirect(`/use-cases/${id}`);
 }
 
+/**
+ * One field at a time, from the record page. Same validation and permissions
+ * as the full form — it just stays where it is instead of redirecting, so the
+ * reader keeps their place on the page.
+ */
+export async function patchUseCaseAction(
+  id: string,
+  raw: UseCaseUpdateInput,
+): Promise<ActionResult> {
+  const user = await requireUser();
+  try {
+    const input = useCaseUpdateSchema.parse(raw);
+    await updateUseCase({ id: user.id, role: user.role }, id, input);
+  } catch (err) {
+    return { error: messageFor(err) };
+  }
+  revalidatePath("/use-cases");
+  revalidatePath(`/use-cases/${id}`);
+  return {};
+}
+
 export async function setStatusAction(
   id: string,
   to: UcStatus,

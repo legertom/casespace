@@ -64,6 +64,9 @@ export const DEPARTMENT_LABELS: Record<Department, string> = {
  * AI doing the work at runtime (AI-enabled). "built" covers workflows where
  * AI (e.g. Claude Code) built the tool but doesn't run at runtime (AI-built)
  * — that still satisfies the "AI tool & approach identified" gate.
+ *
+ * A record holds any number of these: Casespace itself is AI-built *and*
+ * agentic at runtime. None selected means nobody has said yet.
  */
 export const APPROACHES = ["prompt", "automation", "agentic", "built"] as const;
 
@@ -75,6 +78,30 @@ export const APPROACH_LABELS: Record<Approach, string> = {
   agentic: "Agentic",
   built: "AI-built",
 };
+
+/** Labels in the canonical order, for display: "Agentic · AI-built". */
+export function approachLabels(approaches: readonly string[]): string {
+  return APPROACHES.filter((a) => approaches.includes(a))
+    .map((a) => APPROACH_LABELS[a])
+    .join(" · ");
+}
+
+// ---------------------------------------------------------------------------
+// Worksheet ratings
+// ---------------------------------------------------------------------------
+
+/** The seven scoping-worksheet lenses: column, label, and what it asks. */
+export const RATING_FIELDS = [
+  ["ratingFrequency", "Frequency", "How often the workflow runs"],
+  ["ratingPain", "Pain", "How painful it is today"],
+  ["ratingDataAvailability", "Data availability", "Is the needed data accessible?"],
+  ["ratingRisk", "Risk", "Cost of getting it wrong"],
+  ["ratingOwnershipClarity", "Ownership clarity", "Is it clear who owns it?"],
+  ["ratingEvaluationClarity", "Evaluation clarity", "Is it clear how to judge output?"],
+  ["ratingMaintenanceBurden", "Maintenance burden", "Effort to keep it working"],
+] as const;
+
+export type RatingKey = (typeof RATING_FIELDS)[number][0];
 
 // ---------------------------------------------------------------------------
 // Status pipeline

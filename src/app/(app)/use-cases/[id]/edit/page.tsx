@@ -57,7 +57,7 @@ export default async function EditUseCasePage({
         }
       : null,
     aiTools: uc.aiTools,
-    approach: uc.approach,
+    approaches: uc.approaches,
     currentSteps: uc.currentSteps,
     ratingFrequency: uc.ratingFrequency,
     ratingPain: uc.ratingPain,

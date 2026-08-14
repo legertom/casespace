@@ -105,7 +105,7 @@ export async function POST(req: Request) {
           owner: uc.ownerName,
           authors: uc.authors.map((a) => a.displayName),
           aiTools: uc.aiTools,
-          approach: uc.approach,
+          approaches: uc.approaches,
           currentSteps: uc.currentSteps,
           ratings: {
             frequency: uc.ratingFrequency,
