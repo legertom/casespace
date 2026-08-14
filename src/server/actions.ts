@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { ZodError } from "zod";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/current-user";
 import type { UcStatus } from "@/lib/domain";
@@ -22,19 +23,54 @@ import {
 } from "./use-case-service";
 
 export interface ActionResult {
+  /** The line a person reads. */
   error?: string;
+  /** The underlying failure, verbatim — what makes a bug report actionable. */
+  detail?: string;
+  /** Ties what the user sees to the server log line. */
+  ref?: string;
 }
 
-function messageFor(err: unknown): string {
+/** Short, sayable-over-a-desk, and unique enough to grep the logs for. */
+function errorRef() {
+  return Math.random().toString(36).slice(2, 8).toUpperCase();
+}
+
+function detailOf(err: unknown): string {
+  if (err instanceof ZodError) {
+    return err.issues
+      .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
+      .join("; ");
+  }
+  return err instanceof Error ? err.message : String(err);
+}
+
+/**
+ * Expected failures explain themselves. Anything else gets a reference and
+ * the real message: an internal tool with five users is better served by a
+ * specific error the reporter can paste than by a reassuring vague one.
+ */
+function failure(err: unknown): ActionResult {
   if (
     err instanceof ForbiddenError ||
     err instanceof NotFoundError ||
     err instanceof ValidationError
   ) {
-    return err.message;
+    return { error: err.message };
   }
-  console.error(err);
-  return "Something went wrong. Try again.";
+  if (err instanceof ZodError) {
+    return {
+      error: "That didn't pass validation, so nothing was saved.",
+      detail: detailOf(err),
+    };
+  }
+  const ref = errorRef();
+  console.error(`[casespace error ${ref}]`, err);
+  return {
+    error: "Something went wrong — nothing was saved.",
+    detail: detailOf(err),
+    ref,
+  };
 }
 
 export async function createUseCaseAction(
@@ -47,7 +83,7 @@ export async function createUseCaseAction(
     const input = useCaseCreateSchema.parse(raw);
     id = await createUseCase({ id: user.id, role: user.role }, input, source);
   } catch (err) {
-    return { error: messageFor(err) };
+    return failure(err);
   }
   revalidatePath("/use-cases");
   redirect(`/use-cases/${id}`);
@@ -62,7 +98,7 @@ export async function updateUseCaseAction(
     const input = useCaseUpdateSchema.parse(raw);
     await updateUseCase({ id: user.id, role: user.role }, id, input);
   } catch (err) {
-    return { error: messageFor(err) };
+    return failure(err);
   }
   revalidatePath("/use-cases");
   revalidatePath(`/use-cases/${id}`);
@@ -83,7 +119,7 @@ export async function patchUseCaseAction(
     const input = useCaseUpdateSchema.parse(raw);
     await updateUseCase({ id: user.id, role: user.role }, id, input);
   } catch (err) {
-    return { error: messageFor(err) };
+    return failure(err);
   }
   revalidatePath("/use-cases");
   revalidatePath(`/use-cases/${id}`);
@@ -99,7 +135,7 @@ export async function setStatusAction(
   try {
     await setStatus({ id: user.id, role: user.role }, id, to, note);
   } catch (err) {
-    return { error: messageFor(err) };
+    return failure(err);
   }
   revalidatePath("/use-cases");
   revalidatePath(`/use-cases/${id}`);
@@ -115,7 +151,7 @@ export async function rejectGateAction(
   try {
     await rejectAtQualifiedGate({ id: user.id, role: user.role }, id, reason.trim());
   } catch (err) {
-    return { error: messageFor(err) };
+    return failure(err);
   }
   revalidatePath("/use-cases");
   revalidatePath(`/use-cases/${id}`);
@@ -127,7 +163,7 @@ export async function deleteUseCaseAction(id: string): Promise<ActionResult> {
   try {
     await softDeleteUseCase({ id: user.id, role: user.role }, id);
   } catch (err) {
-    return { error: messageFor(err) };
+    return failure(err);
   }
   revalidatePath("/use-cases");
   redirect("/use-cases");

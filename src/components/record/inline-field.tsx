@@ -5,7 +5,8 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { askAboutField, askCoach } from "@/lib/coach-bus";
 import { RATING_FIELDS, type Department, type RatingKey } from "@/lib/domain";
 import type { PersonRef, UseCaseUpdateInput } from "@/lib/use-case-input";
-import { patchUseCaseAction } from "@/server/actions";
+import { patchUseCaseAction, type ActionResult } from "@/server/actions";
+import { ErrorNote } from "@/components/error-note";
 import { PeoplePicker, type PersonOption } from "@/components/people-picker";
 
 export interface Choice {
@@ -93,7 +94,7 @@ export function InlineField({
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ActionResult | null>(null);
 
   const [draft, setDraft] = useState(() => toDraft(editor, value));
   const [list, setList] = useState<string[]>(
@@ -170,13 +171,13 @@ export function InlineField({
   function save() {
     const patch = buildPatch();
     if (typeof patch === "string") {
-      setError(patch);
+      setError({ error: patch });
       return;
     }
     setError(null);
     startTransition(async () => {
       const res = await patchUseCaseAction(record.id, patch);
-      if (res.error) setError(res.error);
+      if (res.error) setError(res);
       else {
         setEditing(false);
         router.refresh();
@@ -390,11 +391,7 @@ export function InlineField({
             )}
           </div>
 
-          {error && (
-            <p role="alert" className="mt-2 text-sm text-flag">
-              {error}
-            </p>
-          )}
+          {error && <ErrorNote result={error} className="mt-2" />}
           <div className="mt-2 flex items-center gap-2">
             <button
               type="button"

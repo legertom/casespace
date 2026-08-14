@@ -165,6 +165,14 @@ export default async function AppLayout({
                   <Link href="/profile" className="block py-1 hover:text-accent">
                     Profile &amp; API tokens
                   </Link>
+                  {user.role === "admin" && (
+                    <Link
+                      href="/feedback"
+                      className="block py-1 hover:text-accent"
+                    >
+                      Feedback
+                    </Link>
+                  )}
                   <form action={doSignOut}>
                     <button type="submit" className="py-1 hover:text-accent">
                       Sign out

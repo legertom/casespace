@@ -9,7 +9,9 @@ import {
   type Role,
   type UcStatus,
 } from "@/lib/domain";
+import type { ActionResult } from "@/server/actions";
 import { rejectGateAction, setStatusAction } from "@/server/actions";
+import { ErrorNote } from "./error-note";
 
 interface Props {
   id: string;
@@ -23,7 +25,7 @@ interface Props {
 export function StatusControls({ id, current, role, canEdit, roiGaps = [] }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ActionResult | null>(null);
   const [target, setTarget] = useState<UcStatus | "">("");
   const [note, setNote] = useState("");
   const [rejecting, setRejecting] = useState(false);
@@ -41,7 +43,7 @@ export function StatusControls({ id, current, role, canEdit, roiGaps = [] }: Pro
     setError(null);
     startTransition(async () => {
       const res = await setStatusAction(id, target as UcStatus, note.trim() || undefined);
-      if (res.error) setError(res.error);
+      if (res.error) setError(res);
       else {
         setTarget("");
         setNote("");
@@ -54,7 +56,7 @@ export function StatusControls({ id, current, role, canEdit, roiGaps = [] }: Pro
     setError(null);
     startTransition(async () => {
       const res = await rejectGateAction(id, reason);
-      if (res.error) setError(res.error);
+      if (res.error) setError(res);
       else {
         setRejecting(false);
         setReason("");
@@ -186,11 +188,7 @@ export function StatusControls({ id, current, role, canEdit, roiGaps = [] }: Pro
         </div>
       )}
 
-      {error && (
-        <p role="alert" className="border-l-2 border-accent bg-accent-wash px-3 py-2 text-sm">
-          {error}
-        </p>
-      )}
+      {error && <ErrorNote result={error} />}
     </div>
   );
 }

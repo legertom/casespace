@@ -512,3 +512,29 @@ export const notifications = pgTable(
   },
   (t) => [index("notification_user_idx").on(t.userId, t.readAt)],
 );
+
+// ---------------------------------------------------------------------------
+// Product feedback — "this broke" and "this is awkward", captured where it
+// happened rather than in a Slack thread nobody can find later.
+// ---------------------------------------------------------------------------
+
+export const feedback = pgTable(
+  "feedback",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** Null only if the reporter's account is later removed. */
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    /** What they typed. */
+    message: text("message").notNull(),
+    /** The page they were on. */
+    path: text("path"),
+    /** Set when the report came from an error, so it reads as a bug report. */
+    errorRef: text("error_ref"),
+    errorDetail: text("error_detail"),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("feedback_created_idx").on(t.createdAt)],
+);

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import type { ActionResult } from "@/server/actions";
 import { deleteUseCaseAction } from "@/server/actions";
+import { ErrorNote } from "./error-note";
 
 export function DeleteUseCase({ id, title }: { id: string; title: string }) {
   const [confirming, setConfirming] = useState(false);
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ActionResult | null>(null);
 
   if (!confirming) {
     return (
@@ -33,7 +35,7 @@ export function DeleteUseCase({ id, title }: { id: string; title: string }) {
           onClick={() =>
             startTransition(async () => {
               const res = await deleteUseCaseAction(id);
-              if (res?.error) setError(res.error);
+              if (res?.error) setError(res);
             })
           }
           className="rounded-md bg-accent px-3 py-1.5 text-white hover:bg-accent-deep disabled:opacity-60"
@@ -48,7 +50,7 @@ export function DeleteUseCase({ id, title }: { id: string; title: string }) {
           Keep it
         </button>
       </div>
-      {error && <p role="alert">{error}</p>}
+      {error && <ErrorNote result={error} className="mt-2" />}
     </div>
   );
 }

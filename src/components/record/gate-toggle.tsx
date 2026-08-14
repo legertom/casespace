@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { UseCaseUpdateInput } from "@/lib/use-case-input";
-import { patchUseCaseAction } from "@/server/actions";
+import { patchUseCaseAction, type ActionResult } from "@/server/actions";
+import { ErrorNote } from "@/components/error-note";
 
 interface Props {
   id: string;
@@ -21,7 +22,7 @@ interface Props {
 export function GateToggle({ id, field, checked, label, help, children }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ActionResult | null>(null);
 
   function toggle(next: boolean) {
     setError(null);
@@ -29,7 +30,7 @@ export function GateToggle({ id, field, checked, label, help, children }: Props)
       const res = await patchUseCaseAction(id, {
         [field]: next,
       } as UseCaseUpdateInput);
-      if (res.error) setError(res.error);
+      if (res.error) setError(res);
       else router.refresh();
     });
   }
@@ -47,11 +48,7 @@ export function GateToggle({ id, field, checked, label, help, children }: Props)
         />
         <span className={checked ? "" : "text-ink-muted"}>{children}</span>
       </label>
-      {error && (
-        <p role="alert" className="mt-1 pl-6 text-xs text-flag">
-          {error}
-        </p>
-      )}
+      {error && <ErrorNote result={error} className="mt-1" />}
     </li>
   );
 }

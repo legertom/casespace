@@ -15,6 +15,7 @@ import {
   type RatingKey,
 } from "@/lib/domain";
 import type { PersonRef, UseCaseCreateInput } from "@/lib/use-case-input";
+import { ErrorNote } from "./error-note";
 import { PeoplePicker, type PersonOption } from "./people-picker";
 
 export interface TeamOption {
@@ -77,7 +78,7 @@ export function UseCaseForm({
   onSubmit,
 }: Props) {
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ActionResult | null>(null);
 
   const [title, setTitle] = useState(initial.title ?? "");
   const [description, setDescription] = useState(initial.description ?? "");
@@ -198,7 +199,7 @@ export function UseCaseForm({
     };
     startTransition(async () => {
       const result = await onSubmit(input);
-      if (result?.error) setError(result.error);
+      if (result?.error) setError(result);
     });
   }
 
@@ -685,11 +686,7 @@ export function UseCaseForm({
         </section>
       )}
 
-      {error && (
-        <p role="alert" className="border-l-2 border-accent bg-accent-wash px-4 py-3 text-sm">
-          {error}
-        </p>
-      )}
+      {error && <ErrorNote result={error} />}
 
       <div className="flex items-center gap-3 border-t border-hairline pt-6">
         <button
