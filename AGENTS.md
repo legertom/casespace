@@ -23,9 +23,10 @@ an API you have not verified in this repo, read the bundled docs for the
 
 - TypeScript strict; Server Components by default, `'use client'` only where
   interactivity requires it.
-- All program/domain logic (status transitions, Qualified+ derivation,
-  permissions, sparse API defaults) lives in pure modules under
-  `src/lib/` and is covered by Vitest — change logic there, keep tests green.
+- All program/domain logic (status transitions, the two counting rules, the
+  ROI evidence checklist, permissions, sparse API defaults) lives in pure
+  modules under `src/lib/` and is covered by Vitest — change logic there,
+  keep tests green.
 - Every write to a use case's status goes through the transition helpers so
   the status-change log stays complete.
 - The AI never writes records directly: Coach tools emit proposals; a human
@@ -33,10 +34,12 @@ an API you have not verified in this repo, read the bundled docs for the
 - Model choices live in `src/lib/ai/config.ts` only. Log token usage to
   `ai_usage` for every model call.
 - Every page is visible to every authenticated user — What's New included.
-  One read exception: the adoption pulse charts on Goals are admin-only
-  (`canViewPulse`); the casebook and every record's status stay open to all.
-  Admin gating is otherwise for writes (drafting/editing posts, program
-  controls); enforce it server-side, not just in nav.
+  Two read exceptions: the adoption pulse charts on Goals (`canViewPulse`)
+  and the `/wins` report (`canViewWins` — annual-ROI notes may carry
+  dollars, which never appear on open surfaces). The casebook and every
+  record's status stay open to all. Admin gating is otherwise for writes
+  (drafting/editing posts, program controls); enforce it server-side, not
+  just in nav.
 - Seeds (`pnpm db:seed`) are idempotent; demo data (`pnpm db:demo`) is
   dev-only and clearly separated.
 

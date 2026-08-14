@@ -37,6 +37,8 @@ interface DemoUc {
   daysAgoLogged: number;
   /** [status, daysAgo] after birth, in order. */
   moves?: [UcStatus, number][];
+  /** The mandatory annual-ROI note on the move to confirmed_positive_roi. */
+  confirmedNote?: string;
   currentSteps?: string[];
   gates?: Partial<{
     gateNamed: boolean;
@@ -82,14 +84,17 @@ const DEMO: DemoUc[] = [
     owner: "Katie Clarkson",
     aiTools: ["Claude"],
     approach: "prompt",
-    status: "qualified",
+    status: "confirmed_positive_roi",
     daysAgoLogged: 30,
     moves: [
       ["under_construction", 26],
       ["in_testing", 20],
       ["launched", 14],
       ["qualified", 4],
+      ["confirmed_positive_roi", 1],
     ],
+    confirmedNote:
+      "Annual ROI: ~1,100 rep-hours saved per year (4.2 hours per ticket × top-20 intents volume), CSAT flat. Method: Zendesk explore, trailing 4 weeks, annualized.",
     currentSteps: [
       "Rep reads the incoming ticket",
       "Searches the KB for the matching article",
@@ -474,10 +479,23 @@ async function main() {
         revisitOn: d.roi?.revisitOn ?? null,
         status: d.status,
         qualifiedAt:
-          d.status === "qualified"
+          d.status === "qualified" || d.status === "confirmed_positive_roi"
             ? new Date(now - (d.moves?.find((m) => m[0] === "qualified")?.[1] ?? 1) * day)
             : null,
-        approvedById: d.status === "qualified" ? tom.id : null,
+        approvedById:
+          d.status === "qualified" || d.status === "confirmed_positive_roi"
+            ? tom.id
+            : null,
+        roiConfirmedAt:
+          d.status === "confirmed_positive_roi"
+            ? new Date(
+                now -
+                  (d.moves?.find((m) => m[0] === "confirmed_positive_roi")?.[1] ??
+                    1) *
+                    day,
+              )
+            : null,
+        roiConfirmedById: d.status === "confirmed_positive_roi" ? tom.id : null,
         createdById: tom.id,
         createdAt: loggedAt,
       })
@@ -509,6 +527,8 @@ async function main() {
         fromStatus: prev,
         toStatus: to,
         changedById: tom.id,
+        note:
+          to === "confirmed_positive_roi" ? (d.confirmedNote ?? null) : null,
         createdAt: new Date(now - daysAgo * day),
       });
       prev = to;

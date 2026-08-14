@@ -6,7 +6,6 @@ import {
   DEPARTMENT_LABELS,
   STATUS_LABELS,
   documentedGatesComplete,
-  isQualifiedPlus,
   roiGaps,
 } from "@/lib/domain";
 import { fmtDate } from "@/lib/format";
@@ -14,7 +13,7 @@ import { canEditUseCase } from "@/lib/permissions";
 import { getUseCase } from "@/server/use-case-queries";
 import { DeleteUseCase } from "@/components/delete-use-case";
 import { PersonLink, PersonLinks } from "@/components/person-link";
-import { QualifiedPlusBadge, StatusBadge } from "@/components/status-badge";
+import { ConfirmedRoiBadge, StatusBadge } from "@/components/status-badge";
 import { StatusControls } from "@/components/status-controls";
 
 const RATING_LABELS: [keyof RatingSource, string][] = [
@@ -86,7 +85,7 @@ export default async function UseCaseDetailPage({
         .filter((x): x is string => !!x),
     },
   );
-  const qualifiedPlus = isQualifiedPlus(uc);
+  const confirmed = uc.status === "confirmed_positive_roi";
   const gates = documentedGatesComplete(uc);
   const gaps = roiGaps(uc);
 
@@ -103,7 +102,7 @@ export default async function UseCaseDetailPage({
           <h1 className="mt-1 font-serif text-4xl leading-tight">{uc.title}</h1>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <StatusBadge status={uc.status} />
-            {qualifiedPlus && <QualifiedPlusBadge />}
+            {confirmed && <ConfirmedRoiBadge />}
             {uc.rejectionReason && editable && (
               <span className="text-sm text-flag">
                 Rejected at the gate — see note below
@@ -268,7 +267,7 @@ export default async function UseCaseDetailPage({
               {uc.status === "qualified" && gaps.length > 0 && (
                 <div className="mt-3 border-t border-hairline pt-3">
                   <p className="text-sm font-medium">
-                    Standing between this record and Qualified+:
+                    Standing between this record and Confirmed Positive ROI:
                   </p>
                   <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-sm text-ink-muted">
                     {gaps.map((g) => (
@@ -277,10 +276,12 @@ export default async function UseCaseDetailPage({
                   </ul>
                 </div>
               )}
-              {qualifiedPlus && (
+              {confirmed && (
                 <p className="mt-3 border-t border-hairline pt-3 text-sm">
-                  <QualifiedPlusBadge /> — derived automatically: Qualified with
-                  complete, positive ROI scoring. Never hand-set.
+                  <ConfirmedRoiBadge /> — confirmed
+                  {uc.roiConfirmedAt ? ` ${fmtDate(uc.roiConfirmedAt)}` : ""}. The
+                  annual-ROI note is in the history below and rolls up into the
+                  end-of-year wins report.
                 </p>
               )}
             </div>
@@ -422,6 +423,7 @@ export default async function UseCaseDetailPage({
             current={uc.status}
             role={user.role}
             canEdit={editable}
+            roiGaps={gaps}
           />
         </aside>
       </div>

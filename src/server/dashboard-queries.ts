@@ -12,8 +12,9 @@ import {
 } from "@/db/schema";
 import {
   STATUSES,
+  countsTowardDocumented,
+  countsTowardRoi,
   documentedGatesComplete,
-  isQualifiedPlus,
   isStale,
   type Department,
   type UcStatus,
@@ -21,8 +22,10 @@ import {
 import { getStaleDays } from "./reference";
 
 export interface ProgramCounts {
-  qualified: number; // status = qualified (the 45 counts these)
-  qualifiedPlus: number; // derived subset (the 15)
+  /** Qualified or better — the 45 counts these. */
+  documented: number;
+  /** Status = confirmed_positive_roi — the 15. Always a subset of documented. */
+  confirmedRoi: number;
   byStatus: Record<UcStatus, number>;
   total: number;
   /** Logged and moving, but not yet Qualified — real work the 45 can't show. */
@@ -42,19 +45,20 @@ export async function getProgramCounts(): Promise<ProgramCounts> {
     UcStatus,
     number
   >;
-  let qualifiedPlus = 0;
   let readyForGate = 0;
   for (const r of rows) {
     byStatus[r.status]++;
-    if (isQualifiedPlus(r)) qualifiedPlus++;
-    if (r.status !== "qualified" && documentedGatesComplete(r)) readyForGate++;
+    if (!countsTowardDocumented(r.status) && documentedGatesComplete(r)) {
+      readyForGate++;
+    }
   }
+  const documented = rows.filter((r) => countsTowardDocumented(r.status)).length;
   return {
-    qualified: byStatus.qualified,
-    qualifiedPlus,
+    documented,
+    confirmedRoi: byStatus.confirmed_positive_roi,
     byStatus,
     total: rows.length,
-    inFlight: rows.length - byStatus.qualified,
+    inFlight: rows.length - documented,
     readyForGate,
   };
 }
@@ -63,8 +67,8 @@ export interface EltProgressRow {
   id: string | null; // null = unallocated bucket
   name: string;
   target: number | null;
-  qualifiedPlus: number;
-  qualifiedInFlight: number; // qualified but ROI not complete yet
+  confirmedRoi: number;
+  qualifiedInFlight: number; // qualified, ROI not yet confirmed
   inPipeline: number; // logged and moving, not yet Qualified
   note: string | null;
 }
@@ -83,7 +87,7 @@ export async function getEltProgress(): Promise<EltProgressRow[]> {
     id: o.id,
     name: o.name,
     target: o.target,
-    qualifiedPlus: 0,
+    confirmedRoi: 0,
     qualifiedInFlight: 0,
     inPipeline: 0,
     note: o.note,
@@ -92,7 +96,7 @@ export async function getEltProgress(): Promise<EltProgressRow[]> {
     id: null,
     name: "Unallocated",
     target: null,
-    qualifiedPlus: 0,
+    confirmedRoi: 0,
     qualifiedInFlight: 0,
     inPipeline: 0,
     note: "Work in departments with no confirmed ELT owner (Business Operations, Business Analytics).",
@@ -100,12 +104,12 @@ export async function getEltProgress(): Promise<EltProgressRow[]> {
 
   for (const r of rows) {
     const bucket = result.find((o) => o.id === r.eltOrgId) ?? unallocated;
-    if (r.status !== "qualified") bucket.inPipeline++;
-    else if (isQualifiedPlus(r)) bucket.qualifiedPlus++;
-    else bucket.qualifiedInFlight++;
+    if (countsTowardRoi(r.status)) bucket.confirmedRoi++;
+    else if (r.status === "qualified") bucket.qualifiedInFlight++;
+    else bucket.inPipeline++;
   }
   if (
-    unallocated.qualifiedPlus +
+    unallocated.confirmedRoi +
       unallocated.qualifiedInFlight +
       unallocated.inPipeline >
     0
@@ -170,7 +174,7 @@ export interface MovementItem {
   title: string;
   fromStatus: UcStatus | null;
   toStatus: UcStatus;
-  becameQualifiedPlus: boolean;
+  reachedConfirmedRoi: boolean;
   changedByName: string | null;
   createdAt: Date;
 }
@@ -200,7 +204,7 @@ export async function getMovement(days = 7): Promise<MovementItem[]> {
     title: r.uc.title,
     fromStatus: r.fromStatus,
     toStatus: r.toStatus,
-    becameQualifiedPlus: r.toStatus === "qualified" && isQualifiedPlus(r.uc),
+    reachedConfirmedRoi: countsTowardRoi(r.toStatus),
     changedByName: r.changedByName,
     createdAt: r.createdAt,
   }));
@@ -235,7 +239,7 @@ export async function getAttentionFlags(): Promise<AttentionFlags> {
 
   const now = new Date();
   const stale = cases
-    .filter((c) => c.status !== "qualified")
+    .filter((c) => !countsTowardDocumented(c.status))
     .map((c) => {
       const last = lastChange.get(c.id) ?? c.createdAt;
       return {

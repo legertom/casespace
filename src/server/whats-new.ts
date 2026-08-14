@@ -20,7 +20,6 @@ import {
   DEPARTMENT_LABELS,
   STATUS_LABELS,
   etDateString,
-  isQualifiedPlus,
   statusRank,
   type UcStatus,
 } from "@/lib/domain";
@@ -103,7 +102,12 @@ async function gatherWeekData(weekStart: string) {
     .filter((c) => c.change.toStatus === "qualified")
     .map((c) => ({
       ...describe(c.uc),
-      nowQualifiedPlus: isQualifiedPlus(c.uc),
+      authorsCredit: true,
+    }));
+  const newConfirmedRoi = changes
+    .filter((c) => c.change.toStatus === "confirmed_positive_roi")
+    .map((c) => ({
+      ...describe(c.uc),
       authorsCredit: true,
     }));
 
@@ -127,6 +131,7 @@ async function gatherWeekData(weekStart: string) {
     promotions,
     regressions,
     newQualified,
+    newConfirmedRoi,
     pulseReadings: snaps.map((s) => ({
       metric: s.metric.label,
       value: s.snap.value,
@@ -147,7 +152,7 @@ Structure (markdown):
 - Start with "# " and a specific, quiet headline (not "Weekly update").
 - An opening paragraph: the week in three sentences, anchored in the two numbers and what is in flight behind them. Never editorialize about being ahead of or behind a pace — the program does not track it that way.
 - "## New in the casebook" — each new record with who logged it and which team it serves. Skip the section if empty ("A quiet week for new entries" belongs in the opener instead).
-- "## Movement" — promotions worth noting; call out anything reaching Qualified or Qualified+ by name with the people behind it. Include demotions/rejections plainly with their reason.
+- "## Movement" — promotions worth noting; call out anything reaching Qualified or Confirmed Positive ROI by name with the people behind it (a confirmed win is the week's biggest news). Include demotions/rejections plainly with their reason. Never quote the ROI confirmation note — it may contain dollars.
 - "## The 15" — per-ELT-org state in prose, including the honest unallocated bucket.
 - "## Pulse" — only if there are new readings this week; compare to baseline and target.
 - "## Worth attention this week" — stale records and launched-but-unscored ROI, each with a concrete next step.

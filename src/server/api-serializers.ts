@@ -1,7 +1,7 @@
 import "server-only";
 import {
+  countsTowardRoi,
   documentedGatesComplete,
-  isQualifiedPlus,
   roiGaps,
 } from "@/lib/domain";
 import type { UseCaseRow } from "./use-case-queries";
@@ -13,7 +13,7 @@ export function toApiUseCase(uc: UseCaseRow) {
     title: uc.title,
     description: uc.description,
     status: uc.status,
-    qualifiedPlus: isQualifiedPlus(uc),
+    confirmedPositiveRoi: countsTowardRoi(uc.status),
     department: uc.department,
     team: uc.teamName,
     eltOrg: uc.eltOrgName,
@@ -53,7 +53,7 @@ export function toApiUseCase(uc: UseCaseRow) {
       netImpactStatement: uc.netImpactStatement,
       isPositive: uc.isPositive,
       revisitOn: uc.revisitOn,
-      gapsToQualifiedPlus: roiGaps(uc),
+      gapsToConfirmation: roiGaps(uc),
     },
     rejectionReason: uc.rejectionReason,
     createdAt: uc.createdAt,

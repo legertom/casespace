@@ -78,8 +78,8 @@ export function CoachChat({
             <p className="mt-2 max-w-md leading-relaxed">
               I can walk you through logging a use case, check the scoreboard,
               review a record&rsquo;s ROI evidence, or explain what
-              &ldquo;documented&rdquo; and &ldquo;Qualified+&rdquo; take.
-              I never save anything without your say-so.
+              &ldquo;documented&rdquo; and &ldquo;Confirmed Positive ROI&rdquo;
+              take. I never save anything without your say-so.
             </p>
           </div>
         )}

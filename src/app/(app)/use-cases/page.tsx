@@ -5,7 +5,7 @@ import {
   DEPARTMENT_LABELS,
   STATUSES,
   STATUS_LABELS,
-  isQualifiedPlus,
+  countsTowardDocumented,
   type Department,
   type UcStatus,
 } from "@/lib/domain";
@@ -13,7 +13,7 @@ import { listNames } from "@/lib/format";
 import { canCreateUseCase } from "@/lib/permissions";
 import { getPersonName, listEltOrgs } from "@/server/reference";
 import { listUseCases } from "@/server/use-case-queries";
-import { QualifiedPlusBadge, StatusBadge } from "@/components/status-badge";
+import { StatusBadge } from "@/components/status-badge";
 
 export const metadata = { title: "Use cases" };
 
@@ -33,9 +33,14 @@ export default async function UseCasesPage({
 }) {
   const user = await requireUser();
   const sp = await searchParams;
-  const status = STATUSES.includes(sp.status as UcStatus)
-    ? (sp.status as UcStatus)
+  // "qualified_plus" is the old derived filter — old links land on the status
+  // that replaced it. "documented" is the 45's slice: Qualified or better.
+  const rawStatus =
+    sp.status === "qualified_plus" ? "confirmed_positive_roi" : sp.status;
+  const status = STATUSES.includes(rawStatus as UcStatus)
+    ? (rawStatus as UcStatus)
     : undefined;
+  const documentedOnly = rawStatus === "documented";
   const department = DEPARTMENTS.includes(sp.department as Department)
     ? (sp.department as Department)
     : undefined;
@@ -67,15 +72,12 @@ export default async function UseCasesPage({
 
   const rows = await listUseCases({ status, ...scope });
 
-  const qualifiedPlus = sp.status === "qualified_plus";
-  const visible = qualifiedPlus
-    ? (await listUseCases({ status: "qualified", ...scope })).filter((r) =>
-        isQualifiedPlus(r),
-      )
+  const visible = documentedOnly
+    ? rows.filter((r) => countsTowardDocumented(r.status))
     : rows;
 
   const hasFilters = Boolean(
-    q || status || department || mine || qualifiedPlus || personId || eltLabel,
+    q || status || department || mine || documentedOnly || personId || eltLabel,
   );
   // A filter that matches nothing shouldn't read as "the casebook is empty" —
   // tell them what does exist and give them one click to it.
@@ -120,7 +122,7 @@ export default async function UseCasesPage({
         />
         <select
           name="status"
-          defaultValue={qualifiedPlus ? "qualified_plus" : status ?? ""}
+          defaultValue={documentedOnly ? "documented" : status ?? ""}
           className="rounded-md border border-hairline-strong bg-surface px-3 py-1.5 text-sm"
           aria-label="Filter by status"
         >
@@ -130,7 +132,7 @@ export default async function UseCasesPage({
               {STATUS_LABELS[s]}
             </option>
           ))}
-          <option value="qualified_plus">Qualified+ (derived)</option>
+          <option value="documented">Qualified or better (the 45)</option>
         </select>
         <select
           name="department"
@@ -208,7 +210,6 @@ export default async function UseCasesPage({
                 <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
                   <div className="flex min-w-0 items-baseline gap-2.5">
                     <span className="truncate font-serif text-lg">{uc.title}</span>
-                    {isQualifiedPlus(uc) && <QualifiedPlusBadge />}
                   </div>
                   <StatusBadge status={uc.status} />
                 </div>

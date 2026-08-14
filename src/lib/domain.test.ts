@@ -2,19 +2,18 @@ import { describe, expect, it } from "vitest";
 import {
   canSetStatus,
   countsTowardDocumented,
+  countsTowardRoi,
   documentedGatesComplete,
   etDateString,
-  isQualifiedPlus,
   isStale,
   roiComplete,
   roiGaps,
   suggestEltOrg,
   targetSumWarning,
-  type QualifiedPlusFields,
+  type RoiFields,
 } from "./domain";
 
-const completeRoi: QualifiedPlusFields = {
-  status: "qualified",
+const completeRoi: RoiFields = {
   successCriterion: "Ticket first-response time under 2 hours",
   successCriterionMet: "yes",
   baselineMetric: "Median first-response time",
@@ -27,13 +26,9 @@ const completeRoi: QualifiedPlusFields = {
   roiStatus: "complete",
 };
 
-describe("Qualified+ derivation", () => {
-  it("is Qualified+ when qualified and ROI scoring is complete", () => {
-    expect(isQualifiedPlus(completeRoi)).toBe(true);
-  });
-
-  it("is not Qualified+ below Qualified even with complete ROI", () => {
-    expect(isQualifiedPlus({ ...completeRoi, status: "launched" })).toBe(false);
+describe("ROI evidence checklist", () => {
+  it("is complete with every field in place", () => {
+    expect(roiComplete(completeRoi)).toBe(true);
   });
 
   it.each([
@@ -49,7 +44,7 @@ describe("Qualified+ derivation", () => {
     ["negative outcome", { isPositive: false }],
     ["roiStatus in_progress", { roiStatus: "in_progress" as const }],
   ])("fails without %s", (_label, patch) => {
-    expect(isQualifiedPlus({ ...completeRoi, ...patch })).toBe(false);
+    expect(roiComplete({ ...completeRoi, ...patch })).toBe(false);
   });
 
   it("lists gaps for a thin record", () => {
@@ -84,9 +79,16 @@ describe("documented gates", () => {
     );
   });
 
-  it("the 45 counts Qualified only", () => {
+  it("the 45 counts Qualified or better", () => {
     expect(countsTowardDocumented("qualified")).toBe(true);
+    expect(countsTowardDocumented("confirmed_positive_roi")).toBe(true);
     expect(countsTowardDocumented("launched")).toBe(false);
+  });
+
+  it("the 15 counts only Confirmed Positive ROI — a subset of the 45", () => {
+    expect(countsTowardRoi("confirmed_positive_roi")).toBe(true);
+    expect(countsTowardRoi("qualified")).toBe(false);
+    expect(countsTowardRoi("launched")).toBe(false);
   });
 });
 
@@ -113,6 +115,30 @@ describe("status transitions", () => {
   it("viewers may not change status; no-ops are rejected", () => {
     expect(canSetStatus("viewer", "in_discovery", "launched")).toBe(false);
     expect(canSetStatus("admin", "launched", "launched")).toBe(false);
+  });
+
+  it("Confirmed Positive ROI is admin-only and reachable only from Qualified", () => {
+    expect(canSetStatus("admin", "qualified", "confirmed_positive_roi")).toBe(
+      true,
+    );
+    expect(canSetStatus("admin", "launched", "confirmed_positive_roi")).toBe(
+      false,
+    );
+    expect(
+      canSetStatus("contributor", "qualified", "confirmed_positive_roi"),
+    ).toBe(false);
+  });
+
+  it("demotion from Confirmed Positive ROI is admin-only", () => {
+    expect(canSetStatus("admin", "confirmed_positive_roi", "qualified")).toBe(
+      true,
+    );
+    expect(canSetStatus("admin", "confirmed_positive_roi", "launched")).toBe(
+      true,
+    );
+    expect(
+      canSetStatus("contributor", "confirmed_positive_roi", "qualified"),
+    ).toBe(false);
   });
 });
 

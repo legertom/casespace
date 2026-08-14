@@ -26,7 +26,7 @@ import {
   STATUSES,
   documentedGatesComplete,
   etDateString,
-  isQualifiedPlus,
+  countsTowardRoi,
   roiGaps,
 } from "@/lib/domain";
 import { buildProgressReport } from "@/server/progress-report";
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
           id: r.id,
           title: r.title,
           status: r.status,
-          qualifiedPlus: isQualifiedPlus(r),
+          confirmedPositiveRoi: countsTowardRoi(r.status),
           department: r.department,
           team: r.teamName,
           owner: r.ownerName,
@@ -98,7 +98,7 @@ export async function POST(req: Request) {
           title: uc.title,
           description: uc.description,
           status: uc.status,
-          qualifiedPlus: isQualifiedPlus(uc),
+          confirmedPositiveRoi: countsTowardRoi(uc.status),
           department: uc.department,
           team: uc.teamName,
           eltOrg: uc.eltOrgName,
@@ -137,7 +137,7 @@ export async function POST(req: Request) {
             netImpactStatement: uc.netImpactStatement,
             isPositive: uc.isPositive,
             revisitOn: uc.revisitOn,
-            gapsToQualifiedPlus: roiGaps(uc),
+            gapsToConfirmation: roiGaps(uc),
           },
           rejectionReason: uc.rejectionReason,
           recentHistory: uc.history.slice(0, 6).map((h) => ({

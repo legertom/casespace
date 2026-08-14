@@ -10,6 +10,7 @@ const DOT_CLASSES: Record<UcStatus, string> = {
   in_testing: "bg-st-testing",
   launched: "bg-st-launched",
   qualified: "bg-st-qualified",
+  confirmed_positive_roi: "bg-st-confirmed",
 };
 
 /** Status chip: colored dot + label, never color alone. */
@@ -25,14 +26,14 @@ export function StatusBadge({ status }: { status: UcStatus }) {
   );
 }
 
-/** Derived top-tier marker: Qualified with complete, positive ROI. */
-export function QualifiedPlusBadge() {
+/** Top-tier marker: Kate confirmed measured, positive annual ROI. */
+export function ConfirmedRoiBadge() {
   return (
     <span
-      title="Qualified with complete, positive ROI scoring — derived automatically, never hand-set."
-      className="inline-flex items-center rounded-sm bg-st-qualifiedplus px-1.5 py-0.5 text-xs font-semibold text-white"
+      title="Kate confirmed measured, positive annual ROI — counts toward the 15 (and the 45)."
+      className="inline-flex items-center rounded-sm bg-st-confirmed px-1.5 py-0.5 text-xs font-semibold text-white"
     >
-      Qualified+
+      Confirmed ROI
     </span>
   );
 }

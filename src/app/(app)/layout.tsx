@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/current-user";
 import { signOut } from "@/auth";
 import { aiConfigured } from "@/lib/ai/config";
-import { canCreateUseCase } from "@/lib/permissions";
+import { canCreateUseCase, canViewWins } from "@/lib/permissions";
 import { VIEW_AS_LABELS, VIEW_AS_PROSE, VIEW_AS_ROLES } from "@/lib/view-as";
 import { startViewAsAction, stopViewAsAction } from "@/server/actions-view-as";
 import { CoachLauncher } from "@/components/coach/coach-launcher";
@@ -44,6 +44,11 @@ export default async function AppLayout({
               <Link href="/goals" className="hover:text-ink">
                 Goals
               </Link>
+              {canViewWins(user.role) && (
+                <Link href="/wins" className="hover:text-ink">
+                  Wins
+                </Link>
+              )}
               <Link href="/roster" className="hover:text-ink">
                 AI Leads
               </Link>

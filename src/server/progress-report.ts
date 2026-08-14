@@ -24,21 +24,21 @@ export async function buildProgressReport() {
   return {
     asOf: today,
     documented: {
-      actual: counts.qualified,
+      actual: counts.documented,
       target: TARGET_DOCUMENTED,
       inFlight: counts.inFlight,
       readyForGate: counts.readyForGate,
     },
-    qualifiedPlus: {
-      actual: counts.qualifiedPlus,
+    confirmedPositiveRoi: {
+      actual: counts.confirmedRoi,
       target: TARGET_ROI,
-      awaitingRoi: counts.qualified - counts.qualifiedPlus,
+      awaitingRoiConfirmation: counts.byStatus.qualified,
     },
     pipeline: counts.byStatus,
     byEltOrg: elt.map((o) => ({
       name: o.name,
       target: o.target,
-      qualifiedPlus: o.qualifiedPlus,
+      confirmedPositiveRoi: o.confirmedRoi,
       qualifiedAwaitingRoi: o.qualifiedInFlight,
     })),
     teams: coverage.map((t) => ({

@@ -8,9 +8,10 @@ The program (KR 5 — AI Adoption, owned by Kate Schaff, run by Tom Leger):
 - **45+ documented AI use cases** by December 31 — "documented" means four
   gates: a named workflow with a clear description, an identified AI tool &
   approach, adoption evidence beyond the author(s), and a named owner.
-- **15 with quantified, positive ROI** ("Qualified+") — allocated across ELT
-  owners, derived automatically when a Qualified record's ROI scoring is
-  complete. Never hand-set.
+- **15 with quantified, positive ROI** (**Confirmed Positive ROI**) —
+  allocated across ELT owners. An explicit stage after Qualified, set only by
+  an admin, and only with a note articulating the annual ROI. Those notes
+  roll up on the admin-only `/wins` page for the end-of-year report.
 - Adoption pulse goals (daily-use and readiness percentages) tracked from
   June baselines.
 
@@ -46,10 +47,10 @@ dev login so you can try any role: `tom.leger@clever.com` (admin),
 any roster email like `vamsi.chunduru@clever.com` (contributor), any other
 `clever.com` address (viewer).
 
-`pnpm test` runs the domain suite — status transitions, Qualified+
-derivation, permissions, sparse-create defaults, target-sum warnings,
-view-as role resolution. `pnpm typecheck` and `pnpm build` should both
-stay green.
+`pnpm test` runs the domain suite — status transitions, the two counting
+rules, the ROI evidence checklist, permissions, sparse-create defaults,
+target-sum warnings, view-as role resolution. `pnpm typecheck` and
+`pnpm build` should both stay green.
 
 ## Deploying to Vercel
 
@@ -113,12 +114,15 @@ Tools: `log_use_case` (title + description suffice), `update_use_case`,
 
 ## How the numbers work
 
-- **The 45** counts records at status Qualified (the admin gate that records
-  Kate's approval — rejections drop a record back to Launched with a visible
-  reason).
-- **The 15** counts Qualified+ — derived, never set: Qualified **and**
-  success criterion defined & met, baseline + post measured with the same
-  methodology, a plain-English net-impact statement, and a positive outcome.
+- **The 45** counts records at Qualified **or better** — Qualified is the
+  admin gate that records Kate's approval (rejections drop a record back to
+  Launched with a visible reason), and Confirmed Positive ROI still counts.
+- **The 15** counts records at **Confirmed Positive ROI** — an explicit
+  admin-only promotion from Qualified that requires a note articulating the
+  annual ROI. Always a subset of the 45. The ROI panel (success criterion,
+  baseline + post with the same methodology, net-impact statement, positive
+  outcome) is the evidence checklist behind the decision — gaps warn at
+  confirmation time but never block; the call is Kate's.
 - **In flight** sits beside the two numbers but is never folded into them:
   records logged but not yet Qualified, and how many already have all four
   documented gates met (waiting only on the Qualified gate). The program

@@ -16,9 +16,11 @@ interface Props {
   current: UcStatus;
   role: Role;
   canEdit: boolean;
+  /** Open items from the ROI checklist — warns (never blocks) on confirmation. */
+  roiGaps?: string[];
 }
 
-export function StatusControls({ id, current, role, canEdit }: Props) {
+export function StatusControls({ id, current, role, canEdit, roiGaps = [] }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +33,11 @@ export function StatusControls({ id, current, role, canEdit }: Props) {
   const options = STATUSES.filter((s) => canSetStatus(actorRole, current, s));
   if (options.length === 0 && role !== "admin") return null;
 
+  const confirming = target === "confirmed_positive_roi";
+
   function apply() {
     if (!target) return;
+    if (confirming && !note.trim()) return;
     setError(null);
     startTransition(async () => {
       const res = await setStatusAction(id, target as UcStatus, note.trim() || undefined);
@@ -75,23 +80,61 @@ export function StatusControls({ id, current, role, canEdit }: Props) {
             {options.map((s) => (
               <option key={s} value={s}>
                 {STATUS_LABELS[s]}
-                {s === "qualified" ? " (records Kate's approval)" : ""}
+                {s === "qualified"
+                  ? " (records Kate's approval)"
+                  : s === "confirmed_positive_roi"
+                    ? " (counts toward the 15)"
+                    : ""}
               </option>
             ))}
           </select>
           {target && (
             <>
-              <input
-                aria-label="Note (optional)"
-                placeholder="Note (optional)"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="w-full rounded-md border border-hairline-strong bg-surface px-3 py-2 text-sm"
-              />
+              {confirming ? (
+                <>
+                  {roiGaps.length > 0 && (
+                    <div className="border-l-2 border-flag bg-flag-wash px-3 py-2 text-sm">
+                      <p className="font-medium">
+                        Heads up — the ROI checklist still lists:
+                      </p>
+                      <ul className="mt-1 list-disc space-y-0.5 pl-5 text-ink-muted">
+                        {roiGaps.map((g) => (
+                          <li key={g}>{g}</li>
+                        ))}
+                      </ul>
+                      <p className="mt-1 text-ink-muted">
+                        You can still confirm — the call is yours.
+                      </p>
+                    </div>
+                  )}
+                  <label
+                    htmlFor="annual-roi-note"
+                    className="block text-sm font-medium"
+                  >
+                    Annual ROI (required)
+                  </label>
+                  <textarea
+                    id="annual-roi-note"
+                    placeholder="State the measured annual ROI — this line rolls up into the end-of-year wins report."
+                    rows={3}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className="w-full rounded-md border border-hairline-strong bg-surface px-3 py-2 text-sm"
+                  />
+                </>
+              ) : (
+                <input
+                  aria-label="Note (optional)"
+                  placeholder="Note (optional)"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className="w-full rounded-md border border-hairline-strong bg-surface px-3 py-2 text-sm"
+                />
+              )}
               <button
                 type="button"
                 onClick={apply}
-                disabled={pending}
+                disabled={pending || (confirming && !note.trim())}
                 className="w-full rounded-md bg-ink px-3 py-2 text-sm text-paper hover:bg-ink/85 disabled:opacity-60"
               >
                 {pending ? "Applying…" : `Move to ${STATUS_LABELS[target as UcStatus]}`}

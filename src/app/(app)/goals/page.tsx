@@ -31,12 +31,12 @@ export default async function GoalsPage() {
         {[
           {
             label: "Documented use cases (Qualified or better)",
-            actual: counts.qualified,
+            actual: counts.documented,
             target: TARGET_DOCUMENTED,
           },
           {
-            label: "Quantified positive ROI (Qualified+)",
-            actual: counts.qualifiedPlus,
+            label: "Quantified positive ROI (Confirmed)",
+            actual: counts.confirmedRoi,
             target: TARGET_ROI,
           },
         ].map((g) => (

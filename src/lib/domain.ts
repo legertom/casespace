@@ -10,7 +10,7 @@
 export const PROGRAM_START = "2026-07-01";
 export const PROGRAM_END = "2026-12-31";
 export const TARGET_DOCUMENTED = 45; // Qualified or better
-export const TARGET_ROI = 15; // Qualified+
+export const TARGET_ROI = 15; // Confirmed Positive ROI
 export const DEFAULT_STALE_DAYS = 21;
 export const WORKFLOWS_PER_LEAD = 2;
 
@@ -72,6 +72,7 @@ export const STATUSES = [
   "in_testing",
   "launched",
   "qualified",
+  "confirmed_positive_roi",
 ] as const;
 
 export type UcStatus = (typeof STATUSES)[number];
@@ -83,6 +84,7 @@ export const STATUS_LABELS: Record<UcStatus, string> = {
   in_testing: "In Testing",
   launched: "Launched",
   qualified: "Qualified",
+  confirmed_positive_roi: "Confirmed Positive ROI",
 };
 
 export const STATUS_SHORT_LABELS: Record<UcStatus, string> = {
@@ -92,6 +94,7 @@ export const STATUS_SHORT_LABELS: Record<UcStatus, string> = {
   in_testing: "Testing",
   launched: "Launched",
   qualified: "Qualified",
+  confirmed_positive_roi: "ROI Confirmed",
 };
 
 export function statusRank(s: UcStatus): number {
@@ -104,18 +107,24 @@ export type Role = "viewer" | "contributor" | "admin";
  * Who may move a record from one status to another.
  * - Editors move records freely among the five pre-Qualified statuses
  *   (forward or back — people fix mistakes).
- * - Anything entering or leaving Qualified is admin-only: Qualified records
- *   Kate's approval, and demotions from it are equally consequential.
+ * - Anything entering or leaving Qualified or Confirmed Positive ROI is
+ *   admin-only: both record Kate's decisions.
+ * - Confirmed Positive ROI is reachable only from Qualified — the 15 is a
+ *   subset of the 45 by construction, and Kate's flow is qualify first,
+ *   confirm ROI once it's measured.
  */
 export function canSetStatus(role: Role, from: UcStatus, to: UcStatus): boolean {
   if (role === "viewer") return false;
   if (from === to) return false;
-  if (from === "qualified" || to === "qualified") return role === "admin";
+  if (to === "confirmed_positive_roi" && from !== "qualified") return false;
+  if (statusRank(from) >= statusRank("qualified") || to === "qualified") {
+    return role === "admin";
+  }
   return true;
 }
 
 // ---------------------------------------------------------------------------
-// Documented gates & Qualified+ derivation
+// Documented gates & the ROI evidence checklist
 // ---------------------------------------------------------------------------
 
 export interface GateFields {
@@ -179,18 +188,18 @@ export function roiGaps(uc: RoiFields): string[] {
   return gaps;
 }
 
-export interface QualifiedPlusFields extends RoiFields {
-  status: UcStatus;
-}
-
-/** Qualified+ is derived, never hand-set: Qualified AND ROI scoring complete. */
-export function isQualifiedPlus(uc: QualifiedPlusFields): boolean {
-  return uc.status === "qualified" && roiComplete(uc);
-}
-
 /** The 45 counts records at Qualified or better. */
 export function countsTowardDocumented(status: UcStatus): boolean {
-  return status === "qualified";
+  return status === "qualified" || status === "confirmed_positive_roi";
+}
+
+/**
+ * The 15 counts only records Kate has moved to Confirmed Positive ROI —
+ * an explicit stage (with a mandatory annual-ROI note), never derived.
+ * Every confirmed record also counts toward the 45.
+ */
+export function countsTowardRoi(status: UcStatus): boolean {
+  return status === "confirmed_positive_roi";
 }
 
 // ---------------------------------------------------------------------------

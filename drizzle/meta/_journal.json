@@ -15,6 +15,13 @@
       "when": 1785934601523,
       "tag": "0001_thin_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786665509203,
+      "tag": "0002_equal_shooting_star",
+      "breakpoints": true
     }
   ]
 }

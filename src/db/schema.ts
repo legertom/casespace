@@ -44,6 +44,7 @@ export const ucStatusEnum = pgEnum("uc_status", [
   "in_testing",
   "launched",
   "qualified",
+  "confirmed_positive_roi",
 ]);
 
 export const approachEnum = pgEnum("approach", [
@@ -282,6 +283,9 @@ export const useCases = pgTable("use_cases", {
   status: ucStatusEnum("status").notNull().default("in_discovery"),
   qualifiedAt: timestamp("qualified_at", { withTimezone: true }),
   approvedById: uuid("approved_by_id").references(() => users.id),
+  /** Set when Kate confirms positive ROI; cleared on demotion. The annual-ROI note lives in status_changes. */
+  roiConfirmedAt: timestamp("roi_confirmed_at", { withTimezone: true }),
+  roiConfirmedById: uuid("roi_confirmed_by_id").references(() => users.id),
   /** Reason from the most recent rejection at the Qualified gate; cleared on promotion. */
   rejectionReason: text("rejection_reason"),
 

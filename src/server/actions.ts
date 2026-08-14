@@ -18,6 +18,7 @@ import {
   setStatus,
   softDeleteUseCase,
   updateUseCase,
+  ValidationError,
 } from "./use-case-service";
 
 export interface ActionResult {
@@ -25,7 +26,11 @@ export interface ActionResult {
 }
 
 function messageFor(err: unknown): string {
-  if (err instanceof ForbiddenError || err instanceof NotFoundError) {
+  if (
+    err instanceof ForbiddenError ||
+    err instanceof NotFoundError ||
+    err instanceof ValidationError
+  ) {
     return err.message;
   }
   console.error(err);

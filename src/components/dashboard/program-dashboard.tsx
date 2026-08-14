@@ -26,6 +26,7 @@ const PIPELINE_RAMP: Record<UcStatus, string> = {
   in_testing: "#b37d55",
   launched: "#9a5a31",
   qualified: "#7a3a18",
+  confirmed_positive_roi: "#5c2a0e",
 };
 
 function HeroNumber({
@@ -89,19 +90,19 @@ function HeroNumber({
  * throughout so the ramp reads as maturity rather than as categories.
  */
 const ELT_SHADES = {
-  qualifiedPlus: "bg-st-qualifiedplus",
+  confirmedRoi: "bg-st-confirmed",
   qualifiedInFlight: "bg-st-qualified",
   inPipeline: "bg-st-qualified/45",
   empty: "bg-hairline",
 } as const;
 
 function eltSlotClass(i: number, o: EltProgressRow, target: number): string {
-  const qp = Math.min(o.qualifiedPlus, target);
-  const q = Math.min(o.qualifiedInFlight, target - qp);
-  const p = Math.min(o.inPipeline, target - qp - q);
-  if (i < qp) return ELT_SHADES.qualifiedPlus;
-  if (i < qp + q) return ELT_SHADES.qualifiedInFlight;
-  if (i < qp + q + p) return ELT_SHADES.inPipeline;
+  const cr = Math.min(o.confirmedRoi, target);
+  const q = Math.min(o.qualifiedInFlight, target - cr);
+  const p = Math.min(o.inPipeline, target - cr - q);
+  if (i < cr) return ELT_SHADES.confirmedRoi;
+  if (i < cr + q) return ELT_SHADES.qualifiedInFlight;
+  if (i < cr + q + p) return ELT_SHADES.inPipeline;
   return ELT_SHADES.empty;
 }
 
@@ -109,7 +110,7 @@ function eltSlotClass(i: number, o: EltProgressRow, target: number): string {
 function eltDetail(o: EltProgressRow): string | null {
   const parts: string[] = [];
   if (o.qualifiedInFlight > 0)
-    parts.push(`${o.qualifiedInFlight} Qualified awaiting ROI`);
+    parts.push(`${o.qualifiedInFlight} Qualified awaiting ROI confirmation`);
   if (o.inPipeline > 0) parts.push(`${o.inPipeline} in the pipeline`);
   return parts.length ? parts.join(" · ") : null;
 }
@@ -132,7 +133,7 @@ export async function ProgramDashboard() {
     getAttentionFlags(),
   ]);
 
-  const awaitingRoi = counts.qualified - counts.qualifiedPlus;
+  const awaitingRoi = counts.byStatus.qualified;
   const maxStatusCount = Math.max(1, ...Object.values(counts.byStatus));
   const targetWarning = targetSumWarning(
     elt.filter((o) => o.target !== null).map((o) => ({ target: o.target! })),
@@ -147,29 +148,31 @@ export async function ProgramDashboard() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <HeroNumber
             label="Documented use cases — Qualified or better"
-            actual={counts.qualified}
+            actual={counts.documented}
             target={TARGET_DOCUMENTED}
             inFlight={counts.inFlight}
             footnote={inFlightNote(counts.inFlight, counts.readyForGate)}
             // An empty filter is a dead end; send them to the real work instead.
             href={
-              counts.qualified > 0 ? "/use-cases?status=qualified" : "/use-cases"
+              counts.documented > 0
+                ? "/use-cases?status=documented"
+                : "/use-cases"
             }
           />
           <HeroNumber
-            label="Quantified, positive ROI — Qualified+"
-            actual={counts.qualifiedPlus}
+            label="Quantified, positive ROI — Confirmed"
+            actual={counts.confirmedRoi}
             target={TARGET_ROI}
             inFlight={awaitingRoi}
             footnote={
               awaitingRoi
-                ? `${awaitingRoi} Qualified ${awaitingRoi === 1 ? "record is" : "records are"} still short of complete ROI scoring.`
+                ? `${awaitingRoi} Qualified ${awaitingRoi === 1 ? "record is" : "records are"} awaiting ROI confirmation.`
                 : undefined
             }
             href={
-              counts.qualifiedPlus > 0
-                ? "/use-cases?status=qualified_plus"
-                : counts.qualified > 0
+              counts.confirmedRoi > 0
+                ? "/use-cases?status=confirmed_positive_roi"
+                : awaitingRoi > 0
                   ? "/use-cases?status=qualified"
                   : "/use-cases"
             }
@@ -217,15 +220,16 @@ export async function ProgramDashboard() {
       <section aria-label="The 15 by ELT org">
         <h2 className="font-serif text-2xl">The 15, by ELT owner</h2>
         <p className="mt-1 max-w-prose text-sm text-ink-muted">
-          Qualified+ counts against each owner&rsquo;s share of the 15. Shades
-          show how far along the rest is. Click an owner to see their records.
+          Confirmed Positive ROI counts against each owner&rsquo;s share of
+          the 15. Shades show how far along the rest is. Click an owner to see
+          their records.
           {targetWarning && (
             <span className="text-flag"> {targetWarning}</span>
           )}
         </p>
         <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-ink-faint">
           {[
-            ["Counts toward the 15", ELT_SHADES.qualifiedPlus],
+            ["Counts toward the 15", ELT_SHADES.confirmedRoi],
             ["Qualified, ROI pending", ELT_SHADES.qualifiedInFlight],
             ["In the pipeline", ELT_SHADES.inPipeline],
           ].map(([caption, shade]) => (
@@ -258,7 +262,7 @@ export async function ProgramDashboard() {
                       )}
                     </span>
                     <span className="text-sm tabular-nums text-ink-muted">
-                      {o.qualifiedPlus}
+                      {o.confirmedRoi}
                       {o.target !== null ? ` of ${o.target}` : ""}
                       {detail && (
                         <span className="text-ink-faint"> · {detail}</span>
@@ -268,7 +272,7 @@ export async function ProgramDashboard() {
                   {o.target !== null && (
                     <div
                       role="img"
-                      aria-label={`${o.name}: ${o.qualifiedPlus} of ${o.target} counted${detail ? `, ${detail}` : ""}`}
+                      aria-label={`${o.name}: ${o.confirmedRoi} of ${o.target} counted${detail ? `, ${detail}` : ""}`}
                       className="mt-1.5 flex h-2 gap-0.5"
                     >
                       {Array.from({ length: o.target }).map((_, i) => (
@@ -381,8 +385,8 @@ export async function ProgramDashboard() {
                     <span className="text-ink-muted">
                       {m.fromStatus === null
                         ? `logged at ${STATUS_LABELS[m.toStatus]}`
-                        : m.becameQualifiedPlus
-                          ? "reached Qualified+ — qualified with complete ROI"
+                        : m.reachedConfirmedRoi
+                          ? "confirmed positive ROI — counts toward the 15"
                           : `moved to ${STATUS_LABELS[m.toStatus]}`}
                       {m.changedByName ? ` · ${m.changedByName}` : ""}
                     </span>
@@ -428,7 +432,8 @@ export async function ProgramDashboard() {
                 Launched, ROI not yet scored
               </h3>
               <p className="mt-0.5 text-xs text-ink-faint">
-                The Qualified+ pipeline the ROI review should chase.
+                The pipeline of future confirmed wins the ROI review should
+                chase.
               </p>
               {attention.launchedUnscored.length === 0 ? (
                 <p className="mt-1.5 text-sm text-ink-muted">

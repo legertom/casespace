@@ -46,7 +46,7 @@ export default async function CoachPage({
   if (!chatId) chatId = crypto.randomUUID();
 
   const kickoff = review
-    ? `Run an ROI review for use case ${review}. Check the evidence against the Qualified+ bar and produce the Kate-ready packet.`
+    ? `Run an ROI review for use case ${review}. Check the evidence against the ROI confirmation bar and produce the Kate-ready packet.`
     : intent === "wizard"
       ? "Walk me through logging a new use case."
       : undefined;

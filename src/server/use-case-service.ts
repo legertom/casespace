@@ -21,6 +21,7 @@ import { getOwnership } from "./use-case-queries";
 
 export class ForbiddenError extends Error {}
 export class NotFoundError extends Error {}
+export class ValidationError extends Error {}
 
 /** Resolve a team by name (optionally scoped to a department). */
 export async function resolveTeamId(
@@ -240,8 +241,10 @@ export async function updateUseCase(
 }
 
 /**
- * Move a record through the pipeline. Qualified transitions are admin-only
- * (enforced by canSetStatus); every change is logged.
+ * Move a record through the pipeline. Transitions touching Qualified or
+ * Confirmed Positive ROI are admin-only (enforced by canSetStatus); every
+ * change is logged. Confirming positive ROI requires a note articulating
+ * the annual ROI — it feeds the EOY wins report.
  */
 export async function setStatus(
   actor: Actor,
@@ -258,10 +261,23 @@ export async function setStatus(
     throw new ForbiddenError("You can only move use cases you created, own, or authored.");
   }
   if (!canSetStatus(actor.role, from, to)) {
+    if (to === "confirmed_positive_roi" && from !== "qualified") {
+      throw new ForbiddenError(
+        "Only Qualified records can be confirmed — every confirmed win must have passed the Qualified gate first.",
+      );
+    }
     throw new ForbiddenError(
-      to === "qualified" || from === "qualified"
-        ? "Only an admin can promote to or demote from Qualified — it records Kate's decision."
+      to === "qualified" ||
+        from === "qualified" ||
+        to === "confirmed_positive_roi" ||
+        from === "confirmed_positive_roi"
+        ? "Only an admin can move records into or out of Qualified and Confirmed Positive ROI — both record Kate's decisions."
         : "That status change isn't allowed.",
+    );
+  }
+  if (to === "confirmed_positive_roi" && !note?.trim()) {
+    throw new ValidationError(
+      "Confirming positive ROI requires a note articulating the annual ROI — it becomes part of the end-of-year wins report.",
     );
   }
 
@@ -271,6 +287,14 @@ export async function setStatus(
     patch.qualifiedAt = new Date();
     patch.approvedById = actor.id;
     patch.rejectionReason = null;
+  }
+  if (to === "confirmed_positive_roi") {
+    patch.roiConfirmedAt = new Date();
+    patch.roiConfirmedById = actor.id;
+  }
+  if (from === "confirmed_positive_roi") {
+    patch.roiConfirmedAt = null;
+    patch.roiConfirmedById = null;
   }
   await db.update(useCases).set(patch).where(eq(useCases.id, id));
   await db.insert(statusChanges).values({

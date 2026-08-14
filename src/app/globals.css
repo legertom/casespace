@@ -25,9 +25,10 @@
   --color-st-testing: #4f7d9e;
   --color-st-launched: #3d8578;
   --color-st-qualified: #48713f;
-  --color-st-qualifiedplus: #2e5527;
+  --color-st-confirmed: #2e5527;
 
   --color-flag: #8f6a1e; /* attention, not alarm */
+  --color-flag-wash: #f5edda;
 }
 
 @theme inline {
