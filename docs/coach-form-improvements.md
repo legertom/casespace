@@ -810,13 +810,20 @@ Then, in any order:
    2026-08-12** (`ef80395`); still open: the step-1 "basics" split, the ELT
    field's removal, the record-page gap list, and the note #3/#4 copy in
    Tom/Kate's voice.
-6. **Part 2, approach → array** — do it while the table is effectively empty.
+6. ~~**Part 2, approach → array**~~ — **shipped 2026-08-14** (`fe48313`),
+   with 5 records in the table, each carrying its single approach across.
+   REST still accepts a singular `approach` and the API still emits one; the
+   MCP tool takes the new shape only, since its clients read the schema
+   fresh each session. Same change added inline editing on the record page:
+   a pencil and a Coach button per field, plus highlight-to-ask.
 7. **Part 4, `/developers`** — mostly moving existing content and linking it.
 8. ~~**Part 5, comments + notifications**~~ — **shipped 2026-08-13**
    (`d03e826`, `505ee78`). Two new tables, the record-page section, and the
    header bell. Email stays deferred.
-9. **Part 3, feedback** — a new table and a new AI tool. Coordinate its
-   `AGENTS.md` amendment with Part 7's visibility decision.
+9. **Part 3, feedback** — the table and the admin `/feedback` surface
+   **shipped 2026-08-14** (`905e5c0`), reached from every error banner's
+   "Report this". Still open: the `propose_feedback` Coach tool and the
+   `AGENTS.md` amendment, coordinated with Part 7's visibility decision.
 10. **Part 7, What's New deltas** — the release-notes source, the visibility
     call, and (in November) the DST cron adjustment if 9am sharp matters.
 
