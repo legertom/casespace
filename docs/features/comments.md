@@ -29,8 +29,15 @@ before inserting, and the server is the rule.
 — names are never parsed out of the body.** That means a mention is always a
 real person, and typing someone's name in prose doesn't silently notify them.
 
-Mentioned people get the most specific notification kind. See
-[notifications](notifications.md).
+A mention renders as a chip linking to that person's records, the same
+destination as every other name in the app. Someone whose login isn't linked
+to a directory row gets the chip without the link — there'd be nothing to
+filter by. The names are matched only to find where to draw the chip; who
+was mentioned still comes from the stored ids.
+
+The edit box is the same box as the composer, so `@` works there too, and an
+edit rewrites the comment's mention set. Newly named people are notified.
+See [notifications](notifications.md).
 
 ## Who can do what
 

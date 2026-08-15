@@ -18,7 +18,7 @@ A bell in the header. **In-app only** — Casespace sends no email.
 
 | Kind | Raised by |
 |---|---|
-| `mention` | Someone @-mentioned you in a comment |
+| `mention` | Someone @-mentioned you in a comment, when it was posted **or on a later edit** |
 | `reply` | Someone replied to your comment |
 | `comment` | A new comment on a record you're part of |
 | `link` | Someone linked a record you're credited on to another |
@@ -38,6 +38,13 @@ Everyone on the record, plus everyone already talking on it:
 reason they have: mention beats reply beats participation. The person who
 wrote the comment is never notified about their own words, and people who
 have never signed in (unlinked directory names) are dropped.
+
+An **edit** can name someone who wasn't named when the comment was posted,
+and they hear about it. Anyone already named stays quiet; removing a name
+notifies nobody, since the notification already sent was true when it was
+sent. Someone already told about that comment for a weaker reason has their
+notification upgraded to `mention` and marked unread again, rather than
+getting a second bell for one comment.
 
 ## Who hears about a link
 
