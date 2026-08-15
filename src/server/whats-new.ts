@@ -17,6 +17,12 @@ import {
 } from "@/lib/ai/config";
 import { recordAiUsage } from "@/lib/ai/usage";
 import {
+  EDITORIAL_INSTRUCTIONS,
+  splitPost,
+  whatsNewPrompt,
+  type WeekData,
+} from "@/lib/ai/whats-new-prompt";
+import {
   DEPARTMENT_LABELS,
   STATUS_LABELS,
   etDateString,
@@ -44,7 +50,7 @@ export function priorWeekStart(etDate: string): string {
   return dt.toISOString().slice(0, 10);
 }
 
-async function gatherWeekData(weekStart: string) {
+async function gatherWeekData(weekStart: string): Promise<WeekData> {
   const db = getDb();
   const start = new Date(`${weekStart}T00:00:00-04:00`);
   const end = new Date(start.getTime() + 7 * 86_400_000);
@@ -152,21 +158,6 @@ async function gatherWeekData(weekStart: string) {
   };
 }
 
-const EDITORIAL_INSTRUCTIONS = `You write "What's New in Casespace" — the weekly internal note on Clever's AI Enablement program. Audience: everyone in the program — the AI Leads, their leaders, and the sponsors (Tom runs the program; Kate is the VP sponsor).
-
-Voice: a well-edited internal newsletter. Observant, specific, zero hype. Plain words, short sentences, sentence case. Recognition means naming people and teams on real work — no badges, no cheerleading, no emoji, no exclamation marks. NEVER mention dollar figures; the program measures counts, rates, and hours only.
-
-Structure (markdown):
-- Start with "# " and a specific, quiet headline (not "Weekly update").
-- An opening paragraph: the week in three sentences, anchored in the two numbers and what is in flight behind them. Never editorialize about being ahead of or behind a pace — the program does not track it that way.
-- "## New in the casebook" — each new record with who logged it and which team it serves. Skip the section if empty ("A quiet week for new entries" belongs in the opener instead).
-- "## Movement" — promotions worth noting; call out anything reaching Qualified or Confirmed Positive ROI by name with the people behind it (a confirmed win is the week's biggest news). Include demotions/rejections plainly with their reason. Never quote the ROI confirmation note — it may contain dollars.
-- "## The 15" — per-ELT-org state in prose, including the honest unallocated bucket.
-- "## Pulse" — only if there are new readings this week; compare to baseline and target.
-- "## Worth attention this week" — stale records and launched-but-unscored ROI, each with a concrete next step.
-- "## New in Casespace" — only if casespaceChanges is non-empty. What changed in the tool itself this week, in two to four sentences of prose (not a bulleted release note). Say what a reader can now do, not how it was built. When an entry has requestedBy, name that person as the one who asked for it — that is the recognition, and it matters more than the feature. Cover only what is in casespaceChanges; never infer other changes from the rest of the data.
-Keep the whole thing readable in three minutes. Numbers come only from the data provided — never invent or extrapolate.`;
-
 export interface GenerateResult {
   id: string;
   weekStart: string;
@@ -185,7 +176,7 @@ export async function generateWhatsNew(
   const result = await generateText({
     model: MODELS.coach,
     instructions: EDITORIAL_INSTRUCTIONS,
-    prompt: `Write the post for the week of ${data.weekStart} through ${data.weekEnd} (today is ${etDateString(new Date())} ET). The week's data:\n\n${JSON.stringify(data, null, 2)}`,
+    prompt: whatsNewPrompt(data, etDateString(new Date())),
     providerOptions: gatewayOptions(actorUserId ?? "cron", "whats_new"),
   });
 
@@ -197,12 +188,7 @@ export async function generateWhatsNew(
     outputTokens: result.totalUsage.outputTokens,
   });
 
-  const text = result.text.trim();
-  const titleMatch = text.match(/^#\s+(.+)$/m);
-  const title = titleMatch?.[1].trim() ?? `Week of ${weekStart}`;
-  const body = titleMatch
-    ? text.replace(titleMatch[0], "").trim()
-    : text;
+  const { title, body } = splitPost(result.text, weekStart);
 
   const db = getDb();
   const [row] = await db

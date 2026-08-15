@@ -71,6 +71,8 @@ an API you have not verified in this repo, read the bundled docs for the
 - `pnpm build` / `pnpm start`
 - `pnpm typecheck` — `tsc --noEmit`
 - `pnpm test` — Vitest (pure logic tests; no DB needed)
+- `pnpm eval` — What's New evals against real models (`docs/operations/evals.md`);
+  slow and costs money, so deliberately not part of `pnpm test`
 - `pnpm db:generate` / `pnpm db:migrate` — Drizzle migrations
 - `pnpm db:seed` — idempotent real seeds (directory, roster, ELT orgs, goals)
 - `pnpm db:demo` — dev-only sample use cases

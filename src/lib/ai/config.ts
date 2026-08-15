@@ -7,6 +7,11 @@ export const MODELS = {
   coach: "anthropic/claude-sonnet-5",
   /** Parsing/extraction — fast and cheap. */
   extract: "anthropic/claude-haiku-4.5",
+  /**
+   * Grades eval output (`pnpm eval`). Dev tooling only — the app never calls
+   * it, and its calls are deliberately absent from `ai_usage`.
+   */
+  judge: "anthropic/claude-sonnet-5",
 } as const;
 
 export type AiFeature =

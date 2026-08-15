@@ -1,11 +1,12 @@
 ---
 title: Local development
 audience: engineering
-updated: 2026-08-14
+updated: 2026-08-15
 code:
   - package.json
   - drizzle.config.ts
   - .env.example
+  - vitest.eval.config.ts
 ---
 
 # Local development
@@ -59,6 +60,7 @@ Development only — it is hard-disabled outside development builds.
 | `pnpm build` / `pnpm start` | Production build — **build runs migrations first** |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm test` | Vitest — pure logic, no database needed |
+| `pnpm eval` | [Evals](evals.md) for the weekly post — real model calls, ~100s |
 | `pnpm db:generate` / `pnpm db:migrate` | Drizzle migrations |
 | `pnpm db:seed` | Idempotent real seeds |
 | `pnpm db:demo` | Dev-only sample use cases |

@@ -72,6 +72,7 @@ One doc per surface.
 | [Deploying](operations/deploy.md) | Vercel, env vars, self-migrating builds |
 | [Data and seeds](operations/data-and-seeds.md) | Idempotent seeds, the clobber rule, migrations |
 | [AI configuration](operations/ai-config.md) | Models, usage logging, graceful degradation |
+| [Evals](operations/evals.md) | `pnpm eval`, the fixture weeks, grading the weekly post |
 | [Troubleshooting](operations/troubleshooting.md) | Symptoms → causes |
 
 ## Working documents

@@ -1,12 +1,14 @@
 ---
 title: AI configuration
 audience: engineering
-updated: 2026-08-14
+updated: 2026-08-15
 code:
   - src/lib/ai/config.ts
   - src/lib/ai/usage.ts
   - src/lib/ai/proposal.ts
   - src/lib/ai/coach-prompt.ts
+  - src/lib/ai/whats-new-prompt.ts
+  - src/lib/ai/editorial-checks.ts
 ---
 
 # AI configuration
@@ -20,14 +22,21 @@ verified against the live gateway list.
 |---|---|
 | The Coach, and the weekly What's New post | `anthropic/claude-sonnet-5` |
 | Parsing and extraction (the notes door) | `anthropic/claude-haiku-4.5` |
+| Grading [eval](evals.md) output (`pnpm eval`) | `anthropic/claude-sonnet-5` |
 
 Features are tagged `coach`, `notes_parser`, `whats_new` for per-call
 attribution in the AI Gateway dashboard.
 
 ## Usage logging
 
-**Every model call logs tokens to `ai_usage`.** No exceptions — a new AI
-feature that doesn't log is a bug.
+**Every model call the app makes logs tokens to `ai_usage`.** No exceptions —
+a new AI feature that doesn't log is a bug.
+
+The [eval suite](evals.md) is the one thing that doesn't, and it is not a
+feature: it runs from a developer's machine against fixture weeks, so its
+tokens would put invented data into the program's own usage record. Eval calls
+carry the `feature:eval` gateway tag instead, which keeps the spend visible
+without writing a row.
 
 ## Graceful degradation
 
