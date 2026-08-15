@@ -7,3 +7,6 @@ node_modules/
 next-env.d.ts
 .DS_Store
 .env*
+# `.env*` anchors at the start of the name, so it misses prod.env / staging.env
+# — files of real secrets. `.env.example` is not matched and stays tracked.
+*.env
