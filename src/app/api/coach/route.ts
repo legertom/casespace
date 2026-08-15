@@ -29,6 +29,7 @@ import {
   countsTowardRoi,
   roiGaps,
 } from "@/lib/domain";
+import { getCoachLearnings } from "@/server/coach-learnings-queries";
 import { buildProgressReport } from "@/server/progress-report";
 import { getUseCase, listUseCases } from "@/server/use-case-queries";
 
@@ -41,10 +42,13 @@ export async function POST(req: Request) {
     return Response.json({ error: AI_NOT_CONFIGURED_MESSAGE }, { status: 503 });
   }
 
-  const { messages, chatId } = (await req.json()) as {
+  const { messages, chatId, intent } = (await req.json()) as {
     messages: UIMessage[];
     chatId?: string;
+    intent?: string;
   };
+  const chatIntent =
+    intent === "wizard" || intent === "roi_review" ? intent : "qa";
 
   const db = getDb();
   if (chatId) {
@@ -158,6 +162,28 @@ export async function POST(req: Request) {
       execute: () => buildProgressReport(),
     }),
 
+    // Admin-only, and gated at the tool table rather than inside execute:
+    // a tool the Coach can't see is a tool it can't be talked into calling.
+    ...(user.role === "admin"
+      ? {
+          get_coach_learnings: tool({
+            description:
+              "How well the Coach's own proposals have landed: accept and correction rates, the fields it most often gets wrong, where the intake wizard loses people, and why proposals were dismissed. Admin-only. Aggregate — never anyone's conversation.",
+            inputSchema: z.object({
+              windowDays: z
+                .number()
+                .int()
+                .min(1)
+                .max(365)
+                .nullish()
+                .describe("How far back to look. Defaults to 90 days."),
+            }),
+            execute: ({ windowDays }) =>
+              getCoachLearnings(windowDays ?? undefined),
+          }),
+        }
+      : {}),
+
     // Proposal tools have NO execute — they surface as cards the human
     // accepts, edits, or dismisses. Nothing writes without their click.
     propose_use_case: tool({
@@ -205,7 +231,10 @@ export async function POST(req: Request) {
                 userId: user.id,
                 title: firstUserText,
                 messages: finalMessages,
+                intent: chatIntent,
               })
+              // `intent` is deliberately absent from the update: it records
+              // what the person came to do, not what the chat drifted into.
               .onConflictDoUpdate({
                 target: coachChats.id,
                 set: { messages: finalMessages, updatedAt: new Date() },

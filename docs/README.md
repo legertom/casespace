@@ -42,6 +42,7 @@ One doc per surface.
 | [The record page](features/record.md) | `/use-cases/[id]` |
 | [Logging a use case](features/logging-a-use-case.md) | `/use-cases/new`, `/use-cases/from-notes` |
 | [The Coach](features/coach.md) | `/coach` |
+| [Coach learnings](features/coach-learnings.md) | `/learnings` (admin-only) |
 | [Comments](features/comments.md) | on every record |
 | [Notifications](features/notifications.md) | the header bell |
 | [Linked workflows](features/linked-workflows.md) | on every record |

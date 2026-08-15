@@ -72,6 +72,25 @@ export const roiStatusEnum = pgEnum("roi_status", [
   "complete",
 ]);
 
+/** What a Coach conversation was opened to do — set from the kickoff, never re-guessed. */
+export const coachIntentEnum = pgEnum("coach_intent", [
+  "wizard",
+  "roi_review",
+  "qa",
+]);
+
+/**
+ * The life of a proposal, in four beats. A `proposed` row with no later row
+ * for the same proposal is the fifth outcome — the human walked away — and is
+ * counted by its absence rather than written.
+ */
+export const coachEventKindEnum = pgEnum("coach_event_kind", [
+  "proposed",
+  "accepted",
+  "edited_then_saved",
+  "dismissed",
+]);
+
 /** Why a notification exists, most specific first — see commentNotifications(). */
 export const notificationKindEnum = pgEnum("notification_kind", [
   "comment",
@@ -471,6 +490,9 @@ export const coachChats = pgTable("coach_chats", {
     .references(() => users.id, { onDelete: "cascade" }),
   title: text("title").notNull().default("New conversation"),
   messages: jsonb("messages").notNull().default([]),
+  /** Set from the kickoff on the first turn and never rewritten — what the
+   *  person came to do, not what the conversation drifted into. */
+  intent: coachIntentEnum("intent").notNull().default("qa"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -479,6 +501,53 @@ export const coachChats = pgTable("coach_chats", {
     .defaultNow()
     .$onUpdate(() => new Date()),
 });
+
+/**
+ * What the AI doors proposed and what the human did about it — the app's only
+ * record of how well the Coach guesses. Admin-only to read (canViewCoachLearnings).
+ *
+ * Deliberately aggregate-grade: a row holds the proposed *fields* and the
+ * human's correction, never the conversation. Admins learn that the Coach
+ * guesses department wrong; they don't get to read anyone's transcript.
+ *
+ * `chatId` carries no foreign key on purpose. The proposal card renders while
+ * the response is still streaming, which is before /api/coach writes the chat
+ * row on stream end — a constraint here would lose the first event of every
+ * conversation to a race.
+ */
+export const coachEvents = pgTable(
+  "coach_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** Correlates the four beats of one proposal. The tool call id for the
+     *  wizard, a fresh uuid for the notes door. */
+    proposalRef: text("proposal_ref").notNull(),
+    chatId: uuid("chat_id"),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: coachEventKindEnum("kind").notNull(),
+    /** Which door proposed it — the wizard chat or the notes parser. */
+    door: ucSourceEnum("door").notNull(),
+    /** Set on accepted / edited_then_saved. Survives the record's deletion as null. */
+    useCaseId: uuid("use_case_id").references(() => useCases.id, {
+      onDelete: "set null",
+    }),
+    /** On `proposed`: the proposed UseCaseCreateInput. Otherwise empty. */
+    proposed: jsonb("proposed").notNull().default({}),
+    /** On `edited_then_saved`: FieldChange[] — what the human corrected. */
+    diff: jsonb("diff").notNull().default([]),
+    /** On `dismissed`: the human's one line on what was wrong. */
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("coach_events_proposal_idx").on(t.proposalRef),
+    index("coach_events_created_idx").on(t.createdAt),
+  ],
+);
 
 // ---------------------------------------------------------------------------
 // Comments & notifications

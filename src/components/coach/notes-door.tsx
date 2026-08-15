@@ -28,6 +28,8 @@ export function NotesDoor() {
               JSON.stringify({
                 input: proposalToCreateInput(res.proposal),
                 source: "notes",
+                proposalRef: res.proposalRef,
+                proposedTeamName: res.proposal.team ?? null,
               }),
             );
             router.push("/use-cases/new/review");

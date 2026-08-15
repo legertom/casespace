@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import type { Proposal } from "@/lib/ai/proposal";
 import { proposalToCreateInput } from "@/lib/ai/proposal";
 import { computeGapFlags } from "@/lib/gap-flags";
@@ -10,6 +10,11 @@ import {
   acceptProposalAction,
   acceptUpdateProposalAction,
 } from "@/server/actions-ai";
+import {
+  addDismissReasonAction,
+  recordDecisionAction,
+  recordProposedAction,
+} from "@/server/actions-coach-events";
 
 interface BaseProps {
   onDecision: (outcome: string) => void;
@@ -28,14 +33,47 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 export function ProposalCard({
   proposal,
   source,
+  proposalRef,
+  chatId,
+  isLive = true,
   onDecision,
-}: BaseProps & { proposal: Proposal; source: "wizard" | "notes" }) {
+}: BaseProps & {
+  proposal: Proposal;
+  source: "wizard" | "notes";
+  /** Correlates this card's four possible outcomes in `coach_events`. */
+  proposalRef: string;
+  chatId?: string;
+  /**
+   * False when this card is being replayed from a stored transcript. Reopening
+   * an old conversation must not log its proposal again — the decision was
+   * made once, months ago, and re-recording it would read as a fresh one
+   * nobody ever answered.
+   */
+  isLive?: boolean;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [decided, setDecided] = useState(false);
+  const [askingWhy, setAskingWhy] = useState(false);
+  const [why, setWhy] = useState("");
+  const [thanked, setThanked] = useState(false);
+  const logged = useRef(false);
   const gaps = computeGapFlags(proposalToCreateInput(proposal));
+
+  // The card is the moment worth measuring: what the Coach guessed, before
+  // anyone touched it. Recorded once, even though streaming re-renders this.
+  useEffect(() => {
+    if (!isLive || logged.current) return;
+    logged.current = true;
+    void recordProposedAction({
+      proposalRef,
+      chatId,
+      door: source,
+      proposed: { ...proposalToCreateInput(proposal), teamName: proposal.team ?? null },
+    });
+  }, [proposal, proposalRef, chatId, source, isLive]);
 
   function accept() {
     setError(null);
@@ -45,6 +83,13 @@ export function ProposalCard({
       else if (res.id) {
         setSavedId(res.id);
         setDecided(true);
+        void recordDecisionAction({
+          proposalRef,
+          chatId,
+          door: source,
+          kind: "accepted",
+          useCaseId: res.id,
+        });
         onDecision(`Accepted — record created at /use-cases/${res.id}`);
       }
     });
@@ -53,7 +98,12 @@ export function ProposalCard({
   function openInForm() {
     sessionStorage.setItem(
       "casespace-prefill",
-      JSON.stringify(proposalToCreateInput(proposal)),
+      JSON.stringify({
+        input: proposalToCreateInput(proposal),
+        source,
+        proposalRef,
+        proposedTeamName: proposal.team ?? null,
+      }),
     );
     setDecided(true);
     onDecision(
@@ -62,8 +112,16 @@ export function ProposalCard({
     router.push("/use-cases/new/review");
   }
 
+  // Recorded on the click, not on the explanation — see addDismissReasonAction.
   function dismiss() {
     setDecided(true);
+    setAskingWhy(true);
+    void recordDecisionAction({
+      proposalRef,
+      chatId,
+      door: source,
+      kind: "dismissed",
+    });
     onDecision("Dismissed — do not save this. Ask what to change if unclear.");
   }
 
@@ -136,6 +194,49 @@ export function ProposalCard({
             Open the record →
           </a>
         </p>
+      ) : askingWhy ? (
+        <div className="mt-3 border-t border-hairline pt-3">
+          {thanked ? (
+            <p className="text-sm text-ink-faint">
+              Noted — thank you. That goes to whoever tunes the Coach.
+            </p>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!why.trim()) {
+                  setAskingWhy(false);
+                  return;
+                }
+                void addDismissReasonAction(proposalRef, why);
+                setThanked(true);
+              }}
+            >
+              <label htmlFor={`why-${proposalRef}`} className="text-sm">
+                What was off about it?
+              </label>
+              <p className="mt-0.5 text-xs text-ink-faint">
+                Optional, one line. Shared with the program admins so the Coach
+                gets better.
+              </p>
+              <div className="mt-1.5 flex gap-2">
+                <input
+                  id={`why-${proposalRef}`}
+                  value={why}
+                  onChange={(e) => setWhy(e.target.value)}
+                  placeholder="Wrong team, invented a number, missed the point…"
+                  className="min-w-0 flex-1 rounded-md border border-hairline-strong bg-surface px-3 py-1.5 text-sm"
+                />
+                <button
+                  type="submit"
+                  className="rounded-md border border-hairline-strong px-3 py-1.5 text-sm hover:bg-paper"
+                >
+                  {why.trim() ? "Send" : "Skip"}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       ) : decided ? (
         <p className="mt-3 border-t border-hairline pt-3 text-sm text-ink-faint">
           Decision recorded.

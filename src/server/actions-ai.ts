@@ -19,6 +19,7 @@ import { computeGapFlags } from "@/lib/gap-flags";
 import { canCreateUseCase } from "@/lib/permissions";
 import type { Department } from "@/lib/domain";
 import type { UseCaseCreateInput, UseCaseUpdateInput } from "@/lib/use-case-input";
+import { recordProposed } from "./coach-events";
 import {
   createUseCase,
   ForbiddenError,
@@ -30,6 +31,8 @@ import {
 export interface ParseNotesResult {
   proposal?: Proposal;
   gaps?: string[];
+  /** Ties the draft to what eventually saves — see coach_events. */
+  proposalRef?: string;
   error?: string;
 }
 
@@ -75,7 +78,19 @@ Rules:
 
     const proposal = result.output;
     const gaps = computeGapFlags(proposalToCreateInput(proposal));
-    return { proposal, gaps };
+    // The notes door has no accept-as-is button — every draft goes through the
+    // review form — so the extraction is logged here and judged by the diff.
+    const proposalRef = crypto.randomUUID();
+    await recordProposed({
+      proposalRef,
+      userId: user.id,
+      door: "notes",
+      proposed: {
+        ...proposalToCreateInput(proposal),
+        teamName: proposal.team ?? null,
+      },
+    });
+    return { proposal, gaps, proposalRef };
   } catch (err) {
     console.error("notes parsing failed", err);
     return {

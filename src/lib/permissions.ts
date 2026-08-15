@@ -99,3 +99,19 @@ export function canComment(_role: Role): boolean {
 export function canViewWins(role: Role): boolean {
   return role === "admin";
 }
+
+/**
+ * Coach learnings are admin-only — the third read exception, and the only one
+ * gated for a reason other than dollars.
+ *
+ * The page reports how often the Coach guessed wrong and where the wizard
+ * loses people. Everything on it is derived from someone's own intake session,
+ * and being measured is a different thing from being helped: an open page
+ * would make people wonder whether the Coach is a form or an audit. The data
+ * is aggregate by construction (see coach-learnings.ts), which limits the
+ * damage; this limits the audience. Note that dismiss reasons are attributed,
+ * and the dismiss box says so.
+ */
+export function canViewCoachLearnings(role: Role): boolean {
+  return role === "admin";
+}

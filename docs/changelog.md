@@ -42,6 +42,22 @@ in-app report it came from.
 
 ---
 
+## 2026-08-15
+
+### The Coach keeps its own report card
+Requested by: Tom Leger
+
+When the Coach proposes a use case, what you do next now counts for something.
+Save it, fix it first, or dismiss it — and if you dismiss it, there's a line
+where you can say what was off. That goes to whoever tunes the Coach, so the
+next person gets a better guess instead of the same wrong one.
+
+Admins get a new Learnings page reading the whole picture back: which fields
+the Coach gets wrong most often, how far people get through the intake
+interview before giving up, and every dismissal in the dismisser's own words.
+It reports fields and steps, never conversations — nobody's chat with the
+Coach is readable from it.
+
 ## 2026-08-14
 
 ### A changelog the weekly letter can read

@@ -6,6 +6,7 @@ import {
   canLinkUseCases,
   canQualify,
   canUnlinkUseCases,
+  canViewCoachLearnings,
   canViewPulse,
 } from "./permissions";
 
@@ -55,6 +56,12 @@ describe("role gates", () => {
     expect(canViewPulse("viewer")).toBe(false);
     expect(canViewPulse("contributor")).toBe(false);
     expect(canViewPulse("admin")).toBe(true);
+  });
+
+  it("coach learnings are admin-only", () => {
+    expect(canViewCoachLearnings("viewer")).toBe(false);
+    expect(canViewCoachLearnings("contributor")).toBe(false);
+    expect(canViewCoachLearnings("admin")).toBe(true);
   });
 
   it("every role comments — viewers included, on purpose", () => {

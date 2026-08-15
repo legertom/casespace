@@ -50,6 +50,7 @@ export default async function CoachPage({
     : intent === "wizard"
       ? "Walk me through logging a new use case."
       : undefined;
+  const chatIntent = review ? "roi_review" : intent === "wizard" ? "wizard" : "qa";
 
   return (
     <div className="grid h-[calc(100vh-9.5rem)] grid-cols-1 gap-10 lg:grid-cols-[15rem_1fr]">
@@ -95,6 +96,7 @@ export default async function CoachPage({
             chatId={chatId}
             initialMessages={initialMessages}
             kickoff={kickoff}
+            intent={chatIntent}
           />
         ) : (
           <div className="max-w-md py-10">

@@ -50,6 +50,13 @@
       "when": 1786739589240,
       "tag": "0006_sad_kingpin",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786807963375,
+      "tag": "0007_nostalgic_black_cat",
+      "breakpoints": true
     }
   ]
 }

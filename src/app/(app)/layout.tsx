@@ -2,7 +2,11 @@ import Link from "next/link";
 import { requireUser } from "@/lib/current-user";
 import { signOut } from "@/auth";
 import { aiConfigured } from "@/lib/ai/config";
-import { canCreateUseCase, canViewWins } from "@/lib/permissions";
+import {
+  canCreateUseCase,
+  canViewCoachLearnings,
+  canViewWins,
+} from "@/lib/permissions";
 import { VIEW_AS_LABELS, VIEW_AS_PROSE, VIEW_AS_ROLES } from "@/lib/view-as";
 import { startViewAsAction, stopViewAsAction } from "@/server/actions-view-as";
 import { CoachLauncher } from "@/components/coach/coach-launcher";
@@ -51,6 +55,11 @@ export default async function AppLayout({
               {canViewWins(user.role) && (
                 <Link href="/wins" className="hover:text-ink">
                   Wins
+                </Link>
+              )}
+              {canViewCoachLearnings(user.role) && (
+                <Link href="/learnings" className="hover:text-ink">
+                  Learnings
                 </Link>
               )}
               <Link href="/roster" className="hover:text-ink">
@@ -107,6 +116,11 @@ export default async function AppLayout({
                   {canViewWins(user.role) && (
                     <Link href="/wins" className="py-1.5 hover:text-ink">
                       Wins
+                    </Link>
+                  )}
+                  {canViewCoachLearnings(user.role) && (
+                    <Link href="/learnings" className="py-1.5 hover:text-ink">
+                      Learnings
                     </Link>
                   )}
                   <Link href="/roster" className="py-1.5 hover:text-ink">

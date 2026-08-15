@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { ActionResult } from "@/server/actions";
+import type { ActionResult, ProposalLearning } from "@/server/actions";
 import { computeGapFlags } from "@/lib/gap-flags";
 import type { UseCaseCreateInput } from "@/lib/use-case-input";
 import type { Department } from "@/lib/domain";
@@ -18,12 +18,17 @@ interface Props {
   onSubmit: (
     input: UseCaseCreateInput,
     source: "form" | "wizard" | "notes",
+    learning?: ProposalLearning,
   ) => Promise<ActionResult>;
 }
 
 interface PrefillPayload {
   input: Partial<UseCaseCreateInput>;
   source?: "wizard" | "notes";
+  /** Ties what saves here back to what the AI proposed — see coach_events. */
+  proposalRef?: string;
+  /** The team the proposal named, before any picker resolved it to an id. */
+  proposedTeamName?: string | null;
 }
 
 /**
@@ -115,7 +120,22 @@ export function PrefillUseCaseForm({
         initial={initial}
         mode="create"
         submitLabel="Log use case"
-        onSubmit={(input) => onSubmit(input, source)}
+        // What the human changed on the way through is the clearest read we
+        // get on how well the AI door guessed, so the proposal rides along to
+        // be diffed against what actually saves.
+        onSubmit={(input) =>
+          onSubmit(
+            input,
+            source,
+            payload?.proposalRef
+              ? {
+                  proposalRef: payload.proposalRef,
+                  proposed: handoff,
+                  proposedTeamName: payload.proposedTeamName ?? null,
+                }
+              : undefined,
+          )
+        }
       />
     </div>
   );

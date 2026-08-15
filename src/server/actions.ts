@@ -11,6 +11,7 @@ import {
   type UseCaseCreateInput,
   type UseCaseUpdateInput,
 } from "@/lib/use-case-input";
+import { recordProposalEdit } from "./coach-events";
 import {
   createUseCase,
   ForbiddenError,
@@ -73,17 +74,41 @@ function failure(err: unknown): ActionResult {
   };
 }
 
+/**
+ * `learning` is set only when this save came from an AI proposal the human
+ * edited first. It has to be recorded here rather than by the caller: this
+ * action redirects on success, so nothing downstream of it ever runs.
+ */
+export interface ProposalLearning {
+  proposalRef: string;
+  proposed: Partial<UseCaseCreateInput>;
+  proposedTeamName?: string | null;
+}
+
 export async function createUseCaseAction(
   raw: UseCaseCreateInput,
   source: "form" | "wizard" | "notes" = "form",
+  learning?: ProposalLearning,
 ): Promise<ActionResult> {
   const user = await requireUser();
   let id: string;
+  let input: UseCaseCreateInput;
   try {
-    const input = useCaseCreateSchema.parse(raw);
+    input = useCaseCreateSchema.parse(raw);
     id = await createUseCase({ id: user.id, role: user.role }, input, source);
   } catch (err) {
     return failure(err);
+  }
+  if (learning && (source === "wizard" || source === "notes")) {
+    await recordProposalEdit({
+      proposalRef: learning.proposalRef,
+      userId: user.id,
+      door: source,
+      useCaseId: id,
+      proposed: learning.proposed,
+      proposedTeamName: learning.proposedTeamName,
+      saved: input,
+    });
   }
   revalidatePath("/use-cases");
   redirect(`/use-cases/${id}`);

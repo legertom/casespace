@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/current-user";
 import { canCreateUseCase } from "@/lib/permissions";
-import { createUseCaseAction } from "@/server/actions";
+import { createUseCaseAction, type ProposalLearning } from "@/server/actions";
 import {
   getDefaultTeam,
   listEltOrgs,
@@ -29,12 +29,26 @@ export default async function ReviewUseCasePage() {
   async function submit(
     input: UseCaseCreateInput,
     source: "form" | "wizard" | "notes" = "form",
+    learning?: ProposalLearning,
   ) {
     "use server";
     const safeSource = ["form", "wizard", "notes"].includes(source)
       ? source
       : "form";
-    return createUseCaseAction(input, safeSource);
+    // The handoff comes from sessionStorage, so treat it as untrusted: keep
+    // the shape, cap the ref, and let a bad one cost the learning only.
+    const safeLearning =
+      learning && typeof learning.proposalRef === "string"
+        ? {
+            proposalRef: learning.proposalRef.slice(0, 200),
+            proposed: learning.proposed ?? {},
+            proposedTeamName:
+              typeof learning.proposedTeamName === "string"
+                ? learning.proposedTeamName
+                : null,
+          }
+        : undefined;
+    return createUseCaseAction(input, safeSource, safeLearning);
   }
 
   return (

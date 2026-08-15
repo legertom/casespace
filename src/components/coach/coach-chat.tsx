@@ -25,6 +25,8 @@ interface Props {
   seed?: { text: string; nonce: number };
   /** Where accepted create-proposals report their source. */
   source?: "wizard" | "notes";
+  /** What this conversation was opened to do — stored on the chat, once. */
+  intent?: "wizard" | "roi_review" | "qa";
   compact?: boolean;
 }
 
@@ -43,6 +45,7 @@ export function CoachChat({
   kickoff,
   seed,
   source = "wizard",
+  intent = "qa",
   compact = false,
 }: Props) {
   const { messages, sendMessage, addToolOutput, status, error } = useChat({
@@ -50,7 +53,7 @@ export function CoachChat({
     messages: initialMessages,
     transport: new DefaultChatTransport({
       api: "/api/coach",
-      body: { chatId },
+      body: { chatId, intent },
     }),
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
   });
@@ -154,6 +157,9 @@ export function CoachChat({
                             key={part.toolCallId}
                             proposal={part.input as Proposal}
                             source={source}
+                            proposalRef={part.toolCallId}
+                            chatId={chatId}
+                            isLive={part.state === "input-available"}
                             onDecision={(outcome) =>
                               addToolOutput({
                                 tool: "propose_use_case",
