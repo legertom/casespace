@@ -24,6 +24,7 @@ import {
   type UcStatus,
 } from "@/lib/domain";
 import { buildProgressReport } from "./progress-report";
+import { changelogForWeek } from "./changelog";
 
 /** Monday (ET) of the week containing the given ET date. */
 export function mondayOf(etDate: string): string {
@@ -123,9 +124,16 @@ async function gatherWeekData(weekStart: string) {
     );
 
   const progress = await buildProgressReport();
+  const casespaceChanges = await changelogForWeek(weekStart);
 
   return {
     weekStart,
+    casespaceChanges: casespaceChanges.map((c) => ({
+      title: c.title,
+      summary: c.summary,
+      requestedBy: c.requestedBy,
+      shippedOn: c.date,
+    })),
     weekEnd: new Date(end.getTime() - 86_400_000).toISOString().slice(0, 10),
     newRecords,
     promotions,
@@ -156,6 +164,7 @@ Structure (markdown):
 - "## The 15" — per-ELT-org state in prose, including the honest unallocated bucket.
 - "## Pulse" — only if there are new readings this week; compare to baseline and target.
 - "## Worth attention this week" — stale records and launched-but-unscored ROI, each with a concrete next step.
+- "## New in Casespace" — only if casespaceChanges is non-empty. What changed in the tool itself this week, in two to four sentences of prose (not a bulleted release note). Say what a reader can now do, not how it was built. When an entry has requestedBy, name that person as the one who asked for it — that is the recognition, and it matters more than the feature. Cover only what is in casespaceChanges; never infer other changes from the rest of the data.
 Keep the whole thing readable in three minutes. Numbers come only from the data provided — never invent or extrapolate.`;
 
 export interface GenerateResult {

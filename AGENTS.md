@@ -50,6 +50,13 @@ an API you have not verified in this repo, read the bundled docs for the
   just in nav.
 - Seeds (`pnpm db:seed`) are idempotent; demo data (`pnpm db:demo`) is
   dev-only and clearly separated.
+- **Add a changelog entry with every feature.** `docs/changelog.md`, in the
+  same commit. The weekly What's New post reads it, so an entry is how a
+  change reaches everyone at Clever — no entry means it shipped invisibly.
+  Write it for the newsletter's reader (what they can now do), not for the
+  engineer. Credit whoever asked with `Requested by: <name>`, and leave the
+  line off rather than inventing one. Add `Feedback: <id>` when it closes an
+  in-app report. Group under an `## YYYY-MM-DD` ship date, newest first.
 - **Ship the doc with the feature.** Reference documentation lives in
   `docs/` (rendered in-app at `/docs`); `docs/plans/` is working documents
   and doesn't count. A new route needs a doc claiming it in `surface:` front

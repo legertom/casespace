@@ -211,7 +211,11 @@ describe("docs coverage", () => {
 
   it("links only to docs that exist", () => {
     const broken = docs.flatMap((doc) => {
-      const dir = doc.path.slice(0, doc.path.lastIndexOf("/"));
+      // Root-level docs have no directory; slicing at lastIndexOf(-1) would
+      // eat the last character of the filename.
+      const dir = doc.path.includes("/")
+        ? doc.path.slice(0, doc.path.lastIndexOf("/"))
+        : "";
       return [...doc.body.matchAll(/\]\(([^)\s]+\.md)(?:#[^)\s]*)?\)/g)]
         .map((m) => path.normalize(path.join(DOCS_DIR, dir, m[1])))
         .filter((target) => !existsSync(target))

@@ -9,6 +9,13 @@ New here? Read [the program](concepts/program.md), then
 These pages are also served inside the app at **`/docs`** — same files, one
 source of truth.
 
+## What shipped
+
+**[Changelog](changelog.md)** — every improvement to Casespace itself, newest
+first, with the person who asked for it. The [weekly post](features/whats-new.md)
+reads it, so an entry here is how a change reaches everyone at Clever. Add one
+in the same commit as the feature.
+
 ## Concepts
 
 The rules everything else cites.
