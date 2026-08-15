@@ -11,6 +11,7 @@ import {
   users,
 } from "@/db/schema";
 import type { Department, UcStatus } from "@/lib/domain";
+import { creditsIdentity, type Identity } from "@/lib/people-match";
 
 export interface UseCaseFilters {
   status?: UcStatus;
@@ -21,10 +22,10 @@ export interface UseCaseFilters {
   eltUnallocated?: boolean;
   q?: string;
   createdById?: string;
-  /** Restrict to records the given user created, owns, or authored. */
-  mineUserId?: string;
+  /** Restrict to records the given user logged, owns, or authored — "Mine". */
+  mine?: Identity;
   /** Restrict to records the given person owns or authored. */
-  personId?: string;
+  credits?: Identity;
 }
 
 export type UseCaseRow = typeof useCases.$inferSelect & {
@@ -94,22 +95,20 @@ export async function listUseCases(
     authors: byCase.get(r.uc.id) ?? [],
   }));
 
-  if (filters.mineUserId) {
-    const uid = filters.mineUserId;
+  // Both views ask the same question of the same matcher, so "Mine" and
+  // "Use cases for <me>" can never disagree about who a record belongs to.
+  if (filters.mine) {
+    const id = filters.mine;
     result = result.filter(
       (r) =>
-        r.createdById === uid ||
-        r.ownerUserId === uid ||
-        r.authors.some((a) => a.userId === uid),
+        (id.userId !== null && r.createdById === id.userId) ||
+        creditsIdentity(r, id),
     );
   }
 
-  if (filters.personId) {
-    const pid = filters.personId;
-    result = result.filter(
-      (r) =>
-        r.ownerPersonId === pid || r.authors.some((a) => a.personId === pid),
-    );
+  if (filters.credits) {
+    const id = filters.credits;
+    result = result.filter((r) => creditsIdentity(r, id));
   }
 
   return result;

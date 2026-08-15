@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireUser } from "@/lib/current-user";
+import { identityForUser } from "@/server/identity";
 import { listUseCases } from "@/server/use-case-queries";
 import { ProgramDashboard } from "@/components/dashboard/program-dashboard";
 import { StatusBadge } from "@/components/status-badge";
@@ -23,7 +24,7 @@ export default async function Home() {
     );
   }
 
-  const mine = await listUseCases({ mineUserId: user.id });
+  const mine = await listUseCases({ mine: await identityForUser(user) });
 
   return (
     <div>

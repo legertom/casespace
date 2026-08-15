@@ -15,6 +15,7 @@ import {
   proposalSchema,
   proposalToCreateInput,
 } from "@/lib/ai/proposal";
+import { identityForUser } from "@/server/identity";
 import { hashToken } from "@/server/pat";
 import { buildProgressReport } from "@/server/progress-report";
 import { listUseCases } from "@/server/use-case-queries";
@@ -107,7 +108,7 @@ const handler = createMcpHandler(
       },
       async (_args, ctx) => {
         const user = ctx.http?.authInfo?.extra?.user as CurrentUser;
-        const rows = await listUseCases({ mineUserId: user.id });
+        const rows = await listUseCases({ mine: await identityForUser(user) });
         return json(
           rows.map((r) => ({
             id: r.id,

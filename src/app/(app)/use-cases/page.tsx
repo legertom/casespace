@@ -11,7 +11,8 @@ import {
 } from "@/lib/domain";
 import { listNames } from "@/lib/format";
 import { canCreateUseCase } from "@/lib/permissions";
-import { getPersonName, listEltOrgs } from "@/server/reference";
+import { identityForPerson, identityForUser } from "@/server/identity";
+import { listEltOrgs } from "@/server/reference";
 import { listUseCases } from "@/server/use-case-queries";
 import { StatusBadge } from "@/components/status-badge";
 
@@ -47,7 +48,8 @@ export default async function UseCasesPage({
   const q = sp.q?.trim() || undefined;
   const mine = sp.mine === "1";
   const personId = sp.person?.trim() || undefined;
-  const personName = personId ? await getPersonName(personId) : null;
+  const person = personId ? await identityForPerson(personId) : null;
+  const personName = person?.name ?? null;
 
   // "none" is the dashboard's Unallocated bucket. An id matching no real org
   // is dropped entirely — the full list with no scope heading, rather than a
@@ -64,8 +66,8 @@ export default async function UseCasesPage({
   const scope = {
     department,
     q,
-    mineUserId: mine ? user.id : undefined,
-    personId: personName ? personId : undefined,
+    mine: mine ? await identityForUser(user) : undefined,
+    credits: person?.identity,
     eltOrgId: eltOrg?.id,
     eltUnallocated,
   };

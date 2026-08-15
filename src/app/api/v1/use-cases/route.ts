@@ -2,6 +2,7 @@ import { z } from "zod";
 import { DEPARTMENTS, STATUSES, type Department, type UcStatus } from "@/lib/domain";
 import { useCaseCreateApiSchema } from "@/lib/use-case-input";
 import { toApiUseCase } from "@/server/api-serializers";
+import { identityForUser } from "@/server/identity";
 import { authenticatePat } from "@/server/pat";
 import { listUseCases } from "@/server/use-case-queries";
 import { createUseCase, ForbiddenError } from "@/server/use-case-service";
@@ -21,7 +22,10 @@ export async function GET(req: Request) {
     department: DEPARTMENTS.includes(department as Department)
       ? (department as Department)
       : undefined,
-    mineUserId: url.searchParams.get("mine") === "1" ? user.id : undefined,
+    mine:
+      url.searchParams.get("mine") === "1"
+        ? await identityForUser(user)
+        : undefined,
   });
   return Response.json({ useCases: rows.map(toApiUseCase) });
 }

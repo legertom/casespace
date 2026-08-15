@@ -5,6 +5,8 @@ updated: 2026-08-14
 code:
   - src/db/schema.ts
   - src/server/reference.ts
+  - src/server/identity.ts
+  - src/lib/people-match.ts
   - src/lib/domain.ts
 ---
 
@@ -32,6 +34,12 @@ Records credit people by directory reference where possible, but an owner or
 author who has never signed in stays **unlinked**: shown by name, not
 clickable, and never notified. This is why notification code drops nulls
 rather than assuming everyone has an account.
+
+Credit typed by hand is matched back to a person by name, with case and
+accents folded first — a login spelled "Tom Leger" and a directory row
+spelled "Tom Léger" are one human, so both spellings find the same records.
+The matching lives in `src/lib/people-match.ts` and is unit-tested; it is
+exact-after-folding, never fuzzy.
 
 ## `ai_leads` — the roster
 

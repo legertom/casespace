@@ -35,6 +35,14 @@ purpose.
 **"Mine" is broader than "I created it."** A record counts as yours if you
 created it, own it, or are credited as an author.
 
+**One person, several spellings.** Your login name and your directory name
+are often written differently — "Tom Leger" signing in, "Tom Léger" on the
+org chart — and credit typed by hand uses whichever one the writer reached
+for. `mine=1` and `person=` match across all of them: case and accents are
+folded before comparing. This is not fuzzy matching. "Tom Leger" and
+"Tom Léger" are the same name once the accent is off; "Tom Legere" is still
+a different person.
+
 ## Who can do what
 
 Everyone reads everything. **Log a use case** appears for AI Leads and

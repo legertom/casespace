@@ -10,6 +10,7 @@ import {
   type UcStatus,
 } from "@/lib/domain";
 import { canEditUseCase, canCreateUseCase } from "@/lib/permissions";
+import { foldName } from "@/lib/people-match";
 import {
   applyCreateDefaults,
   type PersonRef,
@@ -49,24 +50,25 @@ interface Actor {
 
 /**
  * Link author/owner refs to directory rows and user accounts. Refs that carry
- * only a display name (proposals from the Coach or notes parser) resolve to a
- * person by exact, case-insensitive name match — never fuzzy; credit must not
- * guess.
+ * only a display name (typed by hand, or proposed by the Coach or notes
+ * parser) resolve to a person by name — never fuzzy; credit must not guess.
+ * Case and accents fold first, so the login spelling of a name finds the
+ * directory spelling of it ("Tom Leger" → "Tom Léger").
  */
 async function resolveUserLinks(refs: PersonRef[]): Promise<PersonRef[]> {
   const db = getDb();
-  const resolved: PersonRef[] = [];
-  for (const r of refs) {
-    let personId = r.personId ?? null;
-    if (!personId && r.displayName.trim()) {
-      const [match] = await db
-        .select({ id: people.id })
-        .from(people)
-        .where(sql`lower(${people.name}) = lower(${r.displayName.trim()})`);
-      personId = match?.id ?? null;
-    }
-    resolved.push({ ...r, personId });
+  const needsLookup = refs.some((r) => !r.personId && r.displayName.trim());
+  const byName = new Map<string, string>();
+  if (needsLookup) {
+    const directory = await db
+      .select({ id: people.id, name: people.name })
+      .from(people);
+    for (const p of directory) byName.set(foldName(p.name), p.id);
   }
+  const resolved: PersonRef[] = refs.map((r) => ({
+    ...r,
+    personId: r.personId ?? byName.get(foldName(r.displayName)) ?? null,
+  }));
   const personIds = resolved
     .map((r) => r.personId)
     .filter((x): x is string => !!x);

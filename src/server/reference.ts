@@ -78,15 +78,6 @@ export async function listPeopleLite(): Promise<PersonLite[]> {
     .orderBy(asc(people.name));
 }
 
-export async function getPersonName(id: string): Promise<string | null> {
-  const db = getDb();
-  const [row] = await db
-    .select({ name: people.name })
-    .from(people)
-    .where(eq(people.id, id));
-  return row?.name ?? null;
-}
-
 export async function listRoster() {
   const db = getDb();
   const leads = await db.select().from(aiLeads).orderBy(asc(aiLeads.name));
