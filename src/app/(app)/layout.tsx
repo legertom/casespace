@@ -59,6 +59,9 @@ export default async function AppLayout({
               <Link href="/whats-new" className="hover:text-ink">
                 What&rsquo;s New
               </Link>
+              <Link href="/docs" className="hover:text-ink">
+                Docs
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-3 md:gap-4">
@@ -111,6 +114,9 @@ export default async function AppLayout({
                   </Link>
                   <Link href="/whats-new" className="py-1.5 hover:text-ink">
                     What&rsquo;s New
+                  </Link>
+                  <Link href="/docs" className="py-1.5 hover:text-ink">
+                    Docs
                   </Link>
                 </nav>
                 {canCreateUseCase(user.role) && (

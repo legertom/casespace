@@ -50,6 +50,13 @@ an API you have not verified in this repo, read the bundled docs for the
   just in nav.
 - Seeds (`pnpm db:seed`) are idempotent; demo data (`pnpm db:demo`) is
   dev-only and clearly separated.
+- **Ship the doc with the feature.** Reference documentation lives in
+  `docs/` (rendered in-app at `/docs`); `docs/plans/` is working documents
+  and doesn't count. A new route needs a doc claiming it in `surface:` front
+  matter — `pnpm test` fails otherwise — plus its files in `code:`, a bumped
+  `updated:`, and a row in `docs/README.md`. Put deliberate-looking-wrong
+  decisions under "Rules that surprise people"; that section is why the docs
+  are worth reading.
 
 ## Commands
 
