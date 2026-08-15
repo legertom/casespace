@@ -48,7 +48,7 @@ function Field({
   className,
 }: {
   label: string;
-  hint?: string;
+  hint?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }) {
@@ -505,7 +505,19 @@ export function UseCaseForm({
         <h2 className="font-serif text-2xl">Success &amp; ROI</h2>
         <Field
           label="Success criterion"
-          hint="The measurable definition of success, captured at intake."
+          hint={
+            <>
+              Write the target now, before the results are in, so
+              &ldquo;did it work?&rdquo; isn&rsquo;t a matter of opinion later.
+              Name what you measure, which way it should move, and by how much
+              &mdash; counts or rates, never dollars. Use the same metric you
+              baseline and re-measure below.
+              <span className="mt-1 block">
+                Example: &ldquo;Same-day ticket triage goes from 60% to
+                85%&rdquo; &mdash; not &ldquo;triage gets faster.&rdquo;
+              </span>
+            </>
+          }
         >
           <textarea
             rows={2}
