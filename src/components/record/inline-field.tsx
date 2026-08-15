@@ -198,10 +198,24 @@ export function InlineField({
 
   if (!canEdit) return <div className={className}>{children}</div>;
 
+  /**
+   * The field itself is the control — clicking its value opens the editor,
+   * which is what makes a pencil on every field unnecessary. Two things must
+   * still behave normally inside it: links and buttons, and selecting text
+   * (the Coach's "ask about this" runs off a selection).
+   */
+  function openFromContent(e: React.MouseEvent) {
+    if (e.target instanceof Element && e.target.closest("a,button,input,select,textarea,label")) {
+      return;
+    }
+    if (!window.getSelection()?.isCollapsed) return;
+    open();
+  }
+
   return (
     // The pencil sits top-right of the field; reserve its width so content
     // wraps before it reaches it rather than running underneath.
-    <div className={`relative ${editing ? "" : "pr-9"} ${className ?? ""}`}>
+    <div className={`group relative ${editing ? "" : "pr-9"} ${className ?? ""}`}>
       {editing ? (
         <div onKeyDown={onKeyDown} className="max-w-prose">
           <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">
@@ -417,16 +431,22 @@ export function InlineField({
         </div>
       ) : (
         <>
-          {children}
-          {/* Always on, and only one. Hidden-until-hover kept the controls a
-              secret; a pencil *and* a sparkle on two dozen fields was the
-              other extreme. The Coach is a highlight away, and bottom-right. */}
+          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions,
+              jsx-a11y/click-events-have-key-events -- the keyboard and screen
+              reader path is the button below, which is always in the tree. */}
+          <div onClick={openFromContent} className="cursor-pointer">
+            {children}
+          </div>
+          {/* A hint, not the mechanism: two dozen permanent pencils read as
+              clutter, so the pencil surfaces on hover and the field itself is
+              what you click. It stays focusable, so it is never a secret to a
+              keyboard or a screen reader. */}
           <button
             type="button"
             onClick={open}
             aria-label={`Edit ${label}`}
             title={`Edit ${label}`}
-            className="absolute right-0 top-0 rounded-md border border-hairline bg-paper p-1.5 text-ink-faint transition-colors hover:border-hairline-strong hover:text-accent"
+            className="absolute right-0 top-0 rounded-md border border-hairline bg-paper p-1.5 text-ink-faint opacity-0 transition-opacity hover:text-accent focus-visible:opacity-100 group-hover:opacity-100"
           >
             <PencilIcon />
           </button>

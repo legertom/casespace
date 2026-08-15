@@ -185,8 +185,8 @@ export default async function UseCaseDetailPage({
 
         {editable && (
           <p className="mt-4 text-sm text-ink-faint">
-            Every field carries a pencil to edit it in place. Highlight any text
-            to ask the Coach about it.
+            Click any field to edit it in place. Highlight any text to ask the
+            Coach about it.
           </p>
         )}
 
