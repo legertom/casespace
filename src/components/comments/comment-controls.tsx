@@ -8,12 +8,15 @@ import {
   editCommentAction,
 } from "@/server/actions-comments";
 import { CommentComposer } from "./comment-composer";
+import { MentionTextarea, mentionedIds } from "./mention-textarea";
 
 interface Props {
   commentId: string;
   useCaseId: string;
   /** Raw markdown, for the edit box. */
   body: string;
+  /** Who this comment already names — the edit box starts from these. */
+  mentioned: MentionableUser[];
   canEdit: boolean;
   canDelete: boolean;
   /** False at the deepest level — there is nowhere left to nest. */
@@ -31,6 +34,7 @@ export function CommentControls({
   commentId,
   useCaseId,
   body,
+  mentioned,
   canEdit,
   canDelete,
   canReply,
@@ -42,14 +46,26 @@ export function CommentControls({
   const [replying, setReplying] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(body);
+  const [drafted, setDrafted] = useState<MentionableUser[]>(mentioned);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /** Back to the saved comment, mentions included. */
+  function discard() {
+    setDraft(body);
+    setDrafted(mentioned);
+    setEditing(false);
+  }
 
   function save() {
     if (!draft.trim()) return;
     setError(null);
     startTransition(async () => {
-      const res = await editCommentAction(commentId, draft);
+      const res = await editCommentAction(
+        commentId,
+        draft,
+        mentionedIds(draft, drafted),
+      );
       if (res.error) setError(res.error);
       else {
         setEditing(false);
@@ -74,12 +90,15 @@ export function CommentControls({
     <>
       {editing ? (
         <div className="mt-2 space-y-2">
-          <textarea
-            aria-label="Edit comment"
-            rows={4}
+          <MentionTextarea
+            label="Edit comment"
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            className="w-full rounded-md border border-hairline-strong bg-surface px-3 py-2 text-sm"
+            onChange={setDraft}
+            people={people}
+            mentioned={drafted}
+            onMentionedChange={setDrafted}
+            onSubmit={save}
+            placeholder="Markdown works; type @ to mention someone."
           />
           <div className="flex gap-2">
             <button
@@ -92,10 +111,7 @@ export function CommentControls({
             </button>
             <button
               type="button"
-              onClick={() => {
-                setDraft(body);
-                setEditing(false);
-              }}
+              onClick={discard}
               className="rounded-md border border-hairline-strong px-3 py-1.5 text-sm"
             >
               Cancel
@@ -122,6 +138,7 @@ export function CommentControls({
               type="button"
               onClick={() => {
                 setDraft(body);
+                setDrafted(mentioned);
                 setEditing(true);
               }}
               className="underline-offset-2 hover:text-accent hover:underline"

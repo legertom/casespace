@@ -66,3 +66,21 @@ export function commentNotifications(
 
   return [...best].map(([userId, kind]) => ({ userId, kind }));
 }
+
+/**
+ * Who an edit newly names. Editing a comment can add a mention that wasn't
+ * there when it was posted, and being named is worth hearing about whenever
+ * it happens — but only once: anyone already named keeps their peace, and
+ * the author never hears about naming themselves.
+ *
+ * Removing a mention notifies nobody. The notification already sent stands;
+ * it was true when it was sent.
+ */
+export function newMentions(
+  previous: readonly string[],
+  next: readonly string[],
+  actorId: string,
+): string[] {
+  const had = new Set(previous);
+  return [...new Set(next)].filter((id) => id !== actorId && !had.has(id));
+}

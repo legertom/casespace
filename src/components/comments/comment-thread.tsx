@@ -92,6 +92,7 @@ function Comment({
             commentId={c.id}
             useCaseId={useCaseId}
             body={c.body}
+            mentioned={mentioned}
             canEdit={mine}
             canDelete={mine || isAdmin}
             canReply={canReplyAtDepth(c.depth)}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { commentNotifications } from "./comment-notifications";
+import { commentNotifications, newMentions } from "./comment-notifications";
 
 const kindFor = (
   recipients: { userId: string; kind: string }[],
@@ -137,5 +137,31 @@ describe("unlinked people", () => {
         mentionedUserIds: [],
       }),
     ).toEqual([]);
+  });
+});
+
+describe("who an edit newly names", () => {
+  it("names only people who weren't named before", () => {
+    expect(newMentions(["kate"], ["kate", "alex"], "actor")).toEqual(["alex"]);
+  });
+
+  it("says nothing when the mentions didn't change", () => {
+    expect(newMentions(["kate"], ["kate"], "actor")).toEqual([]);
+  });
+
+  it("says nothing when a mention is removed", () => {
+    expect(newMentions(["kate", "alex"], ["kate"], "actor")).toEqual([]);
+  });
+
+  it("never notifies the author for naming themselves", () => {
+    expect(newMentions([], ["actor", "kate"], "actor")).toEqual(["kate"]);
+  });
+
+  it("notifies someone re-named after being removed", () => {
+    expect(newMentions([], ["kate"], "actor")).toEqual(["kate"]);
+  });
+
+  it("de-dupes a name written twice", () => {
+    expect(newMentions([], ["kate", "kate"], "actor")).toEqual(["kate"]);
   });
 });

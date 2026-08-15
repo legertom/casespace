@@ -10,7 +10,7 @@ import {
   useCases,
   users,
 } from "@/db/schema";
-import { commentNotifications } from "@/lib/comment-notifications";
+import { commentNotifications, newMentions } from "@/lib/comment-notifications";
 import { requireUser } from "@/lib/current-user";
 import { canReplyAtDepth } from "@/lib/domain";
 import { canComment, canManageProgram } from "@/lib/permissions";
@@ -135,10 +135,18 @@ export async function addCommentAction(
   return { id: comment.id };
 }
 
-/** Editing is the author's alone. The edit trail is the "edited" marker. */
+/**
+ * Editing is the author's alone. The edit trail is the "edited" marker.
+ *
+ * An edit can name someone who wasn't named when the comment was posted, and
+ * that person hears about it — a mention added on the second pass is still a
+ * mention. Anyone already named stays quiet, and removing a name notifies
+ * nobody: the notification already sent was true when it was sent.
+ */
 export async function editCommentAction(
   commentId: string,
   body: string,
+  mentionedUserIds: string[] = [],
 ): Promise<ActionResult> {
   const user = await requireUser();
   const text = body.trim();
@@ -150,6 +158,7 @@ export async function editCommentAction(
     .select({
       authorId: useCaseComments.authorId,
       useCaseId: useCaseComments.useCaseId,
+      mentionedUserIds: useCaseComments.mentionedUserIds,
       deletedAt: useCaseComments.deletedAt,
     })
     .from(useCaseComments)
@@ -161,10 +170,64 @@ export async function editCommentAction(
     return { error: "Only the author can edit a comment." };
   }
 
+  const mentioned = [...new Set(mentionedUserIds)].filter(Boolean);
+  const validMentions = mentioned.length
+    ? (
+        await db
+          .select({ id: users.id })
+          .from(users)
+          .where(inArray(users.id, mentioned))
+      ).map((u) => u.id)
+    : [];
+
   await db
     .update(useCaseComments)
-    .set({ body: text, editedAt: new Date() })
+    .set({
+      body: text,
+      editedAt: new Date(),
+      mentionedUserIds: validMentions,
+    })
     .where(eq(useCaseComments.id, commentId));
+
+  const newly = newMentions(comment.mentionedUserIds, validMentions, user.id);
+  if (newly.length > 0) {
+    // Someone already told about this comment for a weaker reason gets that
+    // row upgraded and re-surfaced rather than a second bell for one comment.
+    const existing = await db
+      .select({ userId: notifications.userId })
+      .from(notifications)
+      .where(
+        and(
+          eq(notifications.commentId, commentId),
+          inArray(notifications.userId, newly),
+        ),
+      );
+    const known = new Set(existing.map((n) => n.userId));
+
+    if (known.size > 0) {
+      await db
+        .update(notifications)
+        .set({ kind: "mention", readAt: null })
+        .where(
+          and(
+            eq(notifications.commentId, commentId),
+            inArray(notifications.userId, [...known]),
+          ),
+        );
+    }
+    const fresh = newly.filter((id) => !known.has(id));
+    if (fresh.length > 0) {
+      await db.insert(notifications).values(
+        fresh.map((userId) => ({
+          userId,
+          kind: "mention" as const,
+          useCaseId: comment.useCaseId,
+          commentId,
+          actorId: user.id,
+        })),
+      );
+    }
+  }
 
   revalidatePath(`/use-cases/${comment.useCaseId}`);
   return {};
