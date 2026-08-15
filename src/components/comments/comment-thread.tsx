@@ -1,9 +1,8 @@
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { buildCommentTree, type CommentNode } from "@/lib/comment-tree";
 import { canReplyAtDepth } from "@/lib/domain";
 import { fmtDate } from "@/lib/format";
 import type { CommentRow, MentionableUser } from "@/server/comment-queries";
+import { CommentBody } from "./comment-body";
 import { CommentComposer } from "./comment-composer";
 import { CommentControls } from "./comment-controls";
 
@@ -76,6 +75,7 @@ function Comment({
 }) {
   const c = node.comment;
   const mine = c.authorId === currentUserId;
+  const mentioned = people.filter((p) => c.mentionedUserIds.includes(p.id));
 
   return (
     <li id={`comment-${c.id}`} className="scroll-mt-6 target:bg-accent-wash">
@@ -97,9 +97,7 @@ function Comment({
             canReply={canReplyAtDepth(c.depth)}
             people={people}
           >
-            <div className="post-md mt-1.5 text-sm">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{c.body}</ReactMarkdown>
-            </div>
+            <CommentBody body={c.body} mentions={mentioned} />
           </CommentControls>
         </>
       )}

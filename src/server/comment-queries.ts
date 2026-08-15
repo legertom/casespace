@@ -41,6 +41,8 @@ export async function listComments(useCaseId: string): Promise<CommentRow[]> {
 export interface MentionableUser {
   id: string;
   name: string;
+  /** Their directory row, when their login is linked — what a mention links to. */
+  personId: string | null;
 }
 
 /**
@@ -51,7 +53,7 @@ export interface MentionableUser {
 export async function listMentionableUsers(): Promise<MentionableUser[]> {
   const db = getDb();
   return db
-    .select({ id: users.id, name: users.name })
+    .select({ id: users.id, name: users.name, personId: users.personId })
     .from(users)
     .orderBy(asc(users.name));
 }
