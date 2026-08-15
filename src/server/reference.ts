@@ -1,12 +1,60 @@
 import "server-only";
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, or } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { aiLeads, aiLeadTeams, appSettings, eltOrgs, people, teams } from "@/db/schema";
-import { DEFAULT_STALE_DAYS } from "@/lib/domain";
+import { DEFAULT_STALE_DAYS, type Department } from "@/lib/domain";
 
 export async function listTeams() {
   const db = getDb();
   return db.select().from(teams).orderBy(asc(teams.department), asc(teams.name));
+}
+
+export interface MyTeam {
+  id: string;
+  name: string;
+  department: Department;
+}
+
+/**
+ * The signed-in user's own team(s), via their roster row. Sign-in links the
+ * row by email (`auth-provision`), so `userId` is the reliable match;
+ * `personId` covers a lead whose row was linked to a person before they ever
+ * signed in.
+ */
+export async function listMyTeams(user: {
+  id: string;
+  personId: string | null;
+}): Promise<MyTeam[]> {
+  const db = getDb();
+  const rows = await db
+    .selectDistinct({
+      id: teams.id,
+      name: teams.name,
+      department: teams.department,
+    })
+    .from(aiLeads)
+    .innerJoin(aiLeadTeams, eq(aiLeadTeams.leadId, aiLeads.id))
+    .innerJoin(teams, eq(aiLeadTeams.teamId, teams.id))
+    .where(
+      user.personId
+        ? or(eq(aiLeads.userId, user.id), eq(aiLeads.personId, user.personId))
+        : eq(aiLeads.userId, user.id),
+    )
+    .orderBy(asc(teams.name));
+  return rows as MyTeam[];
+}
+
+/**
+ * The team to pre-select when this user logs a use case. Only unambiguous
+ * when they lead exactly one team — a lead covering two functions has to say
+ * which one, and guessing would quietly mis-file the record.
+ */
+export async function getDefaultTeam(user: {
+  id: string;
+  personId: string | null;
+}): Promise<MyTeam | null> {
+  const mine = await listMyTeams(user);
+  return mine.length === 1 ? mine[0] : null;
 }
 
 export async function listEltOrgs() {

@@ -2,7 +2,12 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/current-user";
 import { canCreateUseCase } from "@/lib/permissions";
 import { createUseCaseAction } from "@/server/actions";
-import { listEltOrgs, listPeopleLite, listTeams } from "@/server/reference";
+import {
+  getDefaultTeam,
+  listEltOrgs,
+  listPeopleLite,
+  listTeams,
+} from "@/server/reference";
 import { PrefillUseCaseForm } from "@/components/use-case-prefill";
 import type { Department } from "@/lib/domain";
 import type { UseCaseCreateInput } from "@/lib/use-case-input";
@@ -14,10 +19,11 @@ export default async function ReviewUseCasePage() {
   const user = await requireUser();
   if (!canCreateUseCase(user.role)) redirect("/use-cases");
 
-  const [people, teams, orgs] = await Promise.all([
+  const [people, teams, orgs, myTeam] = await Promise.all([
     listPeopleLite(),
     listTeams(),
     listEltOrgs(),
+    getDefaultTeam(user),
   ]);
 
   async function submit(
@@ -43,6 +49,7 @@ export default async function ReviewUseCasePage() {
             name: o.name,
             departments: o.departments as Department[],
           }))}
+          defaultTeam={myTeam}
           onSubmit={submit}
         />
       </div>

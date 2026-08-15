@@ -13,6 +13,8 @@ interface Props {
   people: PersonOption[];
   teams: TeamOption[];
   eltOrgs: EltOrgOption[];
+  /** The signed-in user's own team, used only where the handoff left team blank. */
+  defaultTeam?: TeamOption | null;
   onSubmit: (
     input: UseCaseCreateInput,
     source: "form" | "wizard" | "notes",
@@ -28,7 +30,13 @@ interface PrefillPayload {
  * The review screen the AI doors converge on: the full form, pre-filled, with
  * gap flags on top. Reads the handoff from sessionStorage exactly once.
  */
-export function PrefillUseCaseForm({ people, teams, eltOrgs, onSubmit }: Props) {
+export function PrefillUseCaseForm({
+  people,
+  teams,
+  eltOrgs,
+  defaultTeam,
+  onSubmit,
+}: Props) {
   const [payload] = useState<PrefillPayload | null>(() => {
     if (typeof window === "undefined") return null;
     try {
@@ -45,8 +53,21 @@ export function PrefillUseCaseForm({ people, teams, eltOrgs, onSubmit }: Props) 
     }
   });
 
-  const initial = payload?.input ?? {};
+  const handoff = payload?.input ?? {};
   const source = payload?.source ?? "wizard";
+  // Fall back to the user's own team, but never override what the handoff
+  // named — and never pair it with a department it doesn't belong to.
+  const useDefaultTeam =
+    defaultTeam != null &&
+    !handoff.teamId &&
+    (!handoff.department || handoff.department === defaultTeam.department);
+  const initial: Partial<UseCaseCreateInput> = useDefaultTeam
+    ? {
+        ...handoff,
+        department: defaultTeam.department,
+        teamId: defaultTeam.id,
+      }
+    : handoff;
   const gaps = payload ? computeGapFlags(initial) : [];
 
   return (

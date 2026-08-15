@@ -99,7 +99,7 @@ export async function getEltProgress(): Promise<EltProgressRow[]> {
     confirmedRoi: 0,
     qualifiedInFlight: 0,
     inPipeline: 0,
-    note: "Work in departments with no confirmed ELT owner (Business Operations, Business Analytics).",
+    note: "Work in departments with no confirmed ELT owner.",
   };
 
   for (const r of rows) {
