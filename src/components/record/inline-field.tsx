@@ -6,6 +6,7 @@ import { askAboutField, askCoach } from "@/lib/coach-bus";
 import { RATING_FIELDS, type Department, type RatingKey } from "@/lib/domain";
 import type { PersonRef, UseCaseUpdateInput } from "@/lib/use-case-input";
 import { patchUseCaseAction, type ActionResult } from "@/server/actions";
+import { CoachIcon } from "@/components/coach/coach-icon";
 import { ErrorNote } from "@/components/error-note";
 import { PeoplePicker, type PersonOption } from "@/components/people-picker";
 
@@ -203,7 +204,9 @@ export function InlineField({
   if (!canEdit) return <div className={className}>{children}</div>;
 
   return (
-    <div className={`group relative ${className ?? ""}`}>
+    // The controls sit top-right of the field; reserve their width so content
+    // wraps before it reaches them rather than running underneath.
+    <div className={`relative ${editing ? "" : "pr-16"} ${className ?? ""}`}>
       {editing ? (
         <div onKeyDown={onKeyDown} className="max-w-prose">
           <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">
@@ -418,13 +421,15 @@ export function InlineField({
       ) : (
         <>
           {children}
-          <span className="absolute right-0 top-0 flex gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+          {/* Always on. Hidden-until-hover kept the page calm but kept the
+              controls a secret; two quiet icons cost less than that. */}
+          <span className="absolute right-0 top-0 flex gap-1">
             <button
               type="button"
               onClick={open}
               aria-label={`Edit ${label}`}
               title={`Edit ${label}`}
-              className="rounded-md border border-hairline-strong bg-paper p-1.5 text-ink-muted hover:text-accent"
+              className="rounded-md border border-hairline bg-paper p-1.5 text-ink-faint transition-colors hover:border-hairline-strong hover:text-accent"
             >
               <PencilIcon />
             </button>
@@ -441,9 +446,9 @@ export function InlineField({
               }
               aria-label={`Ask the Coach about ${label}`}
               title={`Ask the Coach about ${label}`}
-              className="rounded-md border border-hairline-strong bg-paper px-2 py-1.5 text-xs text-ink-muted hover:text-accent"
+              className="rounded-md border border-hairline bg-paper p-1.5 text-ink-faint transition-colors hover:border-hairline-strong hover:text-accent"
             >
-              Coach
+              <CoachIcon />
             </button>
           </span>
         </>

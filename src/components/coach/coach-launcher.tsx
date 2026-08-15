@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { onAskCoach } from "@/lib/coach-bus";
 import { CoachChat } from "./coach-chat";
+import { CoachIcon } from "./coach-icon";
 
 /**
  * The floating Coach: available on every page, one persistent panel
@@ -58,8 +59,9 @@ export function CoachLauncher() {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-label={open ? "Close the Coach" : "Open the Coach"}
-        className="fixed bottom-5 right-5 z-40 rounded-full border border-hairline-strong bg-ink px-4 py-2.5 font-serif text-sm text-paper shadow-md transition-colors hover:bg-ink/85"
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full border border-hairline-strong bg-ink px-4 py-2.5 font-serif text-sm text-paper shadow-md transition-colors hover:bg-ink/85"
       >
+        <CoachIcon className="size-4" />
         {open ? "Close" : "Coach"}
       </button>
 

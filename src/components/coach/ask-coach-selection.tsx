@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { askCoach, quoteForCoach } from "@/lib/coach-bus";
+import { CoachIcon } from "./coach-icon";
 
 interface Props {
   /** The record the selected text came from, so the Coach can look it up. */
@@ -95,8 +96,9 @@ export function AskCoachSelection({ record, children }: Props) {
           onMouseDown={(e) => e.preventDefault()}
           onClick={ask}
           style={{ top: spot.top, left: spot.left }}
-          className="fixed z-30 -translate-x-1/2 -translate-y-full rounded-full border border-hairline-strong bg-ink px-3 py-1.5 text-xs text-paper shadow-md transition-colors hover:bg-ink/85"
+          className="fixed z-30 flex -translate-x-1/2 -translate-y-full items-center gap-1.5 rounded-full border border-hairline-strong bg-ink px-3 py-1.5 text-xs text-paper shadow-md transition-colors hover:bg-ink/85"
         >
+          <CoachIcon className="size-3" />
           Ask the Coach
         </button>
       )}
