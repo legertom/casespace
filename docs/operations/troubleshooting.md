@@ -20,10 +20,13 @@ Check, in order:
 1. `CRON_SECRET` is set — without it the route rejects every caller,
    including Vercel.
 2. The cron shows in the Vercel dashboard (it comes from `vercel.json`).
-3. AI is configured — otherwise the job writes a notice, not a post.
+3. AI is configured — otherwise the job returns 503 and writes nothing at
+   all, leaving that week with no post.
 
-An admin can regenerate a draft from the What's New page rather than waiting
-for next Monday. See [cron](../integrations/cron.md).
+An admin can regenerate from the What's New page rather than waiting for next
+Monday. Note that a regenerate **overwrites** that week's post if one already
+exists, and discards any edits made to it. See
+[cron](../integrations/cron.md).
 
 ## Sign-in bounces me
 

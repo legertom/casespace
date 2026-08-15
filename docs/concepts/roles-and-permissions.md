@@ -39,7 +39,7 @@ server-side in the actions, not just by hiding nav links.
 | Link / unlink workflows | — | ✅² | ✅ |
 | Qualify, reject, confirm ROI | — | — | ✅ |
 | Edit roster, ELT targets, pulse snapshots | — | — | ✅ |
-| Draft / edit What's New posts | — | — | ✅ |
+| Regenerate / edit What's New posts | — | — | ✅ |
 | See pulse charts and Wins | — | — | ✅ |
 
 ¹ "Own" means creator, named owner, or credited author (`canEditUseCase`).

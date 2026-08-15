@@ -30,8 +30,8 @@ migrate themselves**.
    `AUTH_GOOGLE_SECRET`, and a generated `AUTH_SECRET`.
 
 4. **AI** — enable AI Gateway on the project, or set `AI_GATEWAY_API_KEY`.
-   Without it the Coach, notes parsing, and the weekly post degrade to polite
-   notices; everything else works.
+   Without it the Coach and notes parsing degrade to polite notices, the
+   weekly post is skipped entirely, and everything else works.
 
 5. **Cron** — `vercel.json` schedules `/api/cron/whats-new` for Mondays 13:00
    UTC. Set `CRON_SECRET`; Vercel sends it as the Authorization bearer
