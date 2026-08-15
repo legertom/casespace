@@ -2,11 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { askAboutField, askCoach } from "@/lib/coach-bus";
 import { RATING_FIELDS, type Department, type RatingKey } from "@/lib/domain";
 import type { PersonRef, UseCaseUpdateInput } from "@/lib/use-case-input";
 import { patchUseCaseAction, type ActionResult } from "@/server/actions";
-import { CoachIcon } from "@/components/coach/coach-icon";
 import { ErrorNote } from "@/components/error-note";
 import { PeoplePicker, type PersonOption } from "@/components/people-picker";
 
@@ -54,8 +52,6 @@ interface Props {
   canEdit: boolean;
   /** Refuse to save an empty value — title and description. */
   required?: boolean;
-  /** What the Coach button quotes. Defaults to the value as text. */
-  coachText?: string;
   className?: string;
   children: React.ReactNode;
 }
@@ -88,7 +84,6 @@ export function InlineField({
   editor,
   canEdit,
   required = false,
-  coachText,
   className,
   children,
 }: Props) {
@@ -204,9 +199,9 @@ export function InlineField({
   if (!canEdit) return <div className={className}>{children}</div>;
 
   return (
-    // The controls sit top-right of the field; reserve their width so content
-    // wraps before it reaches them rather than running underneath.
-    <div className={`relative ${editing ? "" : "pr-16"} ${className ?? ""}`}>
+    // The pencil sits top-right of the field; reserve its width so content
+    // wraps before it reaches it rather than running underneath.
+    <div className={`relative ${editing ? "" : "pr-9"} ${className ?? ""}`}>
       {editing ? (
         <div onKeyDown={onKeyDown} className="max-w-prose">
           <p className="text-xs font-medium uppercase tracking-wide text-ink-faint">
@@ -395,7 +390,9 @@ export function InlineField({
           </div>
 
           {error && <ErrorNote result={error} className="mt-2" />}
-          <div className="mt-2 flex items-center gap-2">
+          {/* Wraps as a whole: in a narrow column the hint drops to its own
+              line rather than splitting in two and pushing the buttons adrift. */}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={save}
@@ -411,7 +408,7 @@ export function InlineField({
             >
               Cancel
             </button>
-            <span className="text-xs text-ink-faint">
+            <span className="whitespace-nowrap text-xs text-ink-faint">
               {editor.kind === "textarea" || editor.kind === "lines"
                 ? "⌘↵ saves · Esc cancels"
                 : "↵ saves · Esc cancels"}
@@ -421,36 +418,18 @@ export function InlineField({
       ) : (
         <>
           {children}
-          {/* Always on. Hidden-until-hover kept the page calm but kept the
-              controls a secret; two quiet icons cost less than that. */}
-          <span className="absolute right-0 top-0 flex gap-1">
-            <button
-              type="button"
-              onClick={open}
-              aria-label={`Edit ${label}`}
-              title={`Edit ${label}`}
-              className="rounded-md border border-hairline bg-paper p-1.5 text-ink-faint transition-colors hover:border-hairline-strong hover:text-accent"
-            >
-              <PencilIcon />
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                askCoach(
-                  askAboutField(
-                    record,
-                    label,
-                    coachText ?? toDraft(editor, value),
-                  ),
-                )
-              }
-              aria-label={`Ask the Coach about ${label}`}
-              title={`Ask the Coach about ${label}`}
-              className="rounded-md border border-hairline bg-paper p-1.5 text-ink-faint transition-colors hover:border-hairline-strong hover:text-accent"
-            >
-              <CoachIcon />
-            </button>
-          </span>
+          {/* Always on, and only one. Hidden-until-hover kept the controls a
+              secret; a pencil *and* a sparkle on two dozen fields was the
+              other extreme. The Coach is a highlight away, and bottom-right. */}
+          <button
+            type="button"
+            onClick={open}
+            aria-label={`Edit ${label}`}
+            title={`Edit ${label}`}
+            className="absolute right-0 top-0 rounded-md border border-hairline bg-paper p-1.5 text-ink-faint transition-colors hover:border-hairline-strong hover:text-accent"
+          >
+            <PencilIcon />
+          </button>
         </>
       )}
     </div>

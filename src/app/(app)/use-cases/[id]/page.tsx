@@ -185,9 +185,8 @@ export default async function UseCaseDetailPage({
 
         {editable && (
           <p className="mt-4 text-sm text-ink-faint">
-            Every field carries a pencil to edit it in place and a sparkle to
-            talk it through with the Coach. Highlight any text to ask the Coach
-            about it.
+            Every field carries a pencil to edit it in place. Highlight any text
+            to ask the Coach about it.
           </p>
         )}
 
@@ -248,7 +247,6 @@ export default async function UseCaseDetailPage({
                   value={uc.approaches}
                   editor={{ kind: "checkboxes", options: approachChoices }}
                   canEdit={editable}
-                  coachText={approachLabels(uc.approaches)}
                   className="mt-1.5"
                 >
                   <p className="text-sm text-ink-muted">
@@ -304,9 +302,6 @@ export default async function UseCaseDetailPage({
                   ratings={ratings}
                   editor={{ kind: "ratings" }}
                   canEdit={editable}
-                  coachText={RATING_FIELDS.filter(([k]) => uc[k] !== null)
-                    .map(([k, name]) => `${name}: ${uc[k]}/5`)
-                    .join(", ")}
                   className="mt-3"
                 >
                   {anyRating ? (
@@ -318,7 +313,8 @@ export default async function UseCaseDetailPage({
                             className="flex items-baseline justify-between border-b border-hairline pb-1.5"
                           >
                             <dt className="text-sm text-ink-muted">{label}</dt>
-                            <dd className="text-sm font-semibold">
+                            {/* A long label may wrap; the score never should. */}
+                            <dd className="shrink-0 whitespace-nowrap text-sm font-semibold">
                               {uc[k]} / 5
                             </dd>
                           </div>
@@ -694,7 +690,6 @@ export default async function UseCaseDetailPage({
                   }))}
                   editor={{ kind: "people", people, multiple: true }}
                   canEdit={editable}
-                  coachText={uc.authors.map((a) => a.displayName).join(", ")}
                 >
                   <div>
                     <dt className="text-ink-faint">
@@ -726,7 +721,6 @@ export default async function UseCaseDetailPage({
                   }
                   editor={{ kind: "people", people }}
                   canEdit={editable}
-                  coachText={uc.ownerName ?? ""}
                 >
                   <div>
                     <dt className="text-ink-faint">Owner</dt>
@@ -753,7 +747,6 @@ export default async function UseCaseDetailPage({
                     empty: "Unallocated",
                   }}
                   canEdit={editable}
-                  coachText={uc.eltOrgName ?? ""}
                 >
                   <div>
                     <dt
@@ -776,12 +769,6 @@ export default async function UseCaseDetailPage({
                     teams: teamChoices,
                   }}
                   canEdit={editable}
-                  coachText={[
-                    uc.department ? DEPARTMENT_LABELS[uc.department] : null,
-                    uc.teamName,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
                 >
                   <div>
                     <dt className="text-ink-faint">Team</dt>
