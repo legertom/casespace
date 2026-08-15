@@ -77,6 +77,14 @@ export const notificationKindEnum = pgEnum("notification_kind", [
   "comment",
   "reply",
   "mention",
+  "link",
+]);
+
+/** How one workflow relates to another — see LINK_KINDS in lib/domain. */
+export const linkKindEnum = pgEnum("link_kind", [
+  "builds_on",
+  "duplicates",
+  "relates_to",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -324,6 +332,38 @@ export const useCaseAuthors = pgTable("use_case_authors", {
   position: integer("position").notNull().default(0),
 });
 
+/**
+ * A link between two workflows. Any AI lead can make one, on any two records
+ * — a lead who spots that two workflows are the same thing shouldn't have to
+ * own either to say so. Stored once, on the side it was made from; the far
+ * end renders the inverse label (LINK_INVERSE_LABELS).
+ */
+export const useCaseLinks = pgTable(
+  "use_case_links",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    fromUseCaseId: uuid("from_use_case_id")
+      .notNull()
+      .references(() => useCases.id, { onDelete: "cascade" }),
+    toUseCaseId: uuid("to_use_case_id")
+      .notNull()
+      .references(() => useCases.id, { onDelete: "cascade" }),
+    kind: linkKindEnum("kind").notNull(),
+    createdById: uuid("created_by_id")
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    // One link per pair. The reverse pair is rejected in the action, which can
+    // say which relationship already exists; a constraint could only say no.
+    uniqueIndex("use_case_link_pair_idx").on(t.fromUseCaseId, t.toUseCaseId),
+    index("use_case_link_to_idx").on(t.toUseCaseId),
+  ],
+);
+
 /** Full history of status movement — feeds the movement feed and What's New. */
 export const statusChanges = pgTable("status_changes", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -484,7 +524,11 @@ export const useCaseComments = pgTable(
 /**
  * In-app notifications. Email is deliberately deferred: with ~22 users,
  * page-load freshness is enough — there is no queue, no cron, no polling.
- * Rows are written inline by the comment action that causes them.
+ * Rows are written inline by the action that causes them.
+ *
+ * Exactly one of commentId / linkId is set, and it says what the row is
+ * about: a comment on the record, or a link made to it. useCaseId is always
+ * the record the recipient is credited on — the one they land on.
  */
 export const notifications = pgTable(
   "notifications",
@@ -498,9 +542,14 @@ export const notifications = pgTable(
     useCaseId: uuid("use_case_id")
       .notNull()
       .references(() => useCases.id, { onDelete: "cascade" }),
-    commentId: uuid("comment_id")
-      .notNull()
-      .references(() => useCaseComments.id, { onDelete: "cascade" }),
+    /** Set for comment/reply/mention. */
+    commentId: uuid("comment_id").references(() => useCaseComments.id, {
+      onDelete: "cascade",
+    }),
+    /** Set for "link" — removing the link takes the notification with it. */
+    linkId: uuid("link_id").references(() => useCaseLinks.id, {
+      onDelete: "cascade",
+    }),
     /** Who caused it. Never the recipient. */
     actorId: uuid("actor_id")
       .notNull()

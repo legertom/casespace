@@ -3,7 +3,9 @@ import {
   canComment,
   canCreateUseCase,
   canEditUseCase,
+  canLinkUseCases,
   canQualify,
+  canUnlinkUseCases,
   canViewPulse,
 } from "./permissions";
 
@@ -59,5 +61,57 @@ describe("role gates", () => {
     expect(canComment("viewer")).toBe(true);
     expect(canComment("contributor")).toBe(true);
     expect(canComment("admin")).toBe(true);
+  });
+
+  it("every AI lead links workflows, viewers don't", () => {
+    expect(canLinkUseCases("viewer")).toBe(false);
+    expect(canLinkUseCases("contributor")).toBe(true);
+    expect(canLinkUseCases("admin")).toBe(true);
+  });
+});
+
+describe("linking workflows", () => {
+  const link = { createdById: "linker" };
+  const other = {
+    createdById: "other-creator",
+    ownerUserId: "other-owner",
+    authorUserIds: [],
+  };
+
+  it("a lead can link records they had no hand in", () => {
+    expect(canLinkUseCases("contributor")).toBe(true);
+  });
+
+  it("whoever made the link can remove it", () => {
+    expect(
+      canUnlinkUseCases({ id: "linker", role: "contributor" }, link, [uc, other]),
+    ).toBe(true);
+  });
+
+  it("someone on either record can remove a link they didn't make", () => {
+    expect(
+      canUnlinkUseCases({ id: "owner", role: "contributor" }, link, [uc, other]),
+    ).toBe(true);
+    expect(
+      canUnlinkUseCases({ id: "other-owner", role: "contributor" }, link, [
+        uc,
+        other,
+      ]),
+    ).toBe(true);
+  });
+
+  it("admins remove any link", () => {
+    expect(canUnlinkUseCases({ id: "stranger", role: "admin" }, link, [])).toBe(
+      true,
+    );
+  });
+
+  it("a bystander can't remove someone else's link", () => {
+    expect(
+      canUnlinkUseCases({ id: "stranger", role: "contributor" }, link, [
+        uc,
+        other,
+      ]),
+    ).toBe(false);
   });
 });

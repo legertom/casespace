@@ -8,8 +8,9 @@ import { notifications } from "@/db/schema";
 import { requireUser } from "@/lib/current-user";
 
 /**
- * Open a notification: mark it read and land on the comment itself. Reading
- * and navigating are one act, so they're one action.
+ * Open a notification: mark it read and land on what it is about — the
+ * comment itself, or the record's Related workflows. Reading and navigating
+ * are one act, so they're one action.
  */
 export async function openNotificationAction(id: string): Promise<void> {
   const user = await requireUser();
@@ -24,7 +25,11 @@ export async function openNotificationAction(id: string): Promise<void> {
     });
   if (!row) redirect("/");
   revalidatePath("/", "layout");
-  redirect(`/use-cases/${row.useCaseId}#comment-${row.commentId}`);
+  redirect(
+    row.commentId
+      ? `/use-cases/${row.useCaseId}#comment-${row.commentId}`
+      : `/use-cases/${row.useCaseId}#related`,
+  );
 }
 
 /** Clear the badge without reading each one. Used as a form action. */

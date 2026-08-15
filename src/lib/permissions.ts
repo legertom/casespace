@@ -38,6 +38,32 @@ export function canCreateUseCase(role: Role): boolean {
   return role === "admin" || role === "contributor";
 }
 
+/**
+ * Linking two workflows is open to every AI lead, on any two records —
+ * ownership is deliberately not consulted. Spotting that two workflows are
+ * the same thing, or that one builds on another, is program knowledge, and
+ * the lead who spots it usually owns neither record. Viewers stay out: a link
+ * is record data, unlike a comment.
+ */
+export function canLinkUseCases(role: Role): boolean {
+  return role === "admin" || role === "contributor";
+}
+
+/**
+ * Removing a link: whoever made it, an admin, or anyone who can edit a record
+ * at either end — an owner who doesn't want the link on their record can
+ * always take it off.
+ */
+export function canUnlinkUseCases(
+  user: SessionUser,
+  link: { createdById: string },
+  ends: UseCaseOwnership[],
+): boolean {
+  if (user.role === "admin") return true;
+  if (link.createdById === user.id) return true;
+  return ends.some((end) => canEditUseCase(user, end));
+}
+
 /** Only an admin can promote to (or demote from) Qualified — it records Kate's decision. */
 export function canQualify(role: Role): boolean {
   return role === "admin";

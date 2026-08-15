@@ -87,6 +87,57 @@ export function approachLabels(approaches: readonly string[]): string {
 }
 
 // ---------------------------------------------------------------------------
+// Links between workflows
+// ---------------------------------------------------------------------------
+
+/**
+ * How one workflow relates to another. A link is stored once, on the record
+ * it was made from ("from" builds on "to"), and shows on both records — the
+ * far end reads the inverse label.
+ */
+export const LINK_KINDS = ["builds_on", "duplicates", "relates_to"] as const;
+
+export type LinkKind = (typeof LINK_KINDS)[number];
+
+/** What the record the link was made from says. */
+export const LINK_LABELS: Record<LinkKind, string> = {
+  builds_on: "Builds on",
+  duplicates: "Duplicates",
+  relates_to: "Relates to",
+};
+
+/** What the far end says. "Relates to" is symmetric — same word both ways. */
+export const LINK_INVERSE_LABELS: Record<LinkKind, string> = {
+  builds_on: "Built on by",
+  duplicates: "Duplicated by",
+  relates_to: "Relates to",
+};
+
+/** The sentence the picker completes: "This workflow builds on …". */
+export const LINK_PHRASES: Record<LinkKind, string> = {
+  builds_on: "builds on",
+  duplicates: "duplicates",
+  relates_to: "relates to",
+};
+
+/** How the two sides of a record's links are headed, in display order. */
+export const LINK_HEADINGS: readonly {
+  kind: LinkKind;
+  outgoing: boolean;
+  label: string;
+}[] = [
+  { kind: "builds_on", outgoing: true, label: LINK_LABELS.builds_on },
+  { kind: "builds_on", outgoing: false, label: LINK_INVERSE_LABELS.builds_on },
+  { kind: "duplicates", outgoing: true, label: LINK_LABELS.duplicates },
+  { kind: "duplicates", outgoing: false, label: LINK_INVERSE_LABELS.duplicates },
+  { kind: "relates_to", outgoing: true, label: LINK_LABELS.relates_to },
+];
+
+export function isLinkKind(value: string): value is LinkKind {
+  return (LINK_KINDS as readonly string[]).includes(value);
+}
+
+// ---------------------------------------------------------------------------
 // Worksheet ratings
 // ---------------------------------------------------------------------------
 

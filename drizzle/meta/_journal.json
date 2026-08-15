@@ -43,6 +43,13 @@
       "when": 1786730136991,
       "tag": "0005_huge_ultragirl",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786739589240,
+      "tag": "0006_sad_kingpin",
+      "breakpoints": true
     }
   ]
 }

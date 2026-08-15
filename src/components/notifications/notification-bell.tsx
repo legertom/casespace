@@ -67,7 +67,7 @@ export async function NotificationBell({ userId }: { userId: string }) {
         </div>
         {items.length === 0 ? (
           <p className="mt-3 text-sm text-ink-muted">
-            Nothing yet. Comments on your records land here.
+            Nothing yet. Comments and links on your records land here.
           </p>
         ) : (
           <ul className="mt-2 max-h-96 divide-y divide-hairline overflow-y-auto">
@@ -112,6 +112,8 @@ function line(n: NotificationRow): string {
       return `${actor} replied to your comment on ${n.useCaseTitle}`;
     case "mention":
       return `${actor} mentioned you on ${n.useCaseTitle}`;
+    case "link":
+      return `${actor} linked ${n.linkedTitle ?? "another workflow"} to ${n.useCaseTitle}`;
     default:
       return `${actor} commented on ${n.useCaseTitle}`;
   }

@@ -13,15 +13,20 @@ import {
   roiGaps,
 } from "@/lib/domain";
 import { fmtDate } from "@/lib/format";
-import { canEditUseCase } from "@/lib/permissions";
+import { canEditUseCase, canLinkUseCases } from "@/lib/permissions";
 import { listComments, listMentionableUsers } from "@/server/comment-queries";
 import { listEltOrgs, listPeopleLite, listTeams } from "@/server/reference";
+import {
+  listLinkableUseCases,
+  listRecordLinks,
+} from "@/server/use-case-link-queries";
 import { getUseCase } from "@/server/use-case-queries";
 import { AskCoachSelection } from "@/components/coach/ask-coach-selection";
 import { CommentThread } from "@/components/comments/comment-thread";
 import { DeleteUseCase } from "@/components/delete-use-case";
 import { PersonLink, PersonLinks } from "@/components/person-link";
 import { GateToggle } from "@/components/record/gate-toggle";
+import { RelatedWorkflows } from "@/components/record/related-workflows";
 import {
   InlineField,
   type Choice,
@@ -74,10 +79,14 @@ export default async function UseCaseDetailPage({
   const uc = await getUseCase(id).catch(() => null);
   if (!uc) notFound();
 
-  const [comments, mentionable] = await Promise.all([
+  const [comments, mentionable, links] = await Promise.all([
     listComments(uc.id),
     listMentionableUsers(),
+    listRecordLinks(uc.id),
   ]);
+  // Only someone who can link needs the candidate list.
+  const canLink = canLinkUseCases(user.role);
+  const linkable = canLink ? await listLinkableUseCases(uc.id) : [];
 
   const editable = canEditUseCase(
     { id: user.id, role: user.role },
@@ -176,8 +185,9 @@ export default async function UseCaseDetailPage({
 
         {editable && (
           <p className="mt-4 text-sm text-ink-faint">
-            Hover any field for a pencil to edit it in place, or a Coach button
-            to talk it through. Highlight any text to ask the Coach about it.
+            Every field carries a pencil to edit it in place and a sparkle to
+            talk it through with the Coach. Highlight any text to ask the Coach
+            about it.
           </p>
         )}
 
@@ -611,6 +621,16 @@ export default async function UseCaseDetailPage({
                 )}
               </div>
             </section>
+
+            <RelatedWorkflows
+              useCaseId={uc.id}
+              links={links}
+              candidates={linkable}
+              currentUserId={user.id}
+              canLink={canLink}
+              canEditRecord={editable}
+              isAdmin={user.role === "admin"}
+            />
 
             <section>
               <h2 className="font-serif text-2xl">History</h2>
