@@ -42,10 +42,11 @@ around them.
 Unknown values for `status` and `department` are **ignored**, not rejected —
 a typo returns unfiltered results rather than an error.
 
-History entries carry their notes, with one redaction: the note on a
-Confirmed Positive ROI step comes back `null` unless the token's owner is an
-admin. Annual-ROI notes may carry dollar figures, which never appear on an
-open surface — see [Wins](../features/wins.md).
+History entries name their step, date, and who moved it — but `note` comes
+back `null` unless the token's owner is an admin. Notes are in-app context
+(rejection reasons, the annual-ROI confirmation), and the API takes the
+stricter line: admin tokens get them all, other tokens get none. Read them
+in the app, on the record's History.
 
 ## Creating
 

@@ -44,6 +44,14 @@ in-app report it came from.
 
 ## 2026-08-15
 
+### History notes read in the app, not over the API
+Requested by: Tom Leger
+
+Status-change notes — rejection reasons, confirmation notes — are context
+for people reading a record, so that's where they live. Over the REST API,
+notes now come back only to admin tokens; every other token sees the
+history's steps, dates, and names, and reads the notes in the app.
+
 ### The annual-ROI note stays on the Wins page
 
 The note an admin writes when confirming positive ROI can carry the kind of

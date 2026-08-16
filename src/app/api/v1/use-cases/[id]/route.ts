@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { visibleHistoryNote } from "@/lib/permissions";
 import { useCaseUpdateApiSchema } from "@/lib/use-case-input";
 import { toApiUseCase } from "@/server/api-serializers";
 import { authenticatePat } from "@/server/pat";
@@ -27,8 +26,10 @@ export async function GET(
         from: h.fromStatus,
         to: h.toStatus,
         by: h.changedByName,
-        // The annual-ROI note may carry dollars — admin tokens only.
-        note: visibleHistoryNote(h, user.role),
+        // Notes are in-app context; over the API they are admin-only
+        // wholesale (Tom's call, 2026-08-15) — stricter than the in-app
+        // rule, which redacts only the annual-ROI note.
+        note: user.role === "admin" ? h.note : null,
       })),
     },
   });
