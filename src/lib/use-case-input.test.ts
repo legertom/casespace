@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   applyCreateDefaults,
+  UPDATE_PATCHABLE_KEYS,
   useCaseCreateSchema,
+  useCaseUpdateSchema,
 } from "./use-case-input";
 
 describe("sparse API create", () => {
@@ -58,5 +60,28 @@ describe("sparse API create", () => {
         ratingPain: 6,
       }),
     ).toThrow();
+  });
+});
+
+describe("the patchable-field list", () => {
+  it("covers every schema field except the specially-handled three", () => {
+    const covered = new Set<string>([
+      ...UPDATE_PATCHABLE_KEYS,
+      "owner",
+      "authors",
+      "status",
+    ]);
+    expect([...covered].sort()).toEqual(
+      Object.keys(useCaseUpdateSchema.shape).sort(),
+    );
+  });
+
+  it("never patches status — transitions go through the movement log", () => {
+    expect(UPDATE_PATCHABLE_KEYS).not.toContain("status");
+    expect(UPDATE_PATCHABLE_KEYS).not.toContain("owner");
+    expect(UPDATE_PATCHABLE_KEYS).not.toContain("authors");
+    expect(UPDATE_PATCHABLE_KEYS).toContain("title");
+    expect(UPDATE_PATCHABLE_KEYS).toContain("gateNamed");
+    expect(UPDATE_PATCHABLE_KEYS).toContain("roiStatus");
   });
 });

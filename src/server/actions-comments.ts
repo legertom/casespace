@@ -83,56 +83,61 @@ export async function addCommentAction(
       ).map((u) => u.id)
     : [];
 
-  const [comment] = await db
-    .insert(useCaseComments)
-    .values({
-      useCaseId,
-      authorId: user.id,
-      parentId,
-      depth,
-      body: text,
+  // The comment and its notifications land together: a comment nobody was
+  // told about defeats the reason the bell exists.
+  const commentId = await db.transaction(async (tx) => {
+    const [comment] = await tx
+      .insert(useCaseComments)
+      .values({
+        useCaseId,
+        authorId: user.id,
+        parentId,
+        depth,
+        body: text,
+        mentionedUserIds: validMentions,
+      })
+      .returning({ id: useCaseComments.id });
+
+    const priorCommenters = await tx
+      .selectDistinct({ authorId: useCaseComments.authorId })
+      .from(useCaseComments)
+      .where(
+        and(
+          eq(useCaseComments.useCaseId, useCaseId),
+          ne(useCaseComments.id, comment.id),
+        ),
+      );
+    const authorLinks = await tx
+      .select({ userId: useCaseAuthors.userId })
+      .from(useCaseAuthors)
+      .where(eq(useCaseAuthors.useCaseId, useCaseId));
+
+    const recipients = commentNotifications({
+      actorId: user.id,
       mentionedUserIds: validMentions,
-    })
-    .returning({ id: useCaseComments.id });
+      parentAuthorId,
+      ownerUserId: record.ownerUserId,
+      authorUserIds: authorLinks.map((a) => a.userId),
+      createdById: record.createdById,
+      priorCommenterIds: priorCommenters.map((p) => p.authorId),
+    });
 
-  const priorCommenters = await db
-    .selectDistinct({ authorId: useCaseComments.authorId })
-    .from(useCaseComments)
-    .where(
-      and(
-        eq(useCaseComments.useCaseId, useCaseId),
-        ne(useCaseComments.id, comment.id),
-      ),
-    );
-  const authorLinks = await db
-    .select({ userId: useCaseAuthors.userId })
-    .from(useCaseAuthors)
-    .where(eq(useCaseAuthors.useCaseId, useCaseId));
-
-  const recipients = commentNotifications({
-    actorId: user.id,
-    mentionedUserIds: validMentions,
-    parentAuthorId,
-    ownerUserId: record.ownerUserId,
-    authorUserIds: authorLinks.map((a) => a.userId),
-    createdById: record.createdById,
-    priorCommenterIds: priorCommenters.map((p) => p.authorId),
+    if (recipients.length > 0) {
+      await tx.insert(notifications).values(
+        recipients.map((r) => ({
+          userId: r.userId,
+          kind: r.kind,
+          useCaseId,
+          commentId: comment.id,
+          actorId: user.id,
+        })),
+      );
+    }
+    return comment.id;
   });
 
-  if (recipients.length > 0) {
-    await db.insert(notifications).values(
-      recipients.map((r) => ({
-        userId: r.userId,
-        kind: r.kind,
-        useCaseId,
-        commentId: comment.id,
-        actorId: user.id,
-      })),
-    );
-  }
-
   revalidatePath(`/use-cases/${useCaseId}`);
-  return { id: comment.id };
+  return { id: commentId };
 }
 
 /**
@@ -180,20 +185,23 @@ export async function editCommentAction(
       ).map((u) => u.id)
     : [];
 
-  await db
-    .update(useCaseComments)
-    .set({
-      body: text,
-      editedAt: new Date(),
-      mentionedUserIds: validMentions,
-    })
-    .where(eq(useCaseComments.id, commentId));
+  // Edit and mention fan-out land together, like the post path above.
+  await db.transaction(async (tx) => {
+    await tx
+      .update(useCaseComments)
+      .set({
+        body: text,
+        editedAt: new Date(),
+        mentionedUserIds: validMentions,
+      })
+      .where(eq(useCaseComments.id, commentId));
 
-  const newly = newMentions(comment.mentionedUserIds, validMentions, user.id);
-  if (newly.length > 0) {
+    const newly = newMentions(comment.mentionedUserIds, validMentions, user.id);
+    if (newly.length === 0) return;
+
     // Someone already told about this comment for a weaker reason gets that
     // row upgraded and re-surfaced rather than a second bell for one comment.
-    const existing = await db
+    const existing = await tx
       .select({ userId: notifications.userId })
       .from(notifications)
       .where(
@@ -205,7 +213,7 @@ export async function editCommentAction(
     const known = new Set(existing.map((n) => n.userId));
 
     if (known.size > 0) {
-      await db
+      await tx
         .update(notifications)
         .set({ kind: "mention", readAt: null })
         .where(
@@ -217,7 +225,7 @@ export async function editCommentAction(
     }
     const fresh = newly.filter((id) => !known.has(id));
     if (fresh.length > 0) {
-      await db.insert(notifications).values(
+      await tx.insert(notifications).values(
         fresh.map((userId) => ({
           userId,
           kind: "mention" as const,
@@ -227,7 +235,7 @@ export async function editCommentAction(
         })),
       );
     }
-  }
+  });
 
   revalidatePath(`/use-cases/${comment.useCaseId}`);
   return {};

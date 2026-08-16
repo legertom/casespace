@@ -15,23 +15,23 @@ import {
   uuid,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
+import {
+  APPROACHES,
+  DEPARTMENTS,
+  LINK_KINDS,
+  ROLES,
+  STATUSES,
+} from "../lib/domain";
 
 // ---------------------------------------------------------------------------
-// Enums
+// Enums — value lists live in lib/domain (single source; the two cannot
+// drift). Relative import because drizzle-kit bundles this file itself.
 // ---------------------------------------------------------------------------
 
-export const roleEnum = pgEnum("role", ["viewer", "contributor", "admin"]);
+export const roleEnum = pgEnum("role", ROLES);
 
 /** The program's 7 groupings — not HRIS department names (those live on people.hrisDepartment). */
-export const departmentEnum = pgEnum("department", [
-  "business_operations",
-  "product_design",
-  "engineering",
-  "people",
-  "css",
-  "mss",
-  "finance_legal",
-]);
+export const departmentEnum = pgEnum("department", DEPARTMENTS);
 
 export const leadStateEnum = pgEnum("lead_state", [
   "assigned",
@@ -39,22 +39,9 @@ export const leadStateEnum = pgEnum("lead_state", [
   "pending",
 ]);
 
-export const ucStatusEnum = pgEnum("uc_status", [
-  "in_discovery",
-  "approved_by_fl",
-  "under_construction",
-  "in_testing",
-  "launched",
-  "qualified",
-  "confirmed_positive_roi",
-]);
+export const ucStatusEnum = pgEnum("uc_status", STATUSES);
 
-export const approachEnum = pgEnum("approach", [
-  "prompt",
-  "automation",
-  "agentic",
-  "built",
-]);
+export const approachEnum = pgEnum("approach", APPROACHES);
 
 export const ucSourceEnum = pgEnum("uc_source", [
   "form",
@@ -100,11 +87,7 @@ export const notificationKindEnum = pgEnum("notification_kind", [
 ]);
 
 /** How one workflow relates to another — see LINK_KINDS in lib/domain. */
-export const linkKindEnum = pgEnum("link_kind", [
-  "builds_on",
-  "duplicates",
-  "relates_to",
-]);
+export const linkKindEnum = pgEnum("link_kind", LINK_KINDS);
 
 // ---------------------------------------------------------------------------
 // Identity & access

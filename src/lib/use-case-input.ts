@@ -100,6 +100,27 @@ export const useCaseUpdateApiSchema = acceptLegacyApproach(useCaseUpdateSchema);
 
 export type UseCaseUpdateInput = z.infer<typeof useCaseUpdateSchema>;
 
+/**
+ * Fields `updateUseCase` never patches column-for-column: the person refs
+ * (owner, authors) resolve against the directory first, and status only ever
+ * moves through the transition helpers so the movement log stays complete.
+ */
+const UNPATCHABLE = ["owner", "authors", "status"] as const;
+
+export type PatchableKey = Exclude<
+  keyof UseCaseUpdateInput,
+  (typeof UNPATCHABLE)[number]
+>;
+
+/**
+ * Every other updatable column, derived from the schema itself — add a field
+ * to useCaseCreateSchema and it becomes patchable without a second list to
+ * remember.
+ */
+export const UPDATE_PATCHABLE_KEYS = Object.keys(useCaseUpdateSchema.shape).filter(
+  (k) => !(UNPATCHABLE as readonly string[]).includes(k),
+) as PatchableKey[];
+
 export type UcSource = "form" | "wizard" | "notes" | "api" | "mcp";
 
 /**

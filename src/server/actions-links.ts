@@ -77,45 +77,50 @@ export async function linkUseCasesAction(
     return { error: `These two are already linked, as “${label}”.` };
   }
 
-  const [link] = await db
-    .insert(useCaseLinks)
-    .values({
-      fromUseCaseId: fromId,
-      toUseCaseId: toId,
-      kind,
-      createdById: user.id,
-    })
-    .returning({ id: useCaseLinks.id });
+  // The link and its notifications land together — the notification is what
+  // keeps ownerless linking honest, so it must not be lost to a mid-write
+  // failure.
+  await db.transaction(async (tx) => {
+    const [link] = await tx
+      .insert(useCaseLinks)
+      .values({
+        fromUseCaseId: fromId,
+        toUseCaseId: toId,
+        kind,
+        createdById: user.id,
+      })
+      .returning({ id: useCaseLinks.id });
 
-  const authors = await db
-    .select({
-      useCaseId: useCaseAuthors.useCaseId,
-      userId: useCaseAuthors.userId,
-    })
-    .from(useCaseAuthors)
-    .where(inArray(useCaseAuthors.useCaseId, [fromId, toId]));
-  const credited = (record: (typeof records)[number]) => [
-    record.ownerUserId,
-    record.createdById,
-    ...authors.filter((a) => a.useCaseId === record.id).map((a) => a.userId),
-  ];
+    const authors = await tx
+      .select({
+        useCaseId: useCaseAuthors.useCaseId,
+        userId: useCaseAuthors.userId,
+      })
+      .from(useCaseAuthors)
+      .where(inArray(useCaseAuthors.useCaseId, [fromId, toId]));
+    const credited = (record: (typeof records)[number]) => [
+      record.ownerUserId,
+      record.createdById,
+      ...authors.filter((a) => a.useCaseId === record.id).map((a) => a.userId),
+    ];
 
-  const recipients = linkNotifications({
-    actorId: user.id,
-    from: { useCaseId: fromId, creditedUserIds: credited(from) },
-    to: { useCaseId: toId, creditedUserIds: credited(to) },
+    const recipients = linkNotifications({
+      actorId: user.id,
+      from: { useCaseId: fromId, creditedUserIds: credited(from) },
+      to: { useCaseId: toId, creditedUserIds: credited(to) },
+    });
+    if (recipients.length > 0) {
+      await tx.insert(notifications).values(
+        recipients.map((r) => ({
+          userId: r.userId,
+          kind: "link" as const,
+          useCaseId: r.useCaseId,
+          linkId: link.id,
+          actorId: user.id,
+        })),
+      );
+    }
   });
-  if (recipients.length > 0) {
-    await db.insert(notifications).values(
-      recipients.map((r) => ({
-        userId: r.userId,
-        kind: "link" as const,
-        useCaseId: r.useCaseId,
-        linkId: link.id,
-        actorId: user.id,
-      })),
-    );
-  }
 
   revalidatePath(`/use-cases/${fromId}`);
   revalidatePath(`/use-cases/${toId}`);

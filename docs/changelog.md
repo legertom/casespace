@@ -44,6 +44,16 @@ in-app report it came from.
 
 ## 2026-08-15
 
+### A save lands whole, or not at all
+
+Saving a record writes several things at once — the record, its credited
+authors, its history. Those now land together or not at all, so a save that
+fails partway can no longer strip authors from a record or leave one missing
+from the movement log. The same goes for comments and links with the
+notifications they raise. And if two people move the same record's status at
+the same moment, the second mover now gets a clear "reload and try again"
+instead of the history quietly recording a move that never happened.
+
 ### The Coach keeps its own report card
 Requested by: Tom Leger
 

@@ -4,10 +4,17 @@ surface:
   - /use-cases/[id]
   - /use-cases/[id]/edit
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-15
 code:
   - src/app/(app)/use-cases/[id]/page.tsx
   - src/app/(app)/use-cases/[id]/edit/page.tsx
+  - src/components/record/record-header.tsx
+  - src/components/record/record-about.tsx
+  - src/components/record/record-worksheet.tsx
+  - src/components/record/record-roi.tsx
+  - src/components/record/record-history.tsx
+  - src/components/record/record-credit.tsx
+  - src/components/record/record-gates.tsx
   - src/components/record/inline-field.tsx
   - src/components/record/gate-toggle.tsx
   - src/components/status-controls.tsx

@@ -100,15 +100,21 @@ export async function createUseCaseAction(
     return failure(err);
   }
   if (learning && (source === "wizard" || source === "notes")) {
-    await recordProposalEdit({
-      proposalRef: learning.proposalRef,
-      userId: user.id,
-      door: source,
-      useCaseId: id,
-      proposed: learning.proposed,
-      proposedTeamName: learning.proposedTeamName,
-      saved: input,
-    });
+    // Best-effort: learning capture is telemetry, and a telemetry failure
+    // must never turn a successful save into an error screen.
+    try {
+      await recordProposalEdit({
+        proposalRef: learning.proposalRef,
+        userId: user.id,
+        door: source,
+        useCaseId: id,
+        proposed: learning.proposed,
+        proposedTeamName: learning.proposedTeamName,
+        saved: input,
+      });
+    } catch (err) {
+      console.error("proposal learning capture failed", err);
+    }
   }
   revalidatePath("/use-cases");
   redirect(`/use-cases/${id}`);

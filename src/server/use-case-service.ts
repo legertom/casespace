@@ -1,5 +1,5 @@
 import "server-only";
-import { eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { eltOrgs, people, statusChanges, teams, useCaseAuthors, useCases, users } from "@/db/schema";
 import {
@@ -13,6 +13,7 @@ import { canEditUseCase, canCreateUseCase } from "@/lib/permissions";
 import { foldName } from "@/lib/people-match";
 import {
   applyCreateDefaults,
+  UPDATE_PATCHABLE_KEYS,
   type PersonRef,
   type UcSource,
   type UseCaseCreateInput,
@@ -121,30 +122,36 @@ export async function createUseCase(
     row.ownerName = owner.displayName;
   }
 
-  const [created] = await db.insert(useCases).values(row).returning();
-
   const authors = await resolveUserLinks(input.authors ?? []);
-  if (authors.length) {
-    await db.insert(useCaseAuthors).values(
-      authors.map((a, i) => ({
-        useCaseId: created.id,
-        personId: a.personId ?? null,
-        userId: a.userId ?? null,
-        displayName: a.displayName,
-        position: i,
-      })),
-    );
-  }
 
-  // Birth event in the movement log.
-  await db.insert(statusChanges).values({
-    useCaseId: created.id,
-    fromStatus: null,
-    toStatus: created.status,
-    changedById: actor.id,
+  // One transaction: the record, its credit, and its birth event in the
+  // movement log exist together or not at all. A record without its birth
+  // event would vanish from the staleness map; one without its authors would
+  // strip credit, and credit is the program's currency.
+  return db.transaction(async (tx) => {
+    const [created] = await tx.insert(useCases).values(row).returning();
+
+    if (authors.length) {
+      await tx.insert(useCaseAuthors).values(
+        authors.map((a, i) => ({
+          useCaseId: created.id,
+          personId: a.personId ?? null,
+          userId: a.userId ?? null,
+          displayName: a.displayName,
+          position: i,
+        })),
+      );
+    }
+
+    await tx.insert(statusChanges).values({
+      useCaseId: created.id,
+      fromStatus: null,
+      toStatus: created.status,
+      changedById: actor.id,
+    });
+
+    return created.id;
   });
-
-  return created.id;
 }
 
 export async function updateUseCase(
@@ -160,41 +167,7 @@ export async function updateUseCase(
   const db = getDb();
 
   const patch: Record<string, unknown> = {};
-  const direct: (keyof UseCaseUpdateInput)[] = [
-    "title",
-    "description",
-    "department",
-    "teamId",
-    "eltOrgId",
-    "aiTools",
-    "approaches",
-    "currentSteps",
-    "ratingFrequency",
-    "ratingPain",
-    "ratingDataAvailability",
-    "ratingRisk",
-    "ratingOwnershipClarity",
-    "ratingEvaluationClarity",
-    "ratingMaintenanceBurden",
-    "functionalLeaderSuccess",
-    "gateNamed",
-    "gateTool",
-    "gateAdoption",
-    "adoptionEvidence",
-    "gateOwner",
-    "successCriterion",
-    "successCriterionMet",
-    "baselineMetric",
-    "baselineValue",
-    "baselineUnit",
-    "postValue",
-    "measurementMethod",
-    "netImpactStatement",
-    "isPositive",
-    "roiStatus",
-    "revisitOn",
-  ];
-  for (const key of direct) {
+  for (const key of UPDATE_PATCHABLE_KEYS) {
     if (key in input) patch[key] = input[key] ?? null;
   }
   // Required fields never become null via patch.
@@ -222,25 +195,33 @@ export async function updateUseCase(
   // eltOrgId derives from department at create only. Re-deriving on update
   // would silently overwrite an explicit admin re-allocation.
 
-  if (Object.keys(patch).length > 0) {
-    await db.update(useCases).set(patch).where(eq(useCases.id, id));
-  }
+  const authors =
+    "authors" in input && input.authors
+      ? await resolveUserLinks(input.authors)
+      : null;
 
-  if ("authors" in input && input.authors) {
-    const authors = await resolveUserLinks(input.authors);
-    await db.delete(useCaseAuthors).where(eq(useCaseAuthors.useCaseId, id));
-    if (authors.length) {
-      await db.insert(useCaseAuthors).values(
-        authors.map((a, i) => ({
-          useCaseId: id,
-          personId: a.personId ?? null,
-          userId: a.userId ?? null,
-          displayName: a.displayName,
-          position: i,
-        })),
-      );
+  // One transaction, chiefly for the authors swap: delete-then-insert with a
+  // failure in between would silently strip every credit from the record.
+  await db.transaction(async (tx) => {
+    if (Object.keys(patch).length > 0) {
+      await tx.update(useCases).set(patch).where(eq(useCases.id, id));
     }
-  }
+
+    if (authors) {
+      await tx.delete(useCaseAuthors).where(eq(useCaseAuthors.useCaseId, id));
+      if (authors.length) {
+        await tx.insert(useCaseAuthors).values(
+          authors.map((a, i) => ({
+            useCaseId: id,
+            personId: a.personId ?? null,
+            userId: a.userId ?? null,
+            displayName: a.displayName,
+            position: i,
+          })),
+        );
+      }
+    }
+  });
 }
 
 /**
@@ -299,13 +280,28 @@ export async function setStatus(
     patch.roiConfirmedAt = null;
     patch.roiConfirmedById = null;
   }
-  await db.update(useCases).set(patch).where(eq(useCases.id, id));
-  await db.insert(statusChanges).values({
-    useCaseId: id,
-    fromStatus: from,
-    toStatus: to,
-    changedById: actor.id,
-    note: note ?? null,
+  await db.transaction(async (tx) => {
+    // Optimistic guard: only move the record if it still sits where this
+    // request last saw it. Without the status condition, two concurrent
+    // transitions would both land and the log would record a move that never
+    // happened.
+    const moved = await tx
+      .update(useCases)
+      .set(patch)
+      .where(and(eq(useCases.id, id), eq(useCases.status, from)))
+      .returning({ id: useCases.id });
+    if (moved.length === 0) {
+      throw new ValidationError(
+        "This record's status changed while you were looking at it — reload the page and try again.",
+      );
+    }
+    await tx.insert(statusChanges).values({
+      useCaseId: id,
+      fromStatus: from,
+      toStatus: to,
+      changedById: actor.id,
+      note: note ?? null,
+    });
   });
 }
 
@@ -325,16 +321,18 @@ export async function rejectAtQualifiedGate(
   if (!ownership) throw new NotFoundError("Use case not found.");
   const from = ownership.status as UcStatus;
   const db = getDb();
-  await db
-    .update(useCases)
-    .set({ status: "launched", rejectionReason: reason, qualifiedAt: null })
-    .where(eq(useCases.id, id));
-  await db.insert(statusChanges).values({
-    useCaseId: id,
-    fromStatus: from,
-    toStatus: "launched",
-    changedById: actor.id,
-    note: `Rejected at the Qualified gate: ${reason}`,
+  await db.transaction(async (tx) => {
+    await tx
+      .update(useCases)
+      .set({ status: "launched", rejectionReason: reason, qualifiedAt: null })
+      .where(eq(useCases.id, id));
+    await tx.insert(statusChanges).values({
+      useCaseId: id,
+      fromStatus: from,
+      toStatus: "launched",
+      changedById: actor.id,
+      note: `Rejected at the Qualified gate: ${reason}`,
+    });
   });
 }
 

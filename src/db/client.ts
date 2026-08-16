@@ -3,13 +3,21 @@
  * (run with tsx) can share it; app code imports from "./index", which adds
  * the guard.
  */
-import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
+import { drizzle as drizzleNeon } from "drizzle-orm/neon-serverless";
 import { drizzle as drizzleNode } from "drizzle-orm/node-postgres";
-import { neon } from "@neondatabase/serverless";
+import { Pool as NeonPool } from "@neondatabase/serverless";
 import { Pool } from "pg";
 import * as schema from "./schema";
 
 export type Db = ReturnType<typeof createNodeDb>;
+
+/**
+ * The transaction handle inside db.transaction callbacks. Multi-statement
+ * writes (a record plus its authors plus its birth event, a comment plus its
+ * notifications) must land whole or not at all — pass `tx` through, never a
+ * fresh getDb().
+ */
+export type DbTx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 
 function createNodeDb() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -24,9 +32,13 @@ export function createDb(): Db {
     );
   }
   if (url.includes("neon.tech")) {
-    // Neon over HTTP for serverless; both drizzle flavors share the same core
-    // query API, so we present the node-postgres type.
-    return drizzleNeon(neon(url), { schema }) as unknown as Db;
+    // Neon over WebSocket, not HTTP: the HTTP driver cannot run interactive
+    // transactions, and the write paths depend on them. Uses the runtime's
+    // global WebSocket (Node 22+; Vercel's default runtime qualifies). Both
+    // drizzle flavors share the same core query API, so we present the
+    // node-postgres type.
+    const pool = new NeonPool({ connectionString: url });
+    return drizzleNeon(pool, { schema }) as unknown as Db;
   }
   return createNodeDb();
 }

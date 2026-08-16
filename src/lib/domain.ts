@@ -194,7 +194,9 @@ export function statusRank(s: UcStatus): number {
   return STATUSES.indexOf(s);
 }
 
-export type Role = "viewer" | "contributor" | "admin";
+export const ROLES = ["viewer", "contributor", "admin"] as const;
+
+export type Role = (typeof ROLES)[number];
 
 /**
  * Who may move a record from one status to another.
