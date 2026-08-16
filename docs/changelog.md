@@ -58,6 +58,12 @@ interview before giving up, and every dismissal in the dismisser's own words.
 It reports fields and steps, never conversations — nobody's chat with the
 Coach is readable from it.
 
+### See a record from someone else's view
+
+You can now switch perspective and see the casebook or a record as someone
+else would see it — useful for understanding what information they have access
+to and how the program looks from their role.
+
 ## 2026-08-14
 
 ### A changelog the weekly letter can read
@@ -122,6 +128,19 @@ error you never saw.
 Fields on a record can be changed in place, without a round trip through a
 separate form. The AI approach is a set rather than a single choice, so a
 workflow can be both AI-built and agentic — as Casespace itself is.
+
+### Collect feedback on records
+
+Every record now has a feedback section where anyone can share input — a
+simpler alternative to comments when the conversation is optional. Feedback is
+visible to admins and the record's owners, helping close the loop on what's
+working and what isn't.
+
+### Wins, the admin view of program success
+
+Admins have a dedicated Wins page showing all records at Confirmed Positive ROI,
+with the notes explaining the annual impact for each. Use it to build the
+end-of-year impact report and surface the work that moved the needle.
 
 ## 2026-08-13
 
