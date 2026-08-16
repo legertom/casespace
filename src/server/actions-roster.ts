@@ -3,24 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { requireUser } from "@/lib/current-user";
 import { getDb } from "@/db/client";
 import { aiLeadTeams, aiLeads, teams } from "@/db/schema";
 import { DEPARTMENTS } from "@/lib/domain";
 import type { ActionResult } from "./actions";
-
-async function requireAdminActor(): Promise<ActionResult | null> {
-  const user = await requireUser();
-  if (user.role !== "admin") return { error: "Admins only." };
-  return null;
-}
+import { requireAdminActor } from "./guards";
 
 export async function updateLeadEmailAction(
   leadId: string,
   email: string,
 ): Promise<ActionResult> {
-  const denied = await requireAdminActor();
-  if (denied) return denied;
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
   const parsed = z.string().email().safeParse(email.trim().toLowerCase());
   if (!parsed.success) return { error: "Enter a valid email address." };
   const db = getDb();
@@ -40,8 +34,8 @@ export async function setLeadStateAction(
   leadId: string,
   state: "assigned" | "unassigned" | "pending",
 ): Promise<ActionResult> {
-  const denied = await requireAdminActor();
-  if (denied) return denied;
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
   const db = getDb();
   await db.update(aiLeads).set({ state }).where(eq(aiLeads.id, leadId));
   revalidatePath("/roster");
@@ -52,8 +46,8 @@ export async function setLeadTeamsAction(
   leadId: string,
   teamIds: string[],
 ): Promise<ActionResult> {
-  const denied = await requireAdminActor();
-  if (denied) return denied;
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
   const db = getDb();
   await db.delete(aiLeadTeams).where(eq(aiLeadTeams.leadId, leadId));
   if (teamIds.length) {
@@ -77,8 +71,8 @@ const addLeadSchema = z.object({
 export async function addLeadAction(
   raw: z.infer<typeof addLeadSchema>,
 ): Promise<ActionResult> {
-  const denied = await requireAdminActor();
-  if (denied) return denied;
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
   const parsed = addLeadSchema.safeParse(raw);
   if (!parsed.success) return { error: "Name, valid email, and department are required." };
   const db = getDb();
@@ -107,8 +101,8 @@ export async function addLeadAction(
 }
 
 export async function removeLeadAction(leadId: string): Promise<ActionResult> {
-  const denied = await requireAdminActor();
-  if (denied) return denied;
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
   const db = getDb();
   await db.delete(aiLeads).where(eq(aiLeads.id, leadId));
   revalidatePath("/roster");
@@ -120,8 +114,8 @@ export async function addTeamAction(raw: {
   name: string;
   department: (typeof DEPARTMENTS)[number];
 }): Promise<ActionResult> {
-  const denied = await requireAdminActor();
-  if (denied) return denied;
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
   const name = raw.name.trim();
   if (!name) return { error: "Team name is required." };
   const db = getDb();

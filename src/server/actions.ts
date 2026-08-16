@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ZodError } from "zod";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/current-user";
 import type { UcStatus } from "@/lib/domain";
@@ -12,15 +11,13 @@ import {
   type UseCaseUpdateInput,
 } from "@/lib/use-case-input";
 import { recordProposalEdit } from "./coach-events";
+import { failure } from "./guards";
 import {
   createUseCase,
-  ForbiddenError,
-  NotFoundError,
   rejectAtQualifiedGate,
   setStatus,
   softDeleteUseCase,
   updateUseCase,
-  ValidationError,
 } from "./use-case-service";
 
 export interface ActionResult {
@@ -30,48 +27,6 @@ export interface ActionResult {
   detail?: string;
   /** Ties what the user sees to the server log line. */
   ref?: string;
-}
-
-/** Short, sayable-over-a-desk, and unique enough to grep the logs for. */
-function errorRef() {
-  return Math.random().toString(36).slice(2, 8).toUpperCase();
-}
-
-function detailOf(err: unknown): string {
-  if (err instanceof ZodError) {
-    return err.issues
-      .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
-      .join("; ");
-  }
-  return err instanceof Error ? err.message : String(err);
-}
-
-/**
- * Expected failures explain themselves. Anything else gets a reference and
- * the real message: an internal tool with five users is better served by a
- * specific error the reporter can paste than by a reassuring vague one.
- */
-function failure(err: unknown): ActionResult {
-  if (
-    err instanceof ForbiddenError ||
-    err instanceof NotFoundError ||
-    err instanceof ValidationError
-  ) {
-    return { error: err.message };
-  }
-  if (err instanceof ZodError) {
-    return {
-      error: "That didn't pass validation, so nothing was saved.",
-      detail: detailOf(err),
-    };
-  }
-  const ref = errorRef();
-  console.error(`[casespace error ${ref}]`, err);
-  return {
-    error: "Something went wrong — nothing was saved.",
-    detail: detailOf(err),
-    ref,
-  };
 }
 
 /**

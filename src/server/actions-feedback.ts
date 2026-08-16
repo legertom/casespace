@@ -6,6 +6,7 @@ import { getDb } from "@/db";
 import { feedback } from "@/db/schema";
 import { requireAdmin, requireUser } from "@/lib/current-user";
 import type { ActionResult } from "./actions";
+import { failure } from "./guards";
 
 export interface FeedbackInput {
   message: string;
@@ -37,11 +38,7 @@ export async function submitFeedbackAction(
         errorDetail: input.errorDetail?.slice(0, 2000) ?? null,
       });
   } catch (err) {
-    console.error("[casespace feedback]", err);
-    return {
-      error: "The report didn't save.",
-      detail: err instanceof Error ? err.message : String(err),
-    };
+    return failure(err);
   }
   revalidatePath("/feedback");
   return {};

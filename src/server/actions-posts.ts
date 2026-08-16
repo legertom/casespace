@@ -4,30 +4,30 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { postRevisions, posts } from "@/db/schema";
-import { requireUser } from "@/lib/current-user";
 import { generateWhatsNew } from "./whats-new";
 import type { ActionResult } from "./actions";
+import { failure, requireAdminActor } from "./guards";
 
 export async function regeneratePostAction(
   weekStart: string,
 ): Promise<ActionResult & { id?: string }> {
-  const user = await requireUser();
-  if (user.role !== "admin") return { error: "Admins only." };
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(weekStart)) {
     return { error: "Bad week start date." };
   }
   try {
-    const result = await generateWhatsNew(weekStart, user.id);
+    const result = await generateWhatsNew(weekStart, gate.user.id);
     revalidatePath("/whats-new");
     return { id: result.id };
   } catch (err) {
-    console.error(err);
-    return {
-      error:
-        err instanceof Error && err.message.includes("AI_GATEWAY")
-          ? err.message
-          : "Drafting failed. Try again.",
-    };
+    // A gateway-configuration problem explains itself — keep its message as
+    // the headline, as before. Everything else takes the standard shape.
+    if (err instanceof Error && err.message.includes("AI_GATEWAY")) {
+      console.error(err);
+      return { error: err.message };
+    }
+    return failure(err);
   }
 }
 
@@ -35,8 +35,9 @@ export async function updatePostAction(
   id: string,
   patch: { title: string; body: string },
 ): Promise<ActionResult> {
-  const user = await requireUser();
-  if (user.role !== "admin") return { error: "Admins only." };
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
+  const user = gate.user;
   if (!patch.title.trim() || !patch.body.trim()) {
     return { error: "Title and body are required." };
   }

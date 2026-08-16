@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireUser } from "@/lib/current-user";
 import { getDb } from "@/db/client";
 import { pulseSnapshots } from "@/db/schema";
 import type { ActionResult } from "./actions";
+import { requireAdminActor } from "./guards";
 
 const snapshotSchema = z.object({
   metricKey: z.string().min(1),
@@ -19,10 +19,9 @@ export async function addPulseSnapshotAction(raw: {
   value: number;
   takenOn: string;
 }): Promise<ActionResult> {
-  const user = await requireUser();
-  if (user.role !== "admin") {
-    return { error: "Only admins record pulse readings." };
-  }
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
+  const user = gate.user;
   const parsed = snapshotSchema.safeParse(raw);
   if (!parsed.success) {
     return { error: "Enter a value between 0 and 100 and a valid date." };
