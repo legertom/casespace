@@ -44,6 +44,21 @@ in-app report it came from.
 
 ## 2026-08-16
 
+### Sign-in opens on the program
+Requested by: Tom Leger
+
+Everyone now lands on the full program dashboard, not just admins. AI Leads
+still get their own use cases and the **Log a use case** button — they sit
+under the dashboard rather than in front of it. Viewers get the most
+recently updated records in the same spot.
+
+### Victoria Crow Dog comes off the AI Leads roster
+Requested by: Tom Leger
+
+She is no longer an AI lead, so a fresh environment no longer seeds her onto
+the roster. She stays in the directory and stays credited on the records she
+authored — coming off the roster is not coming off the team.
+
 ### The pipeline is a subway map now
 Requested by: Tom Leger
 

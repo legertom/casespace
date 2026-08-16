@@ -7,39 +7,28 @@ import { StatusBadge } from "@/components/status-badge";
 
 export default async function Home() {
   const user = await requireUser();
+  const isContributor = user.role === "contributor";
 
-  // Admins land straight on the program dashboard.
-  if (user.role === "admin") {
-    return (
-      <div>
-        <h1 className="font-serif text-4xl">The program, at a glance</h1>
-        <p className="mt-2 max-w-prose text-ink-muted">
-          45 documented use cases and 15 with quantified, positive ROI by
-          December 31.
-        </p>
-        <div className="mt-10">
-          <ProgramDashboard />
-        </div>
-      </div>
-    );
-  }
-
-  const mine = await listUseCases({ mine: await identityForUser(user) });
+  // Everyone opens onto the program. Admins stop there; everyone else gets
+  // their own records underneath — first thing on the page, not the only
+  // thing on it.
+  const recent = isContributor
+    ? await listUseCases({ mine: await identityForUser(user) })
+    : user.role === "viewer"
+      ? await listUseCases()
+      : [];
 
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-serif text-4xl">
-            Welcome back, {user.name.split(" ")[0]}.
-          </h1>
+          <h1 className="font-serif text-4xl">The program, at a glance</h1>
           <p className="mt-2 max-w-prose text-ink-muted">
-            {user.role === "contributor"
-              ? "Your use cases, and the program one click away."
-              : "Browse everything — the whole casebook is open to you."}
+            45 documented use cases and 15 with quantified, positive ROI by
+            December 31.
           </p>
         </div>
-        {user.role === "contributor" && (
+        {isContributor && (
           <Link
             href="/use-cases/new"
             className="rounded-md bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-deep"
@@ -49,28 +38,30 @@ export default async function Home() {
         )}
       </div>
 
-      <section className="mt-10">
-        <h2 className="font-serif text-2xl">
-          {user.role === "contributor" ? "Your use cases" : "Recently updated"}
-        </h2>
-        {user.role === "contributor" && mine.length === 0 ? (
-          <p className="mt-4 max-w-md text-ink-muted">
-            Nothing credits you yet. Built something with AI, however small?{" "}
-            <Link
-              href="/use-cases/new"
-              className="text-accent underline underline-offset-2"
-            >
-              Log it in five minutes.
-            </Link>
-          </p>
-        ) : (
-          <ul className="mt-4 divide-y divide-hairline border-y border-hairline">
-            {(user.role === "contributor"
-              ? mine
-              : await listUseCases()
-            )
-              .slice(0, 8)
-              .map((uc) => (
+      <div className="mt-10">
+        <ProgramDashboard />
+      </div>
+
+      {user.role !== "admin" && (
+        <section className="mt-14 border-t border-hairline pt-10">
+          <h2 className="font-serif text-2xl">
+            {isContributor
+              ? `Your use cases, ${user.name.split(" ")[0]}`
+              : "Recently updated"}
+          </h2>
+          {isContributor && recent.length === 0 ? (
+            <p className="mt-4 max-w-md text-ink-muted">
+              Nothing credits you yet. Built something with AI, however small?{" "}
+              <Link
+                href="/use-cases/new"
+                className="text-accent underline underline-offset-2"
+              >
+                Log it in five minutes.
+              </Link>
+            </p>
+          ) : (
+            <ul className="mt-4 divide-y divide-hairline border-y border-hairline">
+              {recent.slice(0, 8).map((uc) => (
                 <li key={uc.id}>
                   <Link
                     href={`/use-cases/${uc.id}`}
@@ -81,20 +72,10 @@ export default async function Home() {
                   </Link>
                 </li>
               ))}
-          </ul>
-        )}
-      </section>
-
-      <p className="mt-10 text-sm text-ink-muted">
-        Want the big picture?{" "}
-        <Link
-          href="/dashboard"
-          className="text-accent underline underline-offset-2"
-        >
-          See the program dashboard
-        </Link>{" "}
-        — everyone can.
-      </p>
+            </ul>
+          )}
+        </section>
+      )}
     </div>
   );
 }

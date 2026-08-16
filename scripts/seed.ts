@@ -173,9 +173,13 @@ async function linkAdminPeople(tomId: string, kateId: string) {
 /**
  * Emails confirmed against the "AI Leads" Google Group (Aug 2026) — note the
  * handful that differ from the first.last pattern (jennifer.kampf,
- * meghana.balihallimath, zach.gladnick). Victoria Crow Dog was not in the
- * group, so her placeholder stays flagged unverified until Tom confirms.
- * Patricia Henriquez appears in the group and joins the roster.
+ * meghana.balihallimath, zach.gladnick). Patricia Henriquez appears in the
+ * group and joins the roster.
+ *
+ * Victoria Crow Dog does not. She was absent from the group, and Tom
+ * confirmed in Aug 2026 that she is no longer an AI lead, so a fresh seed
+ * no longer creates her here. She stays in the directory and on the records
+ * she authored — off the roster is not off the team.
  */
 const ROSTER: {
   name: string;
@@ -191,7 +195,6 @@ const ROSTER: {
   { name: "Vamsi Chunduru", department: "engineering", teams: ["Engineering"], email: "vamsi.chunduru@clever.com" },
   { name: "Jen Kampf", department: "people", teams: ["POps", "Talent Acquisition"], email: "jennifer.kampf@clever.com" },
   { name: "David McGeary", department: "css", teams: ["Technical Pre-sales"], email: "david.mcgeary@clever.com" },
-  { name: "Victoria Crow Dog", department: "css", teams: ["Integration Engineering"], emailUnverified: true },
   { name: "Meghana Gangadharswami Balihallimath", department: "css", teams: ["Integration Engineering"], email: "meghana.balihallimath@clever.com" },
   { name: "Dotun Oni", department: "css", teams: ["Partner Engineering"], email: "dotun.oni@clever.com" },
   { name: "Sinclair Blackmon", department: "css", teams: ["Clever Core Onboarding"], email: "sinclair.blackmon@clever.com" },

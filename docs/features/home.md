@@ -2,7 +2,7 @@
 title: Home
 surface: /
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-16
 code:
   - src/app/(app)/page.tsx
 ---
@@ -14,16 +14,26 @@ where sign-in lands you.
 
 ## What's on it
 
-- The two numbers against their targets, and what's in flight behind them.
-- Your own recent records, when you have any.
+- The [full program dashboard](dashboard.md), in full — the two numbers, the
+  pipeline, ELT owners, coverage, movement, and what needs attention. Every
+  role sees it, and it is the first thing on the page.
 - **Log a use case** — the primary action, straight to
   [the three doors](logging-a-use-case.md).
-- A link through to [the full dashboard](dashboard.md).
+- Below the dashboard, your own records if you are an AI Lead, or the most
+  recently updated records if you are a viewer. Admins get the dashboard
+  alone.
 
 ## Who can do what
 
-Everyone sees the same page. **Log a use case** appears for AI Leads and
-admins; viewers see the numbers without the button.
+Everyone lands on the same dashboard. **Log a use case** appears for AI Leads
+and admins; viewers see the numbers without the button.
+
+## Rules that surprise people
+
+**Home and `/dashboard` show the same thing.** That is deliberate — the
+dashboard is the program, so putting anything ahead of it on sign-in buries
+the point. `/dashboard` stays as its own route because it is what people link
+to and bookmark.
 
 ## Related
 
