@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Source_Sans_3, Source_Serif_4 } from "next/font/google";
+import { PUBLIC_DESCRIPTION } from "@/lib/public-meta";
 import "./globals.css";
 
 const sourceSans = Source_Sans_3({
@@ -12,17 +13,6 @@ const sourceSerif = Source_Serif_4({
   style: ["normal", "italic"],
   variable: "--font-source-serif",
 });
-
-/**
- * The one public description of Casespace. Anonymous visitors only ever see
- * /signin, so this line — via the meta tags below and the JSON-LD — is what a
- * Slack unfurl, a search snippet, or an AI scraper has to go on.
- */
-const PUBLIC_DESCRIPTION =
-  "Clever's internal casebook of AI use cases — the live scoreboard for the " +
-  "H2 2026 AI Enablement program. Every workflow is a record with a named " +
-  "owner, a status in a seven-stage pipeline, and measured ROI evidence: " +
-  "45 documented use cases, 15 with confirmed positive ROI.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://clever-casespace.vercel.app"),

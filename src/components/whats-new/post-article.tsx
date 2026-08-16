@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import { fmtDate } from "@/lib/format";
 import type { posts } from "@/db/schema";
 import { RegenerateButton } from "@/components/whats-new/post-controls";
+import { SharePostButton } from "@/components/whats-new/share-post";
 
 type Post = typeof posts.$inferSelect;
 
@@ -28,28 +29,36 @@ export function PostArticle({
         Week of {fmtDate(post.weekStart)}
       </p>
       <Title className="mt-2 max-w-[26ch] font-serif text-4xl leading-tight">
-        {post.title}
+        <Link
+          href={`/whats-new/${post.weekStart}`}
+          className="hover:text-accent"
+        >
+          {post.title}
+        </Link>
       </Title>
       <p className="mt-3 text-sm text-ink-faint">
         Drafted by the program&rsquo;s writer
         {post.generatedAt ? ` on ${fmtDate(post.generatedAt)}` : ""}
         {post.editedAt ? ` · edited ${fmtDate(post.editedAt)}` : ""}
       </p>
-      {isAdmin && (
-        <div className="mt-4 flex gap-2">
-          <Link
-            href={`/whats-new/${post.weekStart}/edit`}
-            className="rounded-md border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface"
-          >
-            Edit
-          </Link>
-          <RegenerateButton
-            weekStart={post.weekStart}
-            label="Regenerate draft"
-            edited={post.editedAt !== null}
-          />
-        </div>
-      )}
+      <div className="mt-4 flex flex-wrap gap-2">
+        {isAdmin && (
+          <>
+            <Link
+              href={`/whats-new/${post.weekStart}/edit`}
+              className="rounded-md border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface"
+            >
+              Edit
+            </Link>
+            <RegenerateButton
+              weekStart={post.weekStart}
+              label="Regenerate draft"
+              edited={post.editedAt !== null}
+            />
+          </>
+        )}
+        <SharePostButton weekStart={post.weekStart} />
+      </div>
       <div className="post-md mt-8 border-t border-hairline pt-8">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.body}</ReactMarkdown>
       </div>
