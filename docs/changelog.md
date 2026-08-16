@@ -44,6 +44,15 @@ in-app report it came from.
 
 ## 2026-08-15
 
+### A link to Casespace explains itself
+Requested by: Tom Leger
+
+Pasting a Casespace link into Slack used to unfurl as "Sign in · Casespace"
+and nothing else. The sign-in page now says what the app actually is, every
+page carries a proper social-preview card and description, and structured
+data tells search engines and AI tools what they're looking at — so a shared
+link makes sense to someone who hasn't opened the app yet.
+
 ### A save lands whole, or not at all
 
 Saving a record writes several things at once — the record, its credited

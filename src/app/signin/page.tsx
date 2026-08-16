@@ -37,7 +37,17 @@ export default async function SignInPage({
         <h1 className="font-serif text-5xl tracking-tight">Casespace</h1>
         <p className="mt-3 text-ink-muted leading-relaxed">
           Clever&rsquo;s casebook of AI use cases — and the live scoreboard for
-          the H2 program.
+          the H2 2026 AI Enablement program.
+        </p>
+        {/* The only prose an anonymous visitor (or a scraper) can read, so it
+            says what the app actually is. */}
+        <p className="mt-3 text-sm text-ink-faint leading-relaxed">
+          Inside: every documented AI workflow as a record with a named owner,
+          its status in a seven-stage pipeline, and measured ROI evidence; a
+          program dashboard tracking 45 documented use cases and 15 with
+          confirmed positive ROI; a weekly What&rsquo;s New post; and an AI
+          Coach that drafts records a human confirms. For Clever employees —
+          sign in with a clever.com Google account.
         </p>
 
         {error && (

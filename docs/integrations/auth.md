@@ -4,9 +4,11 @@ surface:
   - /signin
   - /api/auth/[...nextauth]
 audience: engineering
-updated: 2026-08-14
+updated: 2026-08-15
 code:
   - src/app/signin/page.tsx
+  - src/app/layout.tsx
+  - src/app/opengraph-image.tsx
   - src/app/api/auth/[...nextauth]/route.ts
   - src/lib/auth-provision.ts
   - src/lib/current-user.ts
@@ -22,6 +24,18 @@ password anywhere in Casespace.
 `/signin` offers Google. A successful sign-in from a `clever.com` address
 provisions a `users` row on first visit. Addresses outside the domain are
 turned away.
+
+## What an anonymous visitor sees
+
+Every page redirects an anonymous request to `/signin`, so that page is
+Casespace's entire public face. It carries what a link unfurl (Slack,
+iMessage) or an AI scraper needs to understand the app: a paragraph of prose
+describing what's inside, Open Graph and Twitter tags with the app's public
+description (in the root layout, so every route serves them), a generated
+social card at `/opengraph-image`, and schema.org JSON-LD. The public
+description lives in one place — `PUBLIC_DESCRIPTION` in
+`src/app/layout.tsx`. It names the program's targets, which are public in
+this repo, and nothing else.
 
 ## Multi-alias identity
 
