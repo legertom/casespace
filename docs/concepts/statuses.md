@@ -1,7 +1,7 @@
 ---
 title: Statuses
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-15
 code:
   - src/lib/domain.ts
   - src/components/status-controls.tsx
@@ -39,6 +39,11 @@ as an author on the record (`canEditUseCase`).
 - **Confirmed Positive ROI is reachable only from Qualified.** This is what
   makes the 15 a subset of the 45 structurally rather than by agreement, and
   it matches Kate's flow: qualify first, confirm ROI once it's measured.
+- **A record is never created at a gated status.** Every door — the form,
+  the wizard, the notes parser, the REST API, and MCP — can start a record
+  at any of the first five statuses (`SETTABLE_STATUSES`), and only those.
+  Qualified and Confirmed Positive ROI are reached exclusively through the
+  transition rules above.
 
 ## The Qualified gate
 

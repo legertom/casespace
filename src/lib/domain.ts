@@ -194,6 +194,19 @@ export function statusRank(s: UcStatus): number {
   return STATUSES.indexOf(s);
 }
 
+/**
+ * Statuses a non-admin write may set directly. Qualified and Confirmed
+ * Positive ROI are reachable only through the admin transition gate
+ * (canSetStatus) — both record Kate's decisions and neither may be minted
+ * on create. Deriving from STATUSES keeps this in step with the pipeline.
+ */
+export const SETTABLE_STATUSES = STATUSES.filter(
+  (s): s is Exclude<UcStatus, "qualified" | "confirmed_positive_roi"> =>
+    s !== "qualified" && s !== "confirmed_positive_roi",
+);
+
+export type SettableStatus = (typeof SETTABLE_STATUSES)[number];
+
 export const ROLES = ["viewer", "contributor", "admin"] as const;
 
 export type Role = (typeof ROLES)[number];

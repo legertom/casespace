@@ -4,7 +4,7 @@
  * and the form pickers re-link when the human edits first.
  */
 import { z } from "zod";
-import { APPROACHES, DEPARTMENTS } from "@/lib/domain";
+import { APPROACHES, DEPARTMENTS, SETTABLE_STATUSES } from "@/lib/domain";
 import type { UseCaseCreateInput } from "@/lib/use-case-input";
 
 const rating = z
@@ -86,15 +86,9 @@ export const proposalSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .nullish(),
-  status: z
-    .enum([
-      "in_discovery",
-      "approved_by_fl",
-      "under_construction",
-      "in_testing",
-      "launched",
-    ])
-    .nullish(),
+  // The AI never proposes a record into an admin-gated status — derived from
+  // the same SETTABLE_STATUSES constant every other create door validates by.
+  status: z.enum(SETTABLE_STATUSES).nullish(),
 });
 
 export type Proposal = z.infer<typeof proposalSchema>;

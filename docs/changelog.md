@@ -44,6 +44,15 @@ in-app report it came from.
 
 ## 2026-08-15
 
+### Confirmed Positive ROI is set by an admin, and only by an admin
+
+Confirmed Positive ROI and Qualified record Kate's decisions, and now the
+only way a record reaches either is that decision. Every door for logging a
+use case — the form, the wizard, the notes parser, the REST API, and MCP —
+starts records in one of the five working statuses; the two decision stages
+are granted afterward, in the app, by an admin. The status dropdown on the
+create form matches what the server accepts.
+
 ### What's New reads like a blog now
 Requested by: Tom Leger
 

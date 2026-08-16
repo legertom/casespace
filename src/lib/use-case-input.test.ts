@@ -36,20 +36,16 @@ describe("sparse API create", () => {
     ).toThrow();
   });
 
-  it("never allows creating directly at Qualified", () => {
-    expect(() =>
-      useCaseCreateSchema.parse({
-        title: "t",
-        description: "d",
-        status: "qualified",
-      }),
-    ).toThrow();
-    const ok = useCaseCreateSchema.parse({
-      title: "t",
-      description: "d",
-      status: "launched",
-    });
-    expect(ok.status).toBe("launched");
+  it("refuses to create at an admin-gated status", () => {
+    for (const status of ["qualified", "confirmed_positive_roi"]) {
+      expect(() =>
+        useCaseCreateSchema.parse({ title: "t", description: "d", status }),
+      ).toThrow();
+    }
+    expect(
+      useCaseCreateSchema.parse({ title: "t", description: "d", status: "launched" })
+        .status,
+    ).toBe("launched");
   });
 
   it("bounds ratings to 1–5", () => {

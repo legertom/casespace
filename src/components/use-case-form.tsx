@@ -8,7 +8,7 @@ import {
   DEPARTMENTS,
   DEPARTMENT_LABELS,
   RATING_FIELDS,
-  STATUSES,
+  SETTABLE_STATUSES,
   STATUS_LABELS,
   type Approach,
   type Department,
@@ -679,7 +679,7 @@ export function UseCaseForm({
           <h2 className="font-serif text-2xl">Where does it stand?</h2>
           <Field
             label="Status"
-            hint="Qualified is granted later by an admin — it records Kate's approval."
+            hint="Qualified and Confirmed Positive ROI are granted later by an admin — they record Kate's decisions."
           >
             <select
               value={status}
@@ -688,7 +688,7 @@ export function UseCaseForm({
               }
               className={inputCls}
             >
-              {STATUSES.filter((s) => s !== "qualified").map((s) => (
+              {SETTABLE_STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {STATUS_LABELS[s]}
                 </option>

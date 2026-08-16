@@ -6,7 +6,7 @@ surface:
   - /api/v1/progress
   - /api/v1/roster
 audience: engineering
-updated: 2026-08-14
+updated: 2026-08-15
 code:
   - src/app/api/v1/use-cases/route.ts
   - src/app/api/v1/use-cases/[id]/route.ts
@@ -58,8 +58,13 @@ Records created this way are stamped `source: api`.
 
 ## Status is not settable here
 
-Status changes go through the app so the history stays complete and the
-admin gates stay meaningful. See [statuses](../concepts/statuses.md).
+A create may include `status`, but only one of the five working statuses
+(In Discovery through Launched). Qualified and Confirmed Positive ROI can
+never be set over the API — they are granted in the app by an admin, and a
+create naming either is rejected with `422`. On existing records, status
+changes go through the app so the history stays complete and the admin gates
+stay meaningful — `status` in a PATCH body never applies. See
+[statuses](../concepts/statuses.md).
 
 ## Status codes
 

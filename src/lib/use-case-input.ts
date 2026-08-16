@@ -7,14 +7,16 @@
  * exists beats a perfect record that doesn't.
  */
 import { z } from "zod";
-import { APPROACHES, DEPARTMENTS, STATUSES } from "./domain";
+import { APPROACHES, DEPARTMENTS, SETTABLE_STATUSES } from "./domain";
 
 const rating = z.number().int().min(1).max(5);
 
-/** Statuses a non-admin write may set. Qualified only via the admin gate. */
-const settableStatus = z.enum(
-  STATUSES.filter((s) => s !== "qualified") as [string, ...string[]],
-);
+/**
+ * Statuses a non-admin write may set. Qualified and Confirmed Positive ROI
+ * are granted only through the admin transition gate — see SETTABLE_STATUSES
+ * in domain.ts, the single source for this list.
+ */
+const settableStatus = z.enum(SETTABLE_STATUSES);
 
 export const personRefSchema = z.object({
   personId: z.string().uuid().nullish(),
@@ -168,12 +170,9 @@ export function applyCreateDefaults(
     isPositive: input.isPositive ?? null,
     roiStatus: input.roiStatus ?? ("not_yet_measurable" as const),
     revisitOn: input.revisitOn ?? null,
-    status: (input.status ?? "in_discovery") as
-      | "in_discovery"
-      | "approved_by_fl"
-      | "under_construction"
-      | "in_testing"
-      | "launched",
+    // Typed by the schema as a settable status — TypeScript enforces that
+    // the admin-gated statuses can't arrive here; no cast to hide behind.
+    status: input.status ?? "in_discovery",
     createdById: ctx.createdById,
   };
 }
