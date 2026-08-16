@@ -4,6 +4,15 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { Proposal } from "@/lib/ai/proposal";
 import { proposalToCreateInput } from "@/lib/ai/proposal";
+import {
+  createdOutcome,
+  DISMISSED_CREATE,
+  DISMISSED_UPDATE,
+  OPENED_IN_FORM,
+  recordIdFromOutcome,
+  settledLine,
+  UPDATED,
+} from "@/lib/ai/decision";
 import { computeGapFlags } from "@/lib/gap-flags";
 import { approachLabels, DEPARTMENT_LABELS, STATUS_LABELS } from "@/lib/domain";
 import {
@@ -18,6 +27,16 @@ import {
 
 interface BaseProps {
   onDecision: (outcome: string) => void;
+  /**
+   * The outcome already recorded for this proposal, when the human decided it
+   * in an earlier sitting — undefined while the decision is still open.
+   *
+   * A conversation reopened from the sidebar replays its proposals, and a
+   * decision made once must not be put a second time: the buttons would write
+   * a duplicate record, and the card would log its proposal to `coach_events`
+   * afresh, as though nobody had ever answered it.
+   */
+  settled?: string;
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
@@ -35,21 +54,14 @@ export function ProposalCard({
   source,
   proposalRef,
   chatId,
-  isLive = true,
   onDecision,
+  settled,
 }: BaseProps & {
   proposal: Proposal;
   source: "wizard" | "notes";
   /** Correlates this card's four possible outcomes in `coach_events`. */
   proposalRef: string;
   chatId?: string;
-  /**
-   * False when this card is being replayed from a stored transcript. Reopening
-   * an old conversation must not log its proposal again — the decision was
-   * made once, months ago, and re-recording it would read as a fresh one
-   * nobody ever answered.
-   */
-  isLive?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -62,10 +74,17 @@ export function ProposalCard({
   const logged = useRef(false);
   const gaps = computeGapFlags(proposalToCreateInput(proposal));
 
+  // A record logged in an earlier sitting is still reachable: its id rode along
+  // in the outcome, so the reopened card keeps its link to the record.
+  const shownId = savedId ?? (settled ? recordIdFromOutcome(settled) : null);
+  const isDecided = decided || settled !== undefined;
+
   // The card is the moment worth measuring: what the Coach guessed, before
-  // anyone touched it. Recorded once, even though streaming re-renders this.
+  // anyone touched it. Recorded once, even though streaming re-renders this —
+  // and never on a card that arrives already settled, whose proposal was
+  // logged when it was new.
   useEffect(() => {
-    if (!isLive || logged.current) return;
+    if (settled !== undefined || logged.current) return;
     logged.current = true;
     void recordProposedAction({
       proposalRef,
@@ -73,7 +92,7 @@ export function ProposalCard({
       door: source,
       proposed: { ...proposalToCreateInput(proposal), teamName: proposal.team ?? null },
     });
-  }, [proposal, proposalRef, chatId, source, isLive]);
+  }, [proposal, proposalRef, chatId, source, settled]);
 
   function accept() {
     setError(null);
@@ -90,7 +109,7 @@ export function ProposalCard({
           kind: "accepted",
           useCaseId: res.id,
         });
-        onDecision(`Accepted — record created at /use-cases/${res.id}`);
+        onDecision(createdOutcome(res.id));
       }
     });
   }
@@ -106,9 +125,7 @@ export function ProposalCard({
       }),
     );
     setDecided(true);
-    onDecision(
-      "The human chose to review and edit it in the form before saving.",
-    );
+    onDecision(OPENED_IN_FORM);
     router.push("/use-cases/new/review");
   }
 
@@ -122,7 +139,7 @@ export function ProposalCard({
       door: source,
       kind: "dismissed",
     });
-    onDecision("Dismissed — do not save this. Ask what to change if unclear.");
+    onDecision(DISMISSED_CREATE);
   }
 
   return (
@@ -173,7 +190,7 @@ export function ProposalCard({
         />
       </dl>
 
-      {gaps.length > 0 && !savedId && (
+      {gaps.length > 0 && !shownId && (
         <div className="mt-3 border-t border-hairline pt-3">
           <p className="text-xs font-semibold text-flag">Gaps</p>
           <ul className="mt-1 list-disc pl-5 text-sm text-ink-muted">
@@ -184,11 +201,11 @@ export function ProposalCard({
         </div>
       )}
 
-      {savedId ? (
+      {shownId ? (
         <p className="mt-3 border-t border-hairline pt-3 text-sm">
           Logged.{" "}
           <a
-            href={`/use-cases/${savedId}`}
+            href={`/use-cases/${shownId}`}
             className="text-accent underline underline-offset-2"
           >
             Open the record →
@@ -237,9 +254,9 @@ export function ProposalCard({
             </form>
           )}
         </div>
-      ) : decided ? (
+      ) : isDecided ? (
         <p className="mt-3 border-t border-hairline pt-3 text-sm text-ink-faint">
-          Decision recorded.
+          {settled ? settledLine(settled) : "Decision recorded."}
         </p>
       ) : (
         <div className="mt-3 flex flex-wrap gap-2 border-t border-hairline pt-3">
@@ -281,11 +298,15 @@ export function UpdateProposalCard({
   reason,
   changes,
   onDecision,
+  settled,
 }: BaseProps & { id: string; reason: string; changes: Partial<Proposal> }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [decided, setDecided] = useState(false);
+
+  const isApplied = done || settled === UPDATED;
+  const isDecided = decided || settled !== undefined;
 
   const changeList = Object.entries(changes)
     .filter(([, v]) => v !== undefined)
@@ -308,7 +329,7 @@ export function UpdateProposalCard({
           </div>
         ))}
       </dl>
-      {done ? (
+      {isApplied ? (
         <p className="mt-3 border-t border-hairline pt-3 text-sm">
           Applied.{" "}
           <a
@@ -318,9 +339,9 @@ export function UpdateProposalCard({
             Open the record →
           </a>
         </p>
-      ) : decided ? (
+      ) : isDecided ? (
         <p className="mt-3 border-t border-hairline pt-3 text-sm text-ink-faint">
-          Decision recorded.
+          {settled ? settledLine(settled) : "Decision recorded."}
         </p>
       ) : (
         <div className="mt-3 flex gap-2 border-t border-hairline pt-3">
@@ -335,7 +356,7 @@ export function UpdateProposalCard({
                 else {
                   setDone(true);
                   setDecided(true);
-                  onDecision("Accepted — the record was updated.");
+                  onDecision(UPDATED);
                 }
               });
             }}
@@ -347,7 +368,7 @@ export function UpdateProposalCard({
             type="button"
             onClick={() => {
               setDecided(true);
-              onDecision("Dismissed — leave the record as it is.");
+              onDecision(DISMISSED_UPDATE);
             }}
             className="px-2 py-1.5 text-sm text-ink-faint hover:text-accent"
           >

@@ -159,7 +159,11 @@ export function CoachChat({
                             source={source}
                             proposalRef={part.toolCallId}
                             chatId={chatId}
-                            isLive={part.state === "input-available"}
+                            settled={
+                              part.state === "output-available"
+                                ? String(part.output)
+                                : undefined
+                            }
                             onDecision={(outcome) =>
                               addToolOutput({
                                 tool: "propose_use_case",
@@ -190,6 +194,11 @@ export function CoachChat({
                             id={input.id}
                             reason={input.reason}
                             changes={input.changes}
+                            settled={
+                              part.state === "output-available"
+                                ? String(part.output)
+                                : undefined
+                            }
                             onDecision={(outcome) =>
                               addToolOutput({
                                 tool: "propose_update",
