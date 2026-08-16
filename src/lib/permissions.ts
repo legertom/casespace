@@ -7,7 +7,7 @@
  * (What's New drafting/editing goes through canManageProgram-style admin
  * checks in the server actions).
  */
-import type { Role } from "./domain";
+import type { Role, UcStatus } from "./domain";
 
 export interface SessionUser {
   id: string;
@@ -98,6 +98,24 @@ export function canComment(_role: Role): boolean {
  */
 export function canViewWins(role: Role): boolean {
   return role === "admin";
+}
+
+/**
+ * The annual-ROI confirmation note (on the confirmed_positive_roi
+ * transition) may carry dollar figures, which stay off open surfaces — see
+ * canViewWins. Every history-emitting surface runs each entry's note through
+ * this before showing it, so the /wins gate can't be walked around via a
+ * record's History, the REST API, or the Coach. Other transition notes
+ * (e.g. Qualified-gate rejections) are unaffected. Admins see everything.
+ */
+export function visibleHistoryNote(
+  entry: { toStatus: UcStatus; note: string | null },
+  role: Role,
+): string | null {
+  if (entry.toStatus === "confirmed_positive_roi" && !canViewWins(role)) {
+    return null;
+  }
+  return entry.note;
 }
 
 /**

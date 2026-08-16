@@ -44,6 +44,15 @@ in-app report it came from.
 
 ## 2026-08-15
 
+### The annual-ROI note stays on the Wins page
+
+The note an admin writes when confirming positive ROI can carry the kind of
+figures that stay off open surfaces — the reason Wins is admin-only. That
+note now follows the same rule everywhere it could appear: on a record's
+History, over the REST API, and in the Coach, admins see it and everyone
+else sees the status change without the note. Every other history note —
+Qualified-gate rejection reasons included — shows exactly as before.
+
 ### Confirmed Positive ROI is set by an admin, and only by an admin
 
 Confirmed Positive ROI and Qualified record Kate's decisions, and now the

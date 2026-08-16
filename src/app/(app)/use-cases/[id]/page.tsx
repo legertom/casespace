@@ -6,7 +6,11 @@ import {
   DEPARTMENTS,
   DEPARTMENT_LABELS,
 } from "@/lib/domain";
-import { canEditUseCase, canLinkUseCases } from "@/lib/permissions";
+import {
+  canEditUseCase,
+  canLinkUseCases,
+  visibleHistoryNote,
+} from "@/lib/permissions";
 import { listComments, listMentionableUsers } from "@/server/comment-queries";
 import { listEltOrgs, listPeopleLite, listTeams } from "@/server/reference";
 import {
@@ -115,7 +119,14 @@ export default async function UseCaseDetailPage({
               isAdmin={user.role === "admin"}
             />
 
-            <RecordHistory history={uc.history} />
+            {/* Redacted here, server-side, so the annual-ROI note (which may
+                carry dollars) never reaches a non-admin's HTML. */}
+            <RecordHistory
+              history={uc.history.map((h) => ({
+                ...h,
+                note: visibleHistoryNote(h, user.role),
+              }))}
+            />
 
             <CommentThread
               useCaseId={uc.id}

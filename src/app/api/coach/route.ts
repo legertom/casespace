@@ -29,6 +29,7 @@ import {
   countsTowardRoi,
   roiGaps,
 } from "@/lib/domain";
+import { visibleHistoryNote } from "@/lib/permissions";
 import { getCoachLearnings } from "@/server/coach-learnings-queries";
 import { buildProgressReport } from "@/server/progress-report";
 import { getUseCase, listUseCases } from "@/server/use-case-queries";
@@ -149,7 +150,9 @@ export async function POST(req: Request) {
             from: h.fromStatus,
             to: h.toStatus,
             by: h.changedByName,
-            note: h.note,
+            // The annual-ROI note may carry dollars — admins only, same
+            // rule as /wins and the record page.
+            note: visibleHistoryNote(h, user.role),
           })),
         };
       },

@@ -8,6 +8,7 @@ import {
   canUnlinkUseCases,
   canViewCoachLearnings,
   canViewPulse,
+  visibleHistoryNote,
 } from "./permissions";
 
 const uc = {
@@ -74,6 +75,40 @@ describe("role gates", () => {
     expect(canLinkUseCases("viewer")).toBe(false);
     expect(canLinkUseCases("contributor")).toBe(true);
     expect(canLinkUseCases("admin")).toBe(true);
+  });
+});
+
+describe("history-note redaction", () => {
+  const roiNote = {
+    toStatus: "confirmed_positive_roi",
+    note: "Annual ROI ~$120k in saved CSS hours",
+  } as const;
+  const rejectionNote = {
+    toStatus: "launched",
+    note: "Rejected at the Qualified gate: adoption evidence is one team",
+  } as const;
+
+  it("admins see the confirmed-ROI note", () => {
+    expect(visibleHistoryNote(roiNote, "admin")).toBe(roiNote.note);
+  });
+
+  it("viewers and contributors never see the confirmed-ROI note", () => {
+    expect(visibleHistoryNote(roiNote, "viewer")).toBeNull();
+    expect(visibleHistoryNote(roiNote, "contributor")).toBeNull();
+  });
+
+  it("every role still sees other transition notes", () => {
+    expect(visibleHistoryNote(rejectionNote, "viewer")).toBe(rejectionNote.note);
+    expect(visibleHistoryNote(rejectionNote, "contributor")).toBe(
+      rejectionNote.note,
+    );
+    expect(visibleHistoryNote(rejectionNote, "admin")).toBe(rejectionNote.note);
+  });
+
+  it("a noteless entry stays noteless for everyone", () => {
+    const bare = { toStatus: "confirmed_positive_roi", note: null } as const;
+    expect(visibleHistoryNote(bare, "admin")).toBeNull();
+    expect(visibleHistoryNote(bare, "viewer")).toBeNull();
   });
 });
 

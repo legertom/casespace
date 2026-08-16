@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { visibleHistoryNote } from "@/lib/permissions";
 import { useCaseUpdateApiSchema } from "@/lib/use-case-input";
 import { toApiUseCase } from "@/server/api-serializers";
 import { authenticatePat } from "@/server/pat";
@@ -26,7 +27,8 @@ export async function GET(
         from: h.fromStatus,
         to: h.toStatus,
         by: h.changedByName,
-        note: h.note,
+        // The annual-ROI note may carry dollars — admin tokens only.
+        note: visibleHistoryNote(h, user.role),
       })),
     },
   });

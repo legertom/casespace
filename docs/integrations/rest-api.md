@@ -42,6 +42,11 @@ around them.
 Unknown values for `status` and `department` are **ignored**, not rejected —
 a typo returns unfiltered results rather than an error.
 
+History entries carry their notes, with one redaction: the note on a
+Confirmed Positive ROI step comes back `null` unless the token's owner is an
+admin. Annual-ROI notes may carry dollar figures, which never appear on an
+open surface — see [Wins](../features/wins.md).
+
 ## Creating
 
 ```bash

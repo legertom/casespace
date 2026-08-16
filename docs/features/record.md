@@ -31,7 +31,10 @@ whoever owns it.
 - **Title, description, owner, authors, team, department, AI tools,
   approaches** — approaches are a set, so a record can be both Agentic and
   AI-built.
-- **Status** with its controls, and the full status history.
+- **Status** with its controls, and the full status history. History notes
+  show with their entries — except the annual-ROI confirmation note, which
+  only admins see here, for [the same reason Wins is gated](wins.md): it may
+  carry dollar figures.
 - **The four documented gates**, as toggles.
 - **The ROI panel** — success criterion, baseline and post with a stated
   methodology, net-impact statement, positive/negative.
