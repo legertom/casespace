@@ -67,7 +67,7 @@ function PipelineQueues({ byStatus }: { byStatus: Record<UcStatus, number> }) {
     QUEUE.perRank,
   );
   const platformY = 60.6 + (depth - 1) * QUEUE.rowGap;
-  const height = platformY + 46;
+  const height = platformY + 56;
 
   return (
     <div className="overflow-x-auto">
@@ -98,12 +98,14 @@ function PipelineQueues({ byStatus }: { byStatus: Record<UcStatus, number> }) {
                 n === 1 ? "use case" : "use cases"
               }`}
             >
-              {/* Whole column is the hit target; the marks are too thin to aim at. */}
+              {/* Whole column is the hit target; the marks are too thin to aim
+                  at. Inset so neighbouring columns don't share an edge on
+                  hover, and run past the label so descenders clear it. */}
               <rect
-                x={cx - SLOT / 2}
-                y={8}
-                width={SLOT}
-                height={height - 18}
+                x={cx - SLOT / 2 + 3}
+                y={10}
+                width={SLOT - 6}
+                height={platformY + 40}
                 rx={6}
                 className="fill-transparent group-hover:fill-accent-wash"
               />
@@ -172,7 +174,7 @@ function PipelineQueues({ byStatus }: { byStatus: Record<UcStatus, number> }) {
               />
               <text
                 x={cx}
-                y={platformY + 21}
+                y={platformY + 24}
                 fontSize={15}
                 fontWeight={500}
                 textAnchor="middle"
@@ -182,7 +184,7 @@ function PipelineQueues({ byStatus }: { byStatus: Record<UcStatus, number> }) {
               </text>
               <text
                 x={cx}
-                y={platformY + 36}
+                y={platformY + 40}
                 fontSize={10.5}
                 textAnchor="middle"
                 className="fill-ink-muted group-hover:fill-ink"
