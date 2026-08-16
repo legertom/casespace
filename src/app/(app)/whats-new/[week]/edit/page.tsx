@@ -4,28 +4,42 @@ import { getDb } from "@/db/client";
 import { posts } from "@/db/schema";
 import { requireAdmin } from "@/lib/current-user";
 import { fmtDate } from "@/lib/format";
+import { isWeekSlug } from "@/lib/weeks";
 import { updatePostAction } from "@/server/actions-posts";
 
 export const metadata = { title: "Edit post" };
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default async function EditPostPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ week: string }>;
 }) {
   await requireAdmin();
-  const { id } = await params;
+  const { week } = await params;
   const db = getDb();
-  const [post] = await db.select().from(posts).where(eq(posts.id, id));
+
+  // Old bookmarks reach this page as /whats-new/<uuid>/edit.
+  if (UUID.test(week)) {
+    const [byId] = await db.select().from(posts).where(eq(posts.id, week));
+    redirect(byId ? `/whats-new/${byId.weekStart}/edit` : "/whats-new");
+  }
+  if (!isWeekSlug(week)) notFound();
+  const [post] = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.weekStart, week));
   if (!post) notFound();
+  const postId = post.id;
 
   async function save(formData: FormData) {
     "use server";
-    await updatePostAction(id, {
+    await updatePostAction(postId, {
       title: String(formData.get("title") ?? ""),
       body: String(formData.get("body") ?? ""),
     });
-    redirect(`/whats-new?post=${id}`);
+    redirect(`/whats-new/${week}`);
   }
 
   return (
@@ -61,7 +75,7 @@ export default async function EditPostPage({
             Save
           </button>
           <a
-            href={`/whats-new?post=${id}`}
+            href={`/whats-new/${week}`}
             className="rounded-md border border-hairline-strong px-4 py-2 text-sm hover:bg-surface"
           >
             Cancel

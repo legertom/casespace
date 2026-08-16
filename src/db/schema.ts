@@ -419,7 +419,7 @@ export const pulseSnapshots = pgTable(
 
 export const posts = pgTable("posts", {
   id: uuid("id").primaryKey().defaultRandom(),
-  /** Monday of the week the post covers (the prior week). */
+  /** Monday of the week the post covers (the prior week). Also the post's URL: /whats-new/<weekStart>. */
   weekStart: date("week_start").notNull().unique(),
   title: text("title").notNull(),
   /** Markdown body. */
@@ -431,6 +431,41 @@ export const posts = pgTable("posts", {
     .notNull()
     .defaultNow(),
 });
+
+export const postRevisionReasonEnum = pgEnum("post_revision_reason", [
+  "regenerated",
+  "edited",
+]);
+
+/**
+ * The outgoing version of a post, captured whenever anything replaces its
+ * text — append-only, written in the same transaction as the replacement.
+ * No path may replace a post's words without a row landing here; nothing
+ * an admin wrote (or a reader saw) is ever simply gone. No UI reads this
+ * yet — it is insurance, queryable when someone needs it.
+ */
+export const postRevisions = pgTable(
+  "post_revisions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    postId: uuid("post_id")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    model: text("model"),
+    generatedAt: timestamp("generated_at", { withTimezone: true }),
+    editedAt: timestamp("edited_at", { withTimezone: true }),
+    /** What replaced this version: fresh model output, or a hand edit. */
+    reason: postRevisionReasonEnum("reason").notNull(),
+    /** Who did the replacing. The cron never replaces, so this is never system-null in practice. */
+    replacedById: uuid("replaced_by_id").references(() => users.id),
+    replacedAt: timestamp("replaced_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("post_revision_post_idx").on(t.postId)],
+);
 
 // ---------------------------------------------------------------------------
 // API access & AI accounting

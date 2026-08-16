@@ -44,6 +44,17 @@ in-app report it came from.
 
 ## 2026-08-15
 
+### What's New reads like a blog now
+Requested by: Tom Leger
+
+Every weekly post has a permanent address — the Monday of its week, like
+`/whats-new/2026-08-10` — so you can link a colleague straight to an
+article and the link keeps working forever. The What's New page is now a
+proper archive: the latest post in full, earlier weeks beneath it with
+excerpts. And nothing is ever silently overwritten anymore: the Monday
+draft never touches an existing post, and regenerating or editing one
+archives the version it replaces.
+
 ### A link to Casespace explains itself
 Requested by: Tom Leger
 

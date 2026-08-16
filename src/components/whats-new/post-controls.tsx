@@ -7,9 +7,12 @@ import { regeneratePostAction } from "@/server/actions-posts";
 export function RegenerateButton({
   weekStart,
   label,
+  edited = false,
 }: {
   weekStart: string;
   label: string;
+  /** Set when the post was hand-edited — regenerating asks first. */
+  edited?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -21,6 +24,14 @@ export function RegenerateButton({
         type="button"
         disabled={pending}
         onClick={() => {
+          if (
+            edited &&
+            !window.confirm(
+              "This post was edited by hand — regenerating archives the edited version and starts over. Continue?",
+            )
+          ) {
+            return;
+          }
           setError(null);
           startTransition(async () => {
             const res = await regeneratePostAction(weekStart);

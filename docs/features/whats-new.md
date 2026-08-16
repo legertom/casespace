@@ -2,13 +2,18 @@
 title: What's New
 surface:
   - /whats-new
-  - /whats-new/[id]/edit
+  - /whats-new/[week]
+  - /whats-new/[week]/edit
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-15
 code:
   - src/app/(app)/whats-new/page.tsx
-  - src/app/(app)/whats-new/[id]/edit/page.tsx
+  - src/app/(app)/whats-new/[week]/page.tsx
+  - src/app/(app)/whats-new/[week]/edit/page.tsx
+  - src/components/whats-new/post-article.tsx
   - src/components/whats-new/post-controls.tsx
+  - src/lib/weeks.ts
+  - src/lib/post-excerpt.ts
   - src/server/whats-new.ts
   - src/server/actions-posts.ts
 ---
@@ -17,6 +22,16 @@ code:
 
 A weekly post about what moved in the program. **Open to every user** —
 reading it is not gated. Regenerating and editing are admin-only.
+
+## Where a post lives
+
+`/whats-new` is the archive: the newest post in full, every earlier week
+beneath it as a card with an excerpt. Each post's permanent address is
+`/whats-new/<week-start>` — the Monday of the week it covers, e.g.
+`/whats-new/2026-08-10`. The date is the post's identity: it never changes,
+however often the title is edited, so a shared link keeps working. Old
+`?post=<id>` links and `/whats-new/<id>/edit` bookmarks redirect to the new
+addresses.
 
 ## How a post gets written
 
@@ -59,22 +74,27 @@ only thing standing between a bad sentence and the whole company.
 Admin gating is enforced in the server actions, not just by hiding the
 buttons.
 
-## One post per week, overwritten in place
+## One post per week, never silently overwritten
 
-`weekStart` is unique, so a week has exactly one post. Regenerating does not
-create a second one — it **overwrites the existing post**, including one
-people have already read, and clears `editedAt`.
+`weekStart` is unique, so a week has exactly one post — and no path replaces
+a post's text without first archiving the outgoing version to
+`post_revisions`, in the same transaction. Nothing an admin wrote, and
+nothing a reader already saw, is ever simply gone.
 
-Two consequences worth knowing before you click it:
+- **The cron is insert-only.** A Monday re-run that finds the week's post
+  already there skips it — generated, edited, whatever. It also checks
+  before calling the model, so a skipped week costs no tokens.
+- **Only a human regenerates.** The Regenerate button replaces the post with
+  fresh model output; if the post was hand-edited, the button asks first —
+  "regenerating archives the edited version and starts over." Archived, not
+  lost.
+- **Edits are archived too.** Saving an edit stores the version it replaced,
+  with who and when.
 
-- **Regenerating discards an admin's edits.** If someone fixed a name or cut
-  a sentence, a regenerate throws that away and puts fresh model output in
-  its place.
-- **Readers see the change with no trace.** There is no revision history and
-  nothing marks a post as having been rewritten.
-
-Useful when records changed after the cron ran and the post is now wrong.
-Editing is the safer tool for anything smaller.
+There is deliberately **no revisions UI yet** — the table is insurance,
+readable in the database when someone needs it. Regenerating is for when
+records changed after the cron ran and the post is now wrong; editing is the
+safer tool for anything smaller.
 
 ## Related
 

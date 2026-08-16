@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import { and, asc, eq, gte, isNull, lt } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import {
+  postRevisions,
   posts,
   pulseMetrics,
   pulseSnapshots,
@@ -31,24 +32,6 @@ import {
 } from "@/lib/domain";
 import { buildProgressReport } from "./progress-report";
 import { changelogForWeek } from "./changelog";
-
-/** Monday (ET) of the week containing the given ET date. */
-export function mondayOf(etDate: string): string {
-  const [y, m, d] = etDate.split("-").map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d));
-  const dow = dt.getUTCDay(); // 0 = Sunday
-  const back = (dow + 6) % 7;
-  dt.setUTCDate(dt.getUTCDate() - back);
-  return dt.toISOString().slice(0, 10);
-}
-
-/** The Monday of the week BEFORE the one containing `etDate`. */
-export function priorWeekStart(etDate: string): string {
-  const thisMonday = mondayOf(etDate);
-  const dt = new Date(`${thisMonday}T00:00:00Z`);
-  dt.setUTCDate(dt.getUTCDate() - 7);
-  return dt.toISOString().slice(0, 10);
-}
 
 async function gatherWeekData(weekStart: string): Promise<WeekData> {
   const db = getDb();
@@ -164,7 +147,22 @@ export interface GenerateResult {
   title: string;
 }
 
-/** Draft (or re-draft) the post covering the week starting `weekStart`. */
+/** Whether the week already has a post — the cron's insert-only guard. */
+export async function hasPostForWeek(weekStart: string): Promise<boolean> {
+  const db = getDb();
+  const [existing] = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .where(eq(posts.weekStart, weekStart));
+  return Boolean(existing);
+}
+
+/**
+ * Draft (or re-draft) the post covering the week starting `weekStart`.
+ * Re-drafting an existing post archives the outgoing version to
+ * post_revisions in the same transaction — nothing an admin wrote, and
+ * nothing a reader already saw, is ever simply gone.
+ */
 export async function generateWhatsNew(
   weekStart: string,
   actorUserId: string | null,
@@ -191,25 +189,48 @@ export async function generateWhatsNew(
   const { title, body } = splitPost(result.text, weekStart);
 
   const db = getDb();
-  const [row] = await db
-    .insert(posts)
-    .values({
-      weekStart,
-      title,
-      body,
-      model: MODELS.coach,
-      generatedAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: posts.weekStart,
-      set: {
+  const row = await db.transaction(async (tx) => {
+    const [existing] = await tx
+      .select()
+      .from(posts)
+      .where(eq(posts.weekStart, weekStart));
+
+    if (existing) {
+      await tx.insert(postRevisions).values({
+        postId: existing.id,
+        title: existing.title,
+        body: existing.body,
+        model: existing.model,
+        generatedAt: existing.generatedAt,
+        editedAt: existing.editedAt,
+        reason: "regenerated",
+        replacedById: actorUserId,
+      });
+      const [updated] = await tx
+        .update(posts)
+        .set({
+          title,
+          body,
+          model: MODELS.coach,
+          generatedAt: new Date(),
+          editedAt: null,
+        })
+        .where(eq(posts.id, existing.id))
+        .returning();
+      return updated;
+    }
+
+    const [inserted] = await tx
+      .insert(posts)
+      .values({
+        weekStart,
         title,
         body,
         model: MODELS.coach,
         generatedAt: new Date(),
-        editedAt: null,
-      },
-    })
-    .returning();
+      })
+      .returning();
+    return inserted;
+  });
   return { id: row.id, weekStart, title };
 }

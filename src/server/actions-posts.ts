@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { posts } from "@/db/schema";
+import { postRevisions, posts } from "@/db/schema";
 import { requireUser } from "@/lib/current-user";
 import { generateWhatsNew } from "./whats-new";
 import type { ActionResult } from "./actions";
@@ -41,14 +41,29 @@ export async function updatePostAction(
     return { error: "Title and body are required." };
   }
   const db = getDb();
-  await db
-    .update(posts)
-    .set({
-      title: patch.title.trim(),
-      body: patch.body,
-      editedAt: new Date(),
-    })
-    .where(eq(posts.id, id));
+  const title = patch.title.trim();
+
+  // The outgoing version is archived in the same transaction as the edit —
+  // an edit that saved without its revision would be a quiet overwrite.
+  await db.transaction(async (tx) => {
+    const [existing] = await tx.select().from(posts).where(eq(posts.id, id));
+    if (!existing) return;
+    if (existing.title === title && existing.body === patch.body) return;
+    await tx.insert(postRevisions).values({
+      postId: existing.id,
+      title: existing.title,
+      body: existing.body,
+      model: existing.model,
+      generatedAt: existing.generatedAt,
+      editedAt: existing.editedAt,
+      reason: "edited",
+      replacedById: user.id,
+    });
+    await tx
+      .update(posts)
+      .set({ title, body: patch.body, editedAt: new Date() })
+      .where(eq(posts.id, id));
+  });
   revalidatePath("/whats-new");
   return {};
 }
