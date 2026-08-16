@@ -2,11 +2,13 @@ import Link from "next/link";
 import {
   DEPARTMENT_LABELS,
   STATUS_LABELS,
+  STATUS_SHORT_LABELS,
   TARGET_DOCUMENTED,
   TARGET_ROI,
   targetSumWarning,
 } from "@/lib/domain";
 import { fmtDateShort } from "@/lib/format";
+import { maxRankDepth, queueRanks } from "@/lib/platform-queue";
 import {
   getAttentionFlags,
   getEltProgress,
@@ -28,6 +30,172 @@ const PIPELINE_RAMP: Record<UcStatus, string> = {
   qualified: "#7a3a18",
   confirmed_positive_roi: "#5c2a0e",
 };
+
+/**
+ * Platform-queue geometry, in viewBox units. A figure is the same size at
+ * every station — a bigger crowd stands deeper, never smaller — so one
+ * record looks like one record wherever it is in the pipeline.
+ */
+const QUEUE = {
+  perRank: 8,
+  pitch: 8.5,
+  bodyW: 4.2,
+  bodyH: 7,
+  headR: 2.8,
+  headDy: 9.6,
+  rowGap: 6.4,
+} as const;
+
+const VIEW_W = 600;
+const TRACK_Y = 30;
+const SLOT = (VIEW_W - 40) / 7;
+
+/** Sub-pixel wobble so a rank reads as people and not as a picket fence.
+ *  Deterministic — a seeded jitter would differ between server and client. */
+function wobble(stage: number, rank: number, i: number): number {
+  return (((stage * 7 + rank * 13 + i * 5) % 5) - 2) * 0.3;
+}
+
+/**
+ * The pipeline as a transit line: one station per status, and one standing
+ * figure for every record waiting there now. Nothing here encodes how far
+ * work got — only where it is sitting.
+ */
+function PipelineQueues({ byStatus }: { byStatus: Record<UcStatus, number> }) {
+  const depth = maxRankDepth(
+    STATUSES.map((s) => byStatus[s]),
+    QUEUE.perRank,
+  );
+  const platformY = 60.6 + (depth - 1) * QUEUE.rowGap;
+  const height = platformY + 46;
+
+  return (
+    <div className="overflow-x-auto">
+      <svg
+        viewBox={`0 0 ${VIEW_W} ${height}`}
+        className="w-full min-w-[560px]"
+        aria-hidden={false}
+      >
+        <line
+          x1={14}
+          y1={TRACK_Y}
+          x2={VIEW_W - 14}
+          y2={TRACK_Y}
+          strokeWidth={8}
+          strokeLinecap="round"
+          className="stroke-ink"
+        />
+        {STATUSES.map((s, i) => {
+          const n = byStatus[s];
+          const cx = 20 + SLOT * i + SLOT / 2;
+          const ranks = queueRanks(n, QUEUE.perRank);
+          return (
+            <Link
+              key={s}
+              href={`/use-cases?status=${s}`}
+              className="group"
+              aria-label={`${STATUS_LABELS[s]} — ${n} ${
+                n === 1 ? "use case" : "use cases"
+              }`}
+            >
+              {/* Whole column is the hit target; the marks are too thin to aim at. */}
+              <rect
+                x={cx - SLOT / 2}
+                y={8}
+                width={SLOT}
+                height={height - 18}
+                rx={6}
+                className="fill-transparent group-hover:fill-accent-wash"
+              />
+              <line
+                x1={cx}
+                y1={TRACK_Y + 7}
+                x2={cx}
+                y2={platformY - 1}
+                strokeWidth={1}
+                className="stroke-hairline-strong"
+              />
+              {ranks
+                .map((inRank, r) => ({ inRank, r }))
+                .reverse()
+                .map(({ inRank, r }) => {
+                  const feetY = platformY - r * QUEUE.rowGap;
+                  const rowX =
+                    cx -
+                    ((inRank - 1) * QUEUE.pitch) / 2 +
+                    (r % 2 ? QUEUE.pitch / 4 : -QUEUE.pitch / 4);
+                  return (
+                    <g key={r}>
+                      {Array.from({ length: inRank }, (_, j) => {
+                        const x = rowX + j * QUEUE.pitch + wobble(i, r, j);
+                        return (
+                          <g key={j}>
+                            <rect
+                              x={x - QUEUE.bodyW / 2}
+                              y={feetY - QUEUE.bodyH}
+                              width={QUEUE.bodyW}
+                              height={QUEUE.bodyH}
+                              rx={QUEUE.bodyW / 2}
+                              fill={PIPELINE_RAMP[s]}
+                              strokeWidth={0.85}
+                              className="stroke-paper"
+                            />
+                            <circle
+                              cx={x}
+                              cy={feetY - QUEUE.headDy}
+                              r={QUEUE.headR}
+                              fill={PIPELINE_RAMP[s]}
+                              strokeWidth={0.85}
+                              className="stroke-paper"
+                            />
+                          </g>
+                        );
+                      })}
+                    </g>
+                  );
+                })}
+              <rect
+                x={cx - SLOT / 2 + 7}
+                y={platformY}
+                width={SLOT - 14}
+                height={2.5}
+                rx={1.25}
+                className="fill-hairline-strong"
+              />
+              <circle
+                cx={cx}
+                cy={TRACK_Y}
+                r={7}
+                stroke={PIPELINE_RAMP[s]}
+                strokeWidth={3.5}
+                className="fill-paper"
+              />
+              <text
+                x={cx}
+                y={platformY + 21}
+                fontSize={15}
+                fontWeight={500}
+                textAnchor="middle"
+                className={`tabular-nums ${n ? "fill-ink" : "fill-ink-faint"}`}
+              >
+                {n}
+              </text>
+              <text
+                x={cx}
+                y={platformY + 36}
+                fontSize={10.5}
+                textAnchor="middle"
+                className="fill-ink-muted group-hover:fill-ink"
+              >
+                {STATUS_SHORT_LABELS[s]}
+              </text>
+            </Link>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
 
 function HeroNumber({
   label,
@@ -134,7 +302,6 @@ export async function ProgramDashboard() {
   ]);
 
   const awaitingRoi = counts.byStatus.qualified;
-  const maxStatusCount = Math.max(1, ...Object.values(counts.byStatus));
   const targetWarning = targetSumWarning(
     elt.filter((o) => o.target !== null).map((o) => ({ target: o.target! })),
   );
@@ -183,37 +350,13 @@ export async function ProgramDashboard() {
       {/* ------------------------------------------------ pipeline */}
       <section aria-label="Pipeline">
         <h2 className="font-serif text-2xl">The pipeline</h2>
-        <p className="mt-1 text-sm text-ink-muted">
-          All {counts.total} use cases by status. Click a stage to see its
-          records.
+        <p className="mt-1 max-w-prose text-sm text-ink-muted">
+          All {counts.total} use cases by status. Every figure is one record,
+          standing where it sits today. Click a station to see its records.
         </p>
-        <ul className="mt-5 space-y-2">
-          {STATUSES.map((s) => {
-            const n = counts.byStatus[s];
-            return (
-              <li key={s}>
-                <Link
-                  href={`/use-cases?status=${s}`}
-                  className="group grid grid-cols-[11rem_1fr_2.5rem] items-center gap-3"
-                >
-                  <span className="text-right text-sm text-ink-muted group-hover:text-ink">
-                    {STATUS_LABELS[s]}
-                  </span>
-                  <span className="h-6 overflow-hidden rounded-r-[4px]">
-                    <span
-                      className="block h-full rounded-r-[4px]"
-                      style={{
-                        width: `${Math.max(1.5, (n / maxStatusCount) * 100)}%`,
-                        backgroundColor: PIPELINE_RAMP[s],
-                      }}
-                    />
-                  </span>
-                  <span className="text-sm font-semibold tabular-nums">{n}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="mt-5">
+          <PipelineQueues byStatus={counts.byStatus} />
+        </div>
       </section>
 
       {/* ------------------------------------------------ the 15 by ELT org */}

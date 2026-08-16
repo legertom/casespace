@@ -42,6 +42,17 @@ in-app report it came from.
 
 ---
 
+## 2026-08-16
+
+### The pipeline is a subway map now
+Requested by: Tom Leger
+
+The pipeline on the dashboard is drawn as a transit line: one station per
+status, and one standing figure for every record waiting there. A busy stage
+is a crowded platform, so you can see at a glance where work is queuing up
+instead of comparing seven bars that all looked the same length. Every
+station still clicks through to its records.
+
 ## 2026-08-15
 
 ### History notes read in the app, not over the API

@@ -2,10 +2,11 @@
 title: The dashboard
 surface: /dashboard
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-16
 code:
   - src/app/(app)/dashboard/page.tsx
   - src/components/dashboard/program-dashboard.tsx
+  - src/lib/platform-queue.ts
   - src/server/dashboard-queries.ts
 ---
 
@@ -25,8 +26,14 @@ nothing computes ahead/behind — see [counting rules](../concepts/counting-rule
 
 ### The pipeline
 
-Every record by status, in pipeline order, so you can see where work is
-piling up. Shaded by depth through the pipeline.
+A transit line. One station per status in pipeline order, and one standing
+figure for every record waiting at that station now. Shaded by depth through
+the pipeline, and each station clicks through to its records.
+
+A crowd wraps into ranks of eight (`queueRanks()`), spread evenly rather than
+filling the front rank first — a greedy fill leaves the back rank holding
+whatever is left over, and one figure standing alone reads as a rendering
+bug. The drawing grows only as tall as the deepest crowd needs.
 
 ### The 15, by ELT owner
 
@@ -54,6 +61,19 @@ Two flags:
   (`app_settings.stale_days`, `isStale()`).
 - **Ready but not qualified** — all four gates met, still waiting on an
   admin.
+
+## Rules that surprise people
+
+**A figure is always the same size.** A busier station stands deeper, never
+denser — the count of ranks is the encoding, and one record looks like one
+record wherever it is. Past roughly sixteen at a single station the crowd
+reads as an area rather than a queue length, which is why the count sits
+under every platform in numerals.
+
+**The pipeline chart says nothing about how far work got.** It is a snapshot
+of where records are sitting today, not a funnel — nothing on it is
+cumulative, so a thin station means "few here", never "few made it this
+far". Attrition is a different question and does not have a view yet.
 
 ## Who can do what
 
