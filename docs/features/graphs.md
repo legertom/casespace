@@ -21,11 +21,17 @@ seven counts:
 | Group | Numbered | Count |
 |---|---|---|
 | The bar chart that was replaced | 00 | 1 |
-| Designs it was chosen from — 12 shipped, 14 did not | 01–15 | 15 |
+| Designs it was chosen from — 01 shipped, 14 did not | 01–15 | 15 |
 | Proposals needing data we do not query yet | 16–20 | 5 |
 
 If those numbers stop adding to 21, the copy on the page is wrong: the intro,
 the alternatives heading, and the link from the dashboard each state a count.
+
+Numbers are **assigned from display order**, not written next to each drawing
+(`NUMBERS` in `graph-gallery.tsx`), so they always read 00, 01, 02 … as you
+scroll and reordering a family renumbers what follows. They are reference
+handles for talking about a drawing — "look at 09" — and mean nothing else.
+Ranking is the page's prose, not its numbering.
 
 Open to everyone, read-only, nothing on it is editable.
 

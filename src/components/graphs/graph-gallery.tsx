@@ -36,7 +36,6 @@ const AT_TARGET = [12, 9, 6, 7, 4, 4, 3];
 type Draw = (p: SpecimenProps) => React.ReactNode;
 
 interface Entry {
-  no: string;
   name: string;
   verdict: string;
   draw: Draw;
@@ -44,7 +43,6 @@ interface Entry {
 }
 
 const REPLACED: Entry = {
-  no: "00",
   name: "The original bars",
   badge: "replaced",
   verdict:
@@ -53,7 +51,6 @@ const REPLACED: Entry = {
 };
 
 const SHIPPED: Entry = {
-  no: "12",
   name: "Platform queues",
   badge: "shipped",
   verdict:
@@ -67,28 +64,24 @@ const FAMILIES: { title: string; note: string; entries: Entry[] }[] = [
     note: "These show only what is at each stage right now. They react honestly to strange data — if the numbers look wrong, the chart looks wrong.",
     entries: [
       {
-        no: "02",
         name: "Unit marks",
         verdict:
           "One square per record. Honest at small counts, where a bar chart has nothing to show. Gets busy past about sixty.",
         draw: UnitMarks,
       },
       {
-        no: "03",
         name: "Stage strip",
         verdict:
           "Seven tiles, one row, almost no vertical cost. Loses magnitude comparison — the numerals do the work.",
         draw: StageStrip,
       },
       {
-        no: "04",
         name: "Ruled table",
         verdict:
           "No chart at all. The most stable of the set: identical layout at every dataset, readable at twenty rows, and it carries a second column for free.",
         draw: RuledTable,
       },
       {
-        no: "05",
         name: "Journey beeswarm",
         verdict:
           "Every record as a dot on one axis. Shows clumping the bars hide, but its height is hostage to the single biggest stage.",
@@ -101,42 +94,36 @@ const FAMILIES: { title: string; note: string; entries: Entry[] }[] = [
     note: "These encode how many records reached each stage or beyond. Because that total can only fall as you move along the pipeline, they always look plausible — shuffle the data and they never look surprised. A chart that cannot look wrong cannot warn you.",
     entries: [
       {
-        no: "01",
         name: "Attrition ribbon",
         verdict:
           "A band that narrows each time work is left behind. The clearest picture of where the program stalls.",
         draw: AttritionRibbon,
       },
       {
-        no: "06",
         name: "Subway line",
         verdict:
           "Track thickness is how many got this far; dots are who is waiting. Both quantities in one picture, and they account for each other exactly.",
         draw: SubwayLine,
       },
       {
-        no: "07",
         name: "Route diagram, tapered",
         verdict:
           "The same idea turned vertical. The only layout that fits Approved by Functional Leader on one line without abbreviating.",
         draw: TaperedRoute,
       },
       {
-        no: "08",
         name: "Ribbon with platforms",
         verdict:
           "The ribbon, with a pool under each stop for the records parked there. The band narrows by exactly the height of the pool below it.",
         draw: RibbonWithPlatforms,
       },
       {
-        no: "09",
         name: "Lock staircase",
         verdict:
           "Canal locks: water level is what the chamber holds, the figure over each gate is what passed through. The metaphor is not decorative — the program already calls these gates.",
         draw: LockStaircase,
       },
       {
-        no: "10",
         name: "Core sample",
         verdict:
           "One column, one cell per record, earliest at the bottom. Column height above any boundary is the number that got that far. Narrowest footprint of the set.",
@@ -149,28 +136,24 @@ const FAMILIES: { title: string; note: string; entries: Entry[] }[] = [
     note: "Uniform line, stations, and a count of who is waiting at each one. The family the shipped design came from.",
     entries: [
       {
-        no: "11",
         name: "Beck diagram",
         verdict:
           "The Underground treatment, dog-leg and all. Disc area is the crowd — too soft an encoding to read precisely, so the numeral carries it.",
         draw: BeckDiagram,
       },
       {
-        no: "13",
         name: "Crowding map",
         verdict:
           "Every disc the same size, shaded by congestion. Answers where is work piling up better than anything else here — a different question, and one worth its own view.",
         draw: CrowdingMap,
       },
       {
-        no: "14",
         name: "Route diagram, uniform",
         verdict:
           "The in-car service strip. Full station names, one dot per record, count flush right. Least map-like, most practical.",
         draw: UniformRoute,
       },
       {
-        no: "15",
         name: "Zoned map",
         verdict:
           "The map plus fare zones, where the zones are the two counting rules. Zone edges land on Qualified and Confirmed Positive ROI, so the 45 and the 15 become regions of one picture.",
@@ -182,7 +165,6 @@ const FAMILIES: { title: string; note: string; entries: Entry[] }[] = [
 
 const PROPOSALS: Entry[] = [
   {
-    no: "16",
     name: "Dwell platform",
     badge: "needs-data",
     verdict:
@@ -190,7 +172,6 @@ const PROPOSALS: Entry[] = [
     draw: DwellPlatform,
   },
   {
-    no: "17",
     name: "Pipeline over time",
     badge: "needs-data",
     verdict:
@@ -198,7 +179,6 @@ const PROPOSALS: Entry[] = [
     draw: PipelineOverTime,
   },
   {
-    no: "18",
     name: "Journey tracks",
     badge: "needs-data",
     verdict:
@@ -206,7 +186,6 @@ const PROPOSALS: Entry[] = [
     draw: JourneyTracks,
   },
   {
-    no: "19",
     name: "Stage by team",
     badge: "needs-data",
     verdict:
@@ -214,7 +193,6 @@ const PROPOSALS: Entry[] = [
     draw: StageByTeam,
   },
   {
-    no: "20",
     name: "Arrivals and departures",
     badge: "needs-data",
     verdict:
@@ -222,6 +200,19 @@ const PROPOSALS: Entry[] = [
     draw: ArrivalsDepartures,
   },
 ];
+
+/**
+ * Numbers are assigned by where a drawing sits on the page, not authored
+ * alongside it — so they always read 00, 01, 02 … as you scroll, and
+ * reordering a family renumbers everything after it automatically.
+ *
+ * 00 is the chart that was replaced; it was never a candidate. 01 is the one
+ * that shipped, then the fourteen it beat, then the five proposals.
+ */
+const NUMBERS = new Map<Entry, string>([[REPLACED, "00"]]);
+[SHIPPED, ...FAMILIES.flatMap((f) => f.entries), ...PROPOSALS].forEach(
+  (entry, i) => NUMBERS.set(entry, String(i + 1).padStart(2, "0")),
+);
 
 const BADGES = {
   shipped: { text: "On the dashboard", cls: "bg-st-confirmed/12 text-st-confirmed" },
@@ -239,7 +230,9 @@ function Specimen({ entry, n }: { entry: Entry; n: number[] }) {
       }`}
     >
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1.5 border-b border-hairline px-5 py-3.5">
-        <span className="font-mono text-xs tabular-nums text-ink-faint">{entry.no}</span>
+        <span className="font-mono text-xs tabular-nums text-ink-faint">
+          {NUMBERS.get(entry)}
+        </span>
         <h3 className="font-serif text-lg">{entry.name}</h3>
         {badge && (
           <span className={`rounded px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wide ${badge.cls}`}>
@@ -260,7 +253,6 @@ function Specimen({ entry, n }: { entry: Entry; n: number[] }) {
 export function GraphGallery({ live }: { live: number[] }) {
   const [n, setN] = useState<number[]>(live);
   const [mode, setMode] = useState<"live" | "target" | "shuffle">("live");
-  const total = n.reduce((a, b) => a + b, 0);
 
   function choose(next: "live" | "target" | "shuffle") {
     setMode(next);
@@ -296,7 +288,12 @@ export function GraphGallery({ live }: { live: number[] }) {
             </button>
           ))}
           <p className="basis-full text-xs tabular-nums text-ink-faint">
-            {n.map((v, i) => `${["Discovery", "FL Approved", "Building", "Testing", "Launched", "Qualified", "ROI"][i]} ${v}`).join("   ")}
+            {n
+              .map(
+                (v, i) =>
+                  `${["Discovery", "FL Approved", "Building", "Testing", "Launched", "Qualified", "ROI"][i]} ${v}`,
+              )
+              .join("   ")}
             {mode !== "live" && " · illustrative, not the casebook"}
           </p>
         </div>
@@ -333,13 +330,12 @@ export function GraphGallery({ live }: { live: number[] }) {
 
         <section className="space-y-12">
           <div className="max-w-prose space-y-3">
-            <h2 className="font-serif text-2xl">The alternatives</h2>
+            <h2 className="font-serif text-2xl">The fourteen it beat</h2>
             <p className="text-ink-muted">
-              Fifteen designs were drawn against the same data; the one above
-              is the fifteenth. Here are the fourteen that were not chosen,
-              grouped into three families by what they encode — the family
-              matters more than the styling, because it decides which question
-              a chart can answer at all.
+              Fifteen designs were drawn against the same data. Here are the
+              fourteen that were not chosen, grouped into three families by what
+              they encode — the family matters more than the styling, because it
+              decides which question a chart can answer at all.
             </p>
           </div>
           {FAMILIES.map((family) => (
@@ -350,7 +346,7 @@ export function GraphGallery({ live }: { live: number[] }) {
               </div>
               <div className="space-y-5">
                 {family.entries.map((entry) => (
-                  <Specimen key={entry.no} entry={entry} n={n} />
+                  <Specimen key={entry.name} entry={entry} n={n} />
                 ))}
               </div>
             </div>
@@ -375,7 +371,7 @@ export function GraphGallery({ live }: { live: number[] }) {
           </div>
           <div className="space-y-5">
             {PROPOSALS.map((entry) => (
-              <Specimen key={entry.no} entry={entry} n={n} />
+              <Specimen key={entry.name} entry={entry} n={n} />
             ))}
           </div>
         </section>
