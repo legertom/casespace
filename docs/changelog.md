@@ -44,6 +44,15 @@ in-app report it came from.
 
 ## 2026-08-16
 
+### Records now ask what the workflow cost to build
+Requested by: Kate Schaff
+
+Every use case can now carry a rough estimate of the hours that went into
+building it — asked when you log a workflow, editable inline in the ROI
+panel, and shown next to the measurements as **Build effort**. That lets the
+program weigh time spent building against time saved. A rough number is
+fine, it's optional, and it never blocks a status change.
+
 ### A record's history and comments now read as one story
 Requested by: Kate Schaff
 

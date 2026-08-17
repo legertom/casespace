@@ -289,6 +289,8 @@ export const useCases = pgTable("use_cases", {
     .default("not_yet"),
 
   // ROI (the bar for the 15) — counts and rates, never dollars.
+  /** Self-reported estimate of hours spent building; context for ROI, never gates anything. */
+  buildHours: doublePrecision("build_hours"),
   baselineMetric: text("baseline_metric"),
   baselineValue: doublePrecision("baseline_value"),
   baselineUnit: text("baseline_unit"),

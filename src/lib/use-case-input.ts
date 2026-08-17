@@ -59,6 +59,7 @@ export const useCaseCreateSchema = z.object({
   successCriterion: z.string().trim().nullish(),
   successCriterionMet: z.enum(["yes", "no", "not_yet"]).optional(),
 
+  buildHours: z.number().finite().min(0).nullish(),
   baselineMetric: z.string().trim().nullish(),
   baselineValue: z.number().finite().nullish(),
   baselineUnit: z.string().trim().nullish(),
@@ -161,6 +162,7 @@ export function applyCreateDefaults(
     gateOwner: input.gateOwner ?? false,
     successCriterion: input.successCriterion ?? null,
     successCriterionMet: input.successCriterionMet ?? ("not_yet" as const),
+    buildHours: input.buildHours ?? null,
     baselineMetric: input.baselineMetric ?? null,
     baselineValue: input.baselineValue ?? null,
     baselineUnit: input.baselineUnit ?? null,

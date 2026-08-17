@@ -257,6 +257,30 @@ export function RecordRoi({
           </dl>
         )}
 
+        {/* Outside the roiStatus branches on purpose: a record that is "not
+            yet measurable" still has a build cost. */}
+        {(uc.buildHours !== null || editable) && (
+          <InlineField
+            record={record}
+            field="buildHours"
+            label="Hours spent building"
+            value={uc.buildHours}
+            editor={{ kind: "number" }}
+            canEdit={editable}
+          >
+            <div className="text-sm">
+              <p className="font-medium">Build effort</p>
+              <p className="text-ink-muted">
+                {uc.buildHours !== null ? (
+                  `~${uc.buildHours} ${uc.buildHours === 1 ? "hour" : "hours"} (estimated)`
+                ) : (
+                  <Empty>not estimated yet</Empty>
+                )}
+              </p>
+            </div>
+          </InlineField>
+        )}
+
         {uc.status === "qualified" && gaps.length > 0 && (
           <div className="border-t border-hairline pt-3">
             <p className="text-sm font-medium">

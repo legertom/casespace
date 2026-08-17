@@ -52,6 +52,7 @@ interface DemoUc {
     met: "yes" | "no" | "not_yet";
   };
   roi?: Partial<{
+    buildHours: number;
     baselineMetric: string;
     baselineValue: number;
     baselineUnit: string;
@@ -115,6 +116,7 @@ const DEMO: DemoUc[] = [
       met: "yes",
     },
     roi: {
+      buildHours: 12,
       baselineMetric: "Median first-response time (top-20 intents)",
       baselineValue: 5.8,
       baselineUnit: "hours",
@@ -157,6 +159,7 @@ const DEMO: DemoUc[] = [
       met: "yes",
     },
     roi: {
+      buildHours: 25,
       baselineMetric: "Retro writeups published same-day",
       baselineValue: 40,
       baselineUnit: "%",
@@ -468,6 +471,7 @@ async function main() {
         gateOwner: d.gates?.gateOwner ?? false,
         successCriterion: d.success?.criterion ?? null,
         successCriterionMet: d.success?.met ?? "not_yet",
+        buildHours: d.roi?.buildHours ?? null,
         baselineMetric: d.roi?.baselineMetric ?? null,
         baselineValue: d.roi?.baselineValue ?? null,
         baselineUnit: d.roi?.baselineUnit ?? null,

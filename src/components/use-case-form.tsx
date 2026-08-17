@@ -131,6 +131,9 @@ export function UseCaseForm({
   const [postValue, setPostValue] = useState(
     initial.postValue?.toString() ?? "",
   );
+  const [buildHours, setBuildHours] = useState(
+    initial.buildHours?.toString() ?? "",
+  );
   const [method, setMethod] = useState(initial.measurementMethod ?? "");
   const [netImpact, setNetImpact] = useState(initial.netImpactStatement ?? "");
   const [isPositive, setIsPositive] = useState<string>(
@@ -186,6 +189,7 @@ export function UseCaseForm({
       gateOwner,
       successCriterion: successCriterion.trim() || null,
       successCriterionMet: successMet as "yes" | "no" | "not_yet",
+      buildHours: buildHours === "" ? null : Number(buildHours),
       baselineMetric: baselineMetric.trim() || null,
       baselineValue: baselineValue === "" ? null : Number(baselineValue),
       baselineUnit: baselineUnit.trim() || null,
@@ -539,6 +543,19 @@ export function UseCaseForm({
             <option value="yes">Yes</option>
             <option value="no">No</option>
           </select>
+        </Field>
+        <Field
+          label="Roughly how many hours went into building this?"
+          hint="A rough estimate is fine — we use it to weigh time spent against time saved."
+        >
+          <input
+            type="number"
+            step="any"
+            min="0"
+            value={buildHours}
+            onChange={(e) => setBuildHours(e.target.value)}
+            className={inputCls}
+          />
         </Field>
         <div className="rounded-md border border-hairline bg-surface p-4">
           <p className="text-sm text-ink-muted">

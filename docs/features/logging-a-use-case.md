@@ -6,7 +6,7 @@ surface:
   - /use-cases/new/review
   - /use-cases/from-notes
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-16
 code:
   - src/app/(app)/use-cases/new/page.tsx
   - src/app/(app)/use-cases/new/form/page.tsx
@@ -54,6 +54,11 @@ app).
 **Title and description are enough.** Everything else defaults to the
 emptiest honest value and can be filled in later, on the record page. A
 half-filled record that exists beats a perfect record that doesn't.
+
+That includes the Success & ROI section's intake question, *"Roughly how
+many hours went into building this?"* — a rough estimate is fine, it's
+optional, and it [never gates anything](../concepts/gates-and-roi.md#build-hours).
+It can also be added later, inline on the record's ROI panel.
 
 The [gap flags](../concepts/gates-and-roi.md#gap-flags-on-drafts) tell you
 what's missing. They are prompts, not validation — nothing blocks a save.

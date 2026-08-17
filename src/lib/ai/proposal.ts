@@ -66,6 +66,13 @@ export const proposalSchema = z.object({
     .nullish()
     .describe("The measurable definition of success"),
   successCriterionMet: z.enum(["yes", "no", "not_yet"]).nullish(),
+  buildHours: z
+    .number()
+    .min(0)
+    .nullish()
+    .describe(
+      "Rough hours spent building the workflow, only if the notes say — 'took me about a day' is 8, never invented",
+    ),
   baselineMetric: z.string().nullish(),
   baselineValue: z
     .number()
@@ -146,6 +153,7 @@ export function proposalPatchToUpdateInput(
   if ("successCriterion" in c) patch.successCriterion = c.successCriterion ?? null;
   if ("successCriterionMet" in c && c.successCriterionMet)
     patch.successCriterionMet = c.successCriterionMet;
+  if ("buildHours" in c) patch.buildHours = c.buildHours ?? null;
   if ("baselineMetric" in c) patch.baselineMetric = c.baselineMetric ?? null;
   if ("baselineValue" in c) patch.baselineValue = c.baselineValue ?? null;
   if ("baselineUnit" in c) patch.baselineUnit = c.baselineUnit ?? null;
@@ -196,6 +204,7 @@ export function proposalToCreateInput(p: Proposal): UseCaseCreateInput {
     gateOwner: p.gateOwner ?? false,
     successCriterion: p.successCriterion ?? null,
     successCriterionMet: p.successCriterionMet ?? "not_yet",
+    buildHours: p.buildHours ?? null,
     baselineMetric: p.baselineMetric ?? null,
     baselineValue: p.baselineValue ?? null,
     baselineUnit: p.baselineUnit ?? null,

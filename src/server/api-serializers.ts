@@ -47,6 +47,8 @@ export function toApiUseCase(uc: UseCaseRow) {
     successCriterionMet: uc.successCriterionMet,
     roi: {
       status: uc.roiStatus,
+      /** Self-reported estimate of hours spent building; never gates anything. */
+      buildHours: uc.buildHours,
       baselineMetric: uc.baselineMetric,
       baselineValue: uc.baselineValue,
       baselineUnit: uc.baselineUnit,

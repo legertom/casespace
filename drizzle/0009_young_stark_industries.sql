@@ -1,0 +1,1 @@
+ALTER TABLE "use_cases" ADD COLUMN "build_hours" double precision;

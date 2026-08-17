@@ -35,7 +35,9 @@ whoever owns it.
 - **Status** with its controls.
 - **The four documented gates**, as toggles.
 - **The ROI panel** — success criterion, baseline and post with a stated
-  methodology, net-impact statement, positive/negative.
+  methodology, net-impact statement, positive/negative, and **build effort**:
+  a [self-reported estimate](../concepts/gates-and-roi.md#build-hours) of the
+  hours spent building, shown whether or not ROI is measurable yet.
 - **The seven scoping-worksheet ratings**.
 - **[Linked workflows](linked-workflows.md)**.
 - **Activity** — the record's story in one stream: every status change and
