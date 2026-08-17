@@ -8,6 +8,7 @@ import {
   targetSumWarning,
 } from "@/lib/domain";
 import { fmtDateShort } from "@/lib/format";
+import { PIPELINE_RAMP } from "@/lib/pipeline-ramp";
 import { maxRankDepth, queueRanks } from "@/lib/platform-queue";
 import {
   getAttentionFlags,
@@ -19,17 +20,6 @@ import {
 } from "@/server/dashboard-queries";
 import { STATUSES, type UcStatus } from "@/lib/domain";
 import { PersonLinks } from "@/components/person-link";
-
-/** Sequential one-hue ramp for the ordered pipeline (light → deep rust). */
-const PIPELINE_RAMP: Record<UcStatus, string> = {
-  in_discovery: "#ecdccd",
-  approved_by_fl: "#ddbfa6",
-  under_construction: "#c99f7e",
-  in_testing: "#b37d55",
-  launched: "#9a5a31",
-  qualified: "#7a3a18",
-  confirmed_positive_roi: "#5c2a0e",
-};
 
 /**
  * Platform-queue geometry, in viewBox units. A figure is the same size at
@@ -359,6 +349,12 @@ export async function ProgramDashboard() {
         <div className="mt-5">
           <PipelineQueues byStatus={counts.byStatus} />
         </div>
+        <p className="mt-4 text-sm text-ink-muted">
+          <Link href="/graphs" className="hover:text-accent">
+            Why it looks like this
+          </Link>{" "}
+          — twenty ways this chart was drawn before one was chosen.
+        </p>
       </section>
 
       {/* ------------------------------------------------ the 15 by ELT org */}

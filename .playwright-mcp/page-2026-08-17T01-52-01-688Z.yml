@@ -1,0 +1,305 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - link "Skip to content" [ref=f3e3] [cursor=pointer]:
+      - /url: "#main"
+    - banner [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - generic [ref=f3e6]:
+          - link "Casespace" [ref=f3e7] [cursor=pointer]:
+            - /url: /
+          - navigation "Primary" [ref=f3e8]:
+            - link "Dashboard" [ref=f3e9] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Use cases" [ref=f3e10] [cursor=pointer]:
+              - /url: /use-cases
+            - link "Goals" [ref=f3e11] [cursor=pointer]:
+              - /url: /goals
+            - link "Wins" [ref=f3e12] [cursor=pointer]:
+              - /url: /wins
+            - link "Learnings" [ref=f3e13] [cursor=pointer]:
+              - /url: /learnings
+            - link "AI Leads" [ref=f3e14] [cursor=pointer]:
+              - /url: /roster
+            - link "What’s New" [ref=f3e15] [cursor=pointer]:
+              - /url: /whats-new
+            - link "Docs" [ref=f3e16] [cursor=pointer]:
+              - /url: /docs
+        - generic [ref=f3e17]:
+          - link "Log a use case" [ref=f3e18] [cursor=pointer]:
+            - /url: /use-cases/new
+          - group [ref=f3e19]:
+            - generic "Notifications" [ref=f3e20] [cursor=pointer]
+          - group [ref=f3e24]:
+            - generic "Tom Leger" [ref=f3e25] [cursor=pointer]
+    - main [ref=f3e26]:
+      - generic [ref=f3e27]:
+        - heading "Log a use case" [level=1] [ref=f3e28]
+        - paragraph [ref=f3e29]: Only the title and “What it does” are required — saving a half-filled record early is expected. You can return and edit everything as the work evolves.
+        - generic [ref=f3e31]:
+          - generic [ref=f3e32]:
+            - heading "The workflow" [level=2] [ref=f3e33]
+            - generic [ref=f3e34]:
+              - generic [ref=f3e35]: Title
+              - generic [ref=f3e36]: Name the workflow so a colleague would recognize it.
+              - textbox "Title Name the workflow so a colleague would recognize it." [ref=f3e38]
+            - generic [ref=f3e39]:
+              - generic [ref=f3e40]: What it does
+              - generic [ref=f3e41]: "Plain language: what does this workflow do, for whom?"
+              - 'textbox "What it does Plain language: what does this workflow do, for whom?" [ref=f3e43]'
+            - generic [ref=f3e44]:
+              - generic [ref=f3e45]:
+                - generic [ref=f3e46]: Department
+                - generic [ref=f3e47]: The function this workflow serves. Picking one narrows the Team list.
+                - combobox "Department The function this workflow serves. Picking one narrows the Team list." [ref=f3e49]:
+                  - option "—" [selected]
+                  - option "Business Operations"
+                  - option "Product / Design"
+                  - option "Engineering"
+                  - option "People"
+                  - option "CSS"
+                  - option "MSS"
+                  - option "Finance / Legal"
+              - generic [ref=f3e50]:
+                - generic [ref=f3e51]: Team
+                - generic [ref=f3e52]: The specific team inside that department. Optional.
+                - combobox "Team The specific team inside that department. Optional." [ref=f3e54]:
+                  - option "—" [selected]
+                  - option "Business Analytics (Business Operations)"
+                  - option "Business Operations (Business Operations)"
+                  - option "Product & Design (Product / Design)"
+                  - option "Engineering (Engineering)"
+                  - option "POps (People)"
+                  - option "Talent Acquisition (People)"
+                  - option "Clever Core Onboarding (CSS)"
+                  - option "Clever+ Onboarding (CSS)"
+                  - option "Customer Education (CSS)"
+                  - option "Customer Support (CSS)"
+                  - option "Integration Engineering (CSS)"
+                  - option "Partner Engineering (CSS)"
+                  - option "Technical Account Managers (CSS)"
+                  - option "Technical Pre-sales (CSS)"
+                  - option "App Partnerships (MSS)"
+                  - option "App Success (MSS)"
+                  - option "Marketing (MSS)"
+                  - option "School Partnerships – Domestic (MSS)"
+                  - option "School Partnerships – International (MSS)"
+                  - option "School Success – Global (MSS)"
+                  - option "Finance (Finance / Legal)"
+                  - option "Legal (Finance / Legal)"
+            - generic [ref=f3e55]:
+              - generic [ref=f3e56]: Counts toward (ELT org)
+              - generic [ref=f3e57]: ELT is Clever's executive leadership team — this is whose target the record counts toward. Unmapped departments stay honestly unallocated.
+              - combobox "Counts toward (ELT org) ELT is Clever's executive leadership team — this is whose target the record counts toward. Unmapped departments stay honestly unallocated." [ref=f3e59]:
+                - option "Unallocated" [selected]
+                - option "Amy Lee (CFO)"
+                - option "Eric Krugler (CTO)"
+                - option "Jamie Reffell (CPO)"
+                - option "Phillip Mikula (CRO)"
+                - option "Kate Schaff"
+                - option "Trish Sparks (CEO)"
+          - generic [ref=f3e60]:
+            - heading "People" [level=2] [ref=f3e61]
+            - generic [ref=f3e62]:
+              - generic [ref=f3e63]: Authors
+              - paragraph [ref=f3e64]: Everyone who built it. Credit lands on real people.
+              - combobox "Authors" [ref=f3e66]
+            - generic [ref=f3e67]:
+              - generic [ref=f3e68]: Owner
+              - paragraph [ref=f3e69]: Exactly one named person responsible for maintaining it.
+              - combobox "Owner" [ref=f3e71]
+          - generic [ref=f3e72]:
+            - heading "Tool & approach" [level=2] [ref=f3e73]
+            - generic [ref=f3e74]:
+              - generic [ref=f3e75]: AI tools
+              - generic [ref=f3e76]: Comma-separated, e.g. Claude, Zapier, Cursor.
+              - textbox "AI tools Comma-separated, e.g. Claude, Zapier, Cursor." [ref=f3e78]
+            - group "Approach" [ref=f3e79]:
+              - paragraph [ref=f3e81]: Check every one that applies — one workflow can be several at once. Prompt, automation, and agentic mean AI does the work at runtime. AI-built means AI (e.g. Claude Code) built the tool, even if it doesn’t run AI itself. Leave them all unchecked if you’re not sure yet.
+              - generic [ref=f3e82]:
+                - generic [ref=f3e83]:
+                  - checkbox "Prompt" [ref=f3e84]
+                  - text: Prompt
+                - generic [ref=f3e85]:
+                  - checkbox "Automation" [ref=f3e86]
+                  - text: Automation
+                - generic [ref=f3e87]:
+                  - checkbox "Agentic" [ref=f3e88]
+                  - text: Agentic
+                - generic [ref=f3e89]:
+                  - checkbox "AI-built" [ref=f3e90]
+                  - text: AI-built
+          - generic [ref=f3e91]:
+            - heading "Workflow discovery" [level=2] [ref=f3e92]
+            - generic [ref=f3e93]:
+              - generic [ref=f3e94]: Current workflow, start to finish
+              - generic [ref=f3e95]: One step per line — how the work happens today.
+              - textbox "Current workflow, start to finish One step per line — how the work happens today." [ref=f3e97]
+            - group "Worksheet ratings (1 low – 5 high, all optional)" [ref=f3e98]:
+              - paragraph [ref=f3e100]: Seven lenses from the use-case scoping worksheet, for sizing up a workflow and comparing candidates. Rate what you know; skip what you don’t. Click a number again to clear it.
+              - generic [ref=f3e101]:
+                - generic [ref=f3e102]: FrequencyHow often the workflow runs
+                - radiogroup "Frequency" [ref=f3e103]:
+                  - radio "1" [ref=f3e104]
+                  - radio "2" [ref=f3e105]
+                  - radio "3" [ref=f3e106]
+                  - radio "4" [ref=f3e107]
+                  - radio "5" [ref=f3e108]
+              - generic [ref=f3e109]:
+                - generic [ref=f3e110]: PainHow painful it is today
+                - radiogroup "Pain" [ref=f3e111]:
+                  - radio "1" [ref=f3e112]
+                  - radio "2" [ref=f3e113]
+                  - radio "3" [ref=f3e114]
+                  - radio "4" [ref=f3e115]
+                  - radio "5" [ref=f3e116]
+              - generic [ref=f3e117]:
+                - generic [ref=f3e118]: Data availabilityIs the needed data accessible?
+                - radiogroup "Data availability" [ref=f3e119]:
+                  - radio "1" [ref=f3e120]
+                  - radio "2" [ref=f3e121]
+                  - radio "3" [ref=f3e122]
+                  - radio "4" [ref=f3e123]
+                  - radio "5" [ref=f3e124]
+              - generic [ref=f3e125]:
+                - generic [ref=f3e126]: RiskCost of getting it wrong
+                - radiogroup "Risk" [ref=f3e127]:
+                  - radio "1" [ref=f3e128]
+                  - radio "2" [ref=f3e129]
+                  - radio "3" [ref=f3e130]
+                  - radio "4" [ref=f3e131]
+                  - radio "5" [ref=f3e132]
+              - generic [ref=f3e133]:
+                - generic [ref=f3e134]: Ownership clarityIs it clear who owns it?
+                - radiogroup "Ownership clarity" [ref=f3e135]:
+                  - radio "1" [ref=f3e136]
+                  - radio "2" [ref=f3e137]
+                  - radio "3" [ref=f3e138]
+                  - radio "4" [ref=f3e139]
+                  - radio "5" [ref=f3e140]
+              - generic [ref=f3e141]:
+                - generic [ref=f3e142]: Evaluation clarityIs it clear how to judge output?
+                - radiogroup "Evaluation clarity" [ref=f3e143]:
+                  - radio "1" [ref=f3e144]
+                  - radio "2" [ref=f3e145]
+                  - radio "3" [ref=f3e146]
+                  - radio "4" [ref=f3e147]
+                  - radio "5" [ref=f3e148]
+              - generic [ref=f3e149]:
+                - generic [ref=f3e150]: Maintenance burdenEffort to keep it working
+                - radiogroup "Maintenance burden" [ref=f3e151]:
+                  - radio "1" [ref=f3e152]
+                  - radio "2" [ref=f3e153]
+                  - radio "3" [ref=f3e154]
+                  - radio "4" [ref=f3e155]
+                  - radio "5" [ref=f3e156]
+            - generic [ref=f3e157]:
+              - generic [ref=f3e158]: Functional leader's view of success
+              - generic [ref=f3e159]: The functional leader is the head of the department this serves. What would they call success?
+              - textbox "Functional leader's view of success The functional leader is the head of the department this serves. What would they call success?" [ref=f3e161]
+          - generic [ref=f3e162]:
+            - heading "The four documented gates" [level=2] [ref=f3e163]
+            - paragraph [ref=f3e164]: All four must hold for a use case to count as documented.
+            - generic [ref=f3e165]:
+              - checkbox "Named workflow with a clear description The title names one specific workflow a colleague would recognize, and the description says what it does in plain language. If your title and description above do that, this gate is met." [ref=f3e166]
+              - generic [ref=f3e167]:
+                - strong [ref=f3e168]: Named workflow
+                - text: with a clear description
+                - generic [ref=f3e169]: The title names one specific workflow a colleague would recognize, and the description says what it does in plain language. If your title and description above do that, this gate is met.
+            - generic [ref=f3e170]:
+              - checkbox "AI tool & approach identified The record says which AI tool does the work, and how — the Tool & approach section above." [ref=f3e171]
+              - generic [ref=f3e172]:
+                - strong [ref=f3e173]: AI tool & approach
+                - text: identified
+                - generic [ref=f3e174]: The record says which AI tool does the work, and how — the Tool & approach section above.
+            - generic [ref=f3e175]:
+              - checkbox "Adoption evidence — in active use by at least one person beyond the author(s)" [ref=f3e176]
+              - generic [ref=f3e177]:
+                - strong [ref=f3e178]: Adoption evidence
+                - text: — in active use by at least one person beyond the author(s)
+            - generic [ref=f3e179]:
+              - checkbox "A named owner going forward One specific person is on the hook for keeping it running — the Owner field above." [ref=f3e180]
+              - generic [ref=f3e181]:
+                - strong [ref=f3e182]: A named owner
+                - text: going forward
+                - generic [ref=f3e183]: One specific person is on the hook for keeping it running — the Owner field above.
+          - generic [ref=f3e184]:
+            - heading "Success & ROI" [level=2] [ref=f3e185]
+            - generic [ref=f3e186]:
+              - generic [ref=f3e187]: Success criterion
+              - generic [ref=f3e188]:
+                - text: Write the target now, before the results are in, so “did it work?” isn’t a matter of opinion later. Name what you measure, which way it should move, and by how much — counts or rates, never dollars. Use the same metric you baseline and re-measure below.
+                - generic [ref=f3e189]: "Example: “Same-day ticket triage goes from 60% to 85%” — not “triage gets faster.”"
+              - 'textbox "Success criterion Write the target now, before the results are in, so “did it work?” isn’t a matter of opinion later. Name what you measure, which way it should move, and by how much — counts or rates, never dollars. Use the same metric you baseline and re-measure below. Example: “Same-day ticket triage goes from 60% to 85%” — not “triage gets faster.”" [ref=f3e191]'
+            - generic [ref=f3e192]:
+              - generic [ref=f3e193]: Success criterion met?
+              - generic [ref=f3e194]: Leave on Not yet until there's a real measurement behind the answer.
+              - combobox "Success criterion met? Leave on Not yet until there's a real measurement behind the answer." [ref=f3e196]:
+                - option "Not yet" [selected]
+                - option "Yes"
+                - option "No"
+            - generic [ref=f3e197]:
+              - generic [ref=f3e198]: Roughly how many hours went into building this?
+              - generic [ref=f3e199]: A rough estimate is fine — we use it to weigh time spent against time saved.
+              - spinbutton "Roughly how many hours went into building this? A rough estimate is fine — we use it to weigh time spent against time saved." [ref=f3e201]
+            - generic [ref=f3e202]:
+              - paragraph [ref=f3e203]: ROI is measured in counts and rates — never dollars. Baseline and post-measurement must use the same methodology. If it isn’t measurable yet, say so honestly and set a revisit date.
+              - generic [ref=f3e204]:
+                - generic [ref=f3e205]:
+                  - generic [ref=f3e206]: ROI status
+                  - combobox "ROI status" [ref=f3e208]:
+                    - option "Not yet measurable" [selected]
+                    - option "Measurement in progress"
+                    - option "Complete"
+                - generic [ref=f3e209]:
+                  - generic [ref=f3e210]: Revisit on
+                  - textbox "Revisit on" [ref=f3e212]
+                - generic [ref=f3e213]:
+                  - generic [ref=f3e214]:
+                    - generic [ref=f3e215]: Baseline metric
+                    - generic [ref=f3e216]: What you measured before the AI workflow, e.g. hours per onboarding.
+                    - textbox "Baseline metric What you measured before the AI workflow, e.g. hours per onboarding." [ref=f3e218]
+                  - generic [ref=f3e219]:
+                    - generic [ref=f3e220]: Baseline value
+                    - generic [ref=f3e221]: The number, before.
+                    - spinbutton "Baseline value The number, before." [ref=f3e223]
+                  - generic [ref=f3e224]:
+                    - generic [ref=f3e225]: Unit
+                    - generic [ref=f3e226]: hours, tickets, %…
+                    - textbox "Unit hours, tickets, %…" [ref=f3e228]
+                - generic [ref=f3e229]:
+                  - generic [ref=f3e230]:
+                    - generic [ref=f3e231]: Post value
+                    - generic [ref=f3e232]: The same metric after the workflow, measured the same way.
+                    - spinbutton "Post value The same metric after the workflow, measured the same way." [ref=f3e234]
+                  - generic [ref=f3e235]:
+                    - generic [ref=f3e236]: Measurement method
+                    - generic [ref=f3e237]: How the numbers were captured, e.g. a Zendesk report or time tracking. Baseline and post must use the same method.
+                    - textbox "Measurement method How the numbers were captured, e.g. a Zendesk report or time tracking. Baseline and post must use the same method." [ref=f3e239]
+                - generic [ref=f3e240]:
+                  - generic [ref=f3e241]: Net impact statement
+                  - generic [ref=f3e242]: One plain-English sentence of net impact.
+                  - textbox "Net impact statement One plain-English sentence of net impact." [ref=f3e244]
+                - group "Net outcome positive and primarily attributable to the AI workflow?" [ref=f3e245]:
+                  - generic [ref=f3e247]:
+                    - generic [ref=f3e248]:
+                      - radio "Yes" [ref=f3e249]
+                      - text: "Yes"
+                    - generic [ref=f3e250]:
+                      - radio "No" [ref=f3e251]
+                      - text: "No"
+                    - generic [ref=f3e252]:
+                      - radio "Not assessed" [checked] [ref=f3e253]
+                      - text: Not assessed
+          - generic [ref=f3e254]:
+            - heading "Where does it stand?" [level=2] [ref=f3e255]
+            - generic [ref=f3e256]:
+              - generic [ref=f3e257]: Status
+              - generic [ref=f3e258]: Qualified and Confirmed Positive ROI are granted later by an admin — they record Kate's decisions.
+              - combobox "Status Qualified and Confirmed Positive ROI are granted later by an admin — they record Kate's decisions." [ref=f3e260]:
+                - option "In Discovery" [selected]
+                - option "Approved by Functional Leader"
+                - option "Under Construction"
+                - option "In Testing"
+                - option "Launched"
+          - button "Log use case" [ref=f3e262]
+  - button "Open Next.js Dev Tools" [ref=f3e268] [cursor=pointer]

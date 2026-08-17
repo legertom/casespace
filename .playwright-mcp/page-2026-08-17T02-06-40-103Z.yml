@@ -1,0 +1,199 @@
+- generic [active] [ref=f6e1]:
+  - generic [ref=f6e2]:
+    - link "Skip to content" [ref=f6e3] [cursor=pointer]:
+      - /url: "#main"
+    - banner [ref=f6e4]:
+      - generic [ref=f6e5]:
+        - generic [ref=f6e6]:
+          - link "Casespace" [ref=f6e7] [cursor=pointer]:
+            - /url: /
+          - navigation "Primary" [ref=f6e8]:
+            - link "Dashboard" [ref=f6e9] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Use cases" [ref=f6e10] [cursor=pointer]:
+              - /url: /use-cases
+            - link "Goals" [ref=f6e11] [cursor=pointer]:
+              - /url: /goals
+            - link "Wins" [ref=f6e12] [cursor=pointer]:
+              - /url: /wins
+            - link "Learnings" [ref=f6e13] [cursor=pointer]:
+              - /url: /learnings
+            - link "AI Leads" [ref=f6e14] [cursor=pointer]:
+              - /url: /roster
+            - link "What’s New" [ref=f6e15] [cursor=pointer]:
+              - /url: /whats-new
+            - link "Docs" [ref=f6e16] [cursor=pointer]:
+              - /url: /docs
+        - generic [ref=f6e17]:
+          - link "Log a use case" [ref=f6e18] [cursor=pointer]:
+            - /url: /use-cases/new
+          - group [ref=f6e19]:
+            - generic "Notifications" [ref=f6e20] [cursor=pointer]
+          - group [ref=f6e24]:
+            - generic "Tom Leger" [ref=f6e25] [cursor=pointer]
+    - main [ref=f6e26]:
+      - article [ref=f6e27]:
+        - generic [ref=f6e28]:
+          - generic [ref=f6e29]:
+            - generic [ref=f6e30]:
+              - paragraph [ref=f6e31]:
+                - link "Use cases" [ref=f6e32] [cursor=pointer]:
+                  - /url: /use-cases
+                - text: / Engineering
+              - generic [ref=f6e33]:
+                - heading "PR description drafter" [level=1] [ref=f6e35] [cursor=pointer]
+                - button "Edit Title" [ref=f6e36]
+              - generic [ref=f6e39]:
+                - generic [ref=f6e40]: Confirmed Positive ROI
+                - generic "Kate confirmed measured, positive annual ROI — counts toward the 15 (and the 45)." [ref=f6e245]: Confirmed ROI
+            - link "Edit everything" [ref=f6e43] [cursor=pointer]:
+              - /url: /use-cases/8ee571ae-9a1e-467b-896a-7fc37cf19b39/edit
+          - paragraph [ref=f6e44]: Click any field to edit it in place. Highlight any text to ask the Coach about it.
+          - generic [ref=f6e45]:
+            - generic [ref=f6e46]:
+              - generic [ref=f6e47]:
+                - heading "What it does" [level=2] [ref=f6e48]
+                - generic [ref=f6e49]:
+                  - paragraph [ref=f6e51] [cursor=pointer]: Drafts pull-request descriptions from the diff and linked ticket so reviewers get context without archaeology.
+                  - button "Edit What it does" [ref=f6e52]
+                - generic [ref=f6e55]:
+                  - paragraph [ref=f6e57] [cursor=pointer]:
+                    - strong [ref=f6e58]: "Tools:"
+                    - text: none named yet
+                  - button "Edit AI tools" [ref=f6e59]
+                - generic [ref=f6e62]:
+                  - paragraph [ref=f6e64] [cursor=pointer]:
+                    - strong [ref=f6e65]: "Approach:"
+                    - text: not identified yet
+                  - button "Edit Approach" [ref=f6e66]
+              - generic [ref=f6e69]:
+                - heading "The workflow, start to finish" [level=2] [ref=f6e70]
+                - generic [ref=f6e71]:
+                  - paragraph [ref=f6e73] [cursor=pointer]: No steps captured yet — one step per line, as the work happens today.
+                  - button "Edit Workflow steps" [ref=f6e74]
+              - generic [ref=f6e77]:
+                - heading "Worksheet ratings" [level=2] [ref=f6e78]
+                - generic [ref=f6e79]:
+                  - paragraph [ref=f6e81] [cursor=pointer]: Not rated yet — all seven are optional.
+                  - button "Edit Worksheet ratings" [ref=f6e82]
+              - generic [ref=f6e85]:
+                - heading "The functional leader’s view of success" [level=2] [ref=f6e86]
+                - generic [ref=f6e87]:
+                  - paragraph [ref=f6e89] [cursor=pointer]: Not captured yet — what would the head of this function call success?
+                  - button "Edit The functional leader's view of success" [ref=f6e90]
+              - generic [ref=f6e93]:
+                - heading "Success & ROI" [level=2] [ref=f6e94]
+                - generic [ref=f6e95]:
+                  - paragraph [ref=f6e97] [cursor=pointer]:
+                    - strong [ref=f6e98]: "Success criterion:"
+                    - text: none defined yet
+                  - button "Edit Success criterion" [ref=f6e99]
+                - generic [ref=f6e102]:
+                  - paragraph [ref=f6e104] [cursor=pointer]: Not yet evaluated.
+                  - button "Edit Whether the success criterion is met" [ref=f6e105]
+                - generic [ref=f6e108]:
+                  - generic [ref=f6e109]:
+                    - paragraph [ref=f6e111] [cursor=pointer]:
+                      - strong [ref=f6e112]: "ROI:"
+                      - text: not measurable yet
+                    - button "Edit ROI status" [ref=f6e113]
+                  - generic [ref=f6e116]:
+                    - paragraph [ref=f6e118] [cursor=pointer]: No revisit date set. Never fake a number.
+                    - button "Edit Revisit date" [ref=f6e119]
+                  - generic [ref=f6e122]:
+                    - generic [ref=f6e124] [cursor=pointer]:
+                      - paragraph [ref=f6e125]: Build effort
+                      - paragraph [ref=f6e126]: not estimated yet
+                    - button "Edit Hours spent building" [ref=f6e127]
+                  - paragraph [ref=f6e246]:
+                    - generic "Kate confirmed measured, positive annual ROI — counts toward the 15 (and the 45)." [ref=f6e247]: Confirmed ROI
+                    - text: — confirmed Aug 16, 2026. The annual-ROI note is in the history below and rolls up into the end-of-year wins report.
+              - generic [ref=f6e130]:
+                - heading "Related workflows" [level=2] [ref=f6e131]
+                - paragraph [ref=f6e132]: Nothing linked yet. Link a workflow when this one builds on it, repeats it, or belongs beside it — any AI lead can, on any record.
+                - button "Link a workflow" [ref=f6e133]
+              - generic [ref=f6e134]:
+                - heading "Activity" [level=2] [ref=f6e135]
+                - list [ref=f6e136]:
+                  - listitem [ref=f6e137]:
+                    - generic [ref=f6e138]: Aug 5, 2026
+                    - generic [ref=f6e139]:
+                      - text: Logged into the casebook at In Discovery
+                      - generic [ref=f6e140]: · vamsi.chunduru
+                  - listitem [ref=f6e248]:
+                    - generic [ref=f6e249]: Aug 16, 2026
+                    - generic [ref=f6e250]:
+                      - text: In Discovery → Confirmed Positive ROI
+                      - generic [ref=f6e251]: · Tom Leger
+                      - generic [ref=f6e252]: "Verification of the new rule: confirming straight from In Discovery. Reverting immediately."
+                - paragraph [ref=f6e141]: No comments yet. Questions, ideas, and requests all belong here.
+                - generic [ref=f6e143]:
+                  - textbox "Comment" [ref=f6e145]:
+                    - /placeholder: Add a comment. Markdown works; type @ to mention someone.
+                  - button "Comment" [disabled] [ref=f6e147]
+              - button "Delete this use case" [ref=f6e149]
+            - complementary [ref=f6e150]:
+              - generic [ref=f6e151]:
+                - heading "Credit" [level=2] [ref=f6e152]
+                - generic [ref=f6e153]:
+                  - generic [ref=f6e154]:
+                    - generic [ref=f6e156] [cursor=pointer]:
+                      - term [ref=f6e157]: Author
+                      - definition [ref=f6e158]:
+                        - link "Trupti Sardesai" [ref=f6e160]:
+                          - /url: /use-cases?person=a3b303fe-f9bf-42d8-a76c-3c4d88ef6d5e
+                    - button "Edit Authors" [ref=f6e161]
+                  - generic [ref=f6e164]:
+                    - generic [ref=f6e166] [cursor=pointer]:
+                      - term [ref=f6e167]: Owner
+                      - definition [ref=f6e168]:
+                        - link "Vamsi Chunduru" [ref=f6e169]:
+                          - /url: /use-cases?person=1671f39c-24fe-4ec1-9bb2-580d457e9162
+                    - button "Edit Owner" [ref=f6e170]
+                  - generic [ref=f6e173]:
+                    - generic [ref=f6e175] [cursor=pointer]:
+                      - term [ref=f6e176]: Counts toward
+                      - definition [ref=f6e177]: Eric Krugler (CTO)
+                    - button "Edit Counts toward (ELT org)" [ref=f6e178]
+                  - generic [ref=f6e181]:
+                    - generic [ref=f6e183] [cursor=pointer]:
+                      - term [ref=f6e184]: Team
+                      - definition [ref=f6e185]: Engineering
+                    - button "Edit Department and team" [ref=f6e186]
+                  - generic [ref=f6e189]:
+                    - term [ref=f6e190]: Logged
+                    - definition [ref=f6e191]: Aug 5, 2026 by vamsi.chunduru · via form
+              - generic [ref=f6e192]:
+                - heading "Documented gates" [level=2] [ref=f6e193]
+                - list [ref=f6e194]:
+                  - listitem "The title names one specific workflow and the description explains it in plain language." [ref=f6e195]:
+                    - generic [ref=f6e196]:
+                      - checkbox "Named workflow, clear description" [ref=f6e197]
+                      - generic [ref=f6e198]: Named workflow, clear description
+                  - listitem "The record says which AI tool does the work, and how it is applied." [ref=f6e199]:
+                    - generic [ref=f6e200]:
+                      - checkbox "AI tool & approach identified" [ref=f6e201]
+                      - generic [ref=f6e202]: AI tool & approach identified
+                  - listitem "Someone beyond the author(s) actively uses it." [ref=f6e203]:
+                    - generic [ref=f6e204]:
+                      - checkbox "Adoption beyond the author(s)" [ref=f6e205]
+                      - generic [ref=f6e206]: Adoption beyond the author(s)
+                  - generic [ref=f6e207]:
+                    - paragraph [ref=f6e209] [cursor=pointer]: Who uses it, and how do you know?
+                    - button "Edit Adoption evidence" [ref=f6e210]
+                  - listitem "One specific person is responsible for keeping it running." [ref=f6e213]:
+                    - generic [ref=f6e214]:
+                      - checkbox "A named owner" [checked] [ref=f6e215]
+                      - generic [ref=f6e216]: A named owner
+              - generic [ref=f6e217]:
+                - heading "Move it forward" [level=2] [ref=f6e218]
+                - combobox "New status" [ref=f6e220]:
+                  - option "Change status…" [selected]
+                  - option "In Discovery"
+                  - option "Approved by Functional Leader"
+                  - option "Under Construction"
+                  - option "In Testing"
+                  - option "Launched"
+                  - option "Qualified (records Kate's approval)"
+  - button "Open Next.js Dev Tools" [ref=f6e226] [cursor=pointer]
+  - alert [ref=f6e244]

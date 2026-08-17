@@ -1,0 +1,258 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - link "Skip to content" [ref=f4e3] [cursor=pointer]:
+      - /url: "#main"
+    - banner [ref=f4e4]:
+      - generic [ref=f4e5]:
+        - generic [ref=f4e6]:
+          - link "Casespace" [ref=f4e7] [cursor=pointer]:
+            - /url: /
+          - navigation "Primary" [ref=f4e8]:
+            - link "Dashboard" [ref=f4e9] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Use cases" [ref=f4e10] [cursor=pointer]:
+              - /url: /use-cases
+            - link "Goals" [ref=f4e11] [cursor=pointer]:
+              - /url: /goals
+            - link "Wins" [ref=f4e12] [cursor=pointer]:
+              - /url: /wins
+            - link "Learnings" [ref=f4e13] [cursor=pointer]:
+              - /url: /learnings
+            - link "AI Leads" [ref=f4e14] [cursor=pointer]:
+              - /url: /roster
+            - link "What’s New" [ref=f4e15] [cursor=pointer]:
+              - /url: /whats-new
+            - link "Docs" [ref=f4e16] [cursor=pointer]:
+              - /url: /docs
+        - generic [ref=f4e17]:
+          - link "Log a use case" [ref=f4e18] [cursor=pointer]:
+            - /url: /use-cases/new
+          - group [ref=f4e19]:
+            - generic "Notifications" [ref=f4e20] [cursor=pointer]
+          - group [ref=f4e24]:
+            - generic "Tom Leger" [ref=f4e25] [cursor=pointer]
+    - main [ref=f4e26]:
+      - article [ref=f4e27]:
+        - generic [ref=f4e28]:
+          - generic [ref=f4e29]:
+            - generic [ref=f4e30]:
+              - paragraph [ref=f4e31]:
+                - link "Use cases" [ref=f4e32] [cursor=pointer]:
+                  - /url: /use-cases
+                - text: / Finance / Legal
+              - generic [ref=f4e33]:
+                - heading "Contract clause summarizer" [level=1] [ref=f4e35] [cursor=pointer]
+                - button "Edit Title" [ref=f4e36]
+              - generic [ref=f4e39]: Qualified
+            - generic [ref=f4e42]:
+              - link "Run ROI review" [ref=f4e43] [cursor=pointer]:
+                - /url: /coach?review=ea3aa7c4-392c-4b45-9a7b-88263a4c9ea7
+              - link "Edit everything" [ref=f4e44] [cursor=pointer]:
+                - /url: /use-cases/ea3aa7c4-392c-4b45-9a7b-88263a4c9ea7/edit
+          - paragraph [ref=f4e45]: Click any field to edit it in place. Highlight any text to ask the Coach about it.
+          - generic [ref=f4e46]:
+            - generic [ref=f4e47]:
+              - generic [ref=f4e48]:
+                - heading "What it does" [level=2] [ref=f4e49]
+                - generic [ref=f4e50]:
+                  - paragraph [ref=f4e52] [cursor=pointer]: Summarizes inbound district contracts against Clever's standard positions and flags the clauses Legal actually needs to read.
+                  - button "Edit What it does" [ref=f4e53]
+                - generic [ref=f4e56]:
+                  - paragraph [ref=f4e58] [cursor=pointer]:
+                    - strong [ref=f4e59]: "Tools:"
+                    - text: Claude
+                  - button "Edit AI tools" [ref=f4e60]
+                - generic [ref=f4e63]:
+                  - paragraph [ref=f4e65] [cursor=pointer]:
+                    - strong [ref=f4e66]: "Approach:"
+                    - text: Prompt
+                  - button "Edit Approach" [ref=f4e67]
+              - generic [ref=f4e70]:
+                - heading "The workflow, start to finish" [level=2] [ref=f4e71]
+                - generic [ref=f4e72]:
+                  - paragraph [ref=f4e74] [cursor=pointer]: No steps captured yet — one step per line, as the work happens today.
+                  - button "Edit Workflow steps" [ref=f4e75]
+              - generic [ref=f4e78]:
+                - heading "Worksheet ratings" [level=2] [ref=f4e79]
+                - generic [ref=f4e80]:
+                  - paragraph [ref=f4e82] [cursor=pointer]: Not rated yet — all seven are optional.
+                  - button "Edit Worksheet ratings" [ref=f4e83]
+              - generic [ref=f4e86]:
+                - heading "The functional leader’s view of success" [level=2] [ref=f4e87]
+                - generic [ref=f4e88]:
+                  - paragraph [ref=f4e90] [cursor=pointer]: Not captured yet — what would the head of this function call success?
+                  - button "Edit The functional leader's view of success" [ref=f4e91]
+              - generic [ref=f4e94]:
+                - heading "Success & ROI" [level=2] [ref=f4e95]
+                - generic [ref=f4e96]:
+                  - paragraph [ref=f4e98] [cursor=pointer]:
+                    - strong [ref=f4e99]: "Success criterion:"
+                    - text: Turnaround on standard redlines under 3 business days
+                  - button "Edit Success criterion" [ref=f4e100]
+                - generic [ref=f4e103]:
+                  - paragraph [ref=f4e105] [cursor=pointer]: Not yet evaluated.
+                  - button "Edit Whether the success criterion is met" [ref=f4e106]
+                - generic [ref=f4e109]:
+                  - generic [ref=f4e110]:
+                    - paragraph [ref=f4e112] [cursor=pointer]:
+                      - strong [ref=f4e113]: "ROI:"
+                      - text: measurement in progress
+                    - button "Edit ROI status" [ref=f4e114]
+                  - generic [ref=f4e117]:
+                    - generic [ref=f4e118]:
+                      - generic [ref=f4e120] [cursor=pointer]:
+                        - term [ref=f4e121]: Baseline metric
+                        - definition [ref=f4e122]: Median redline turnaround
+                      - button "Edit Baseline metric" [ref=f4e123]
+                    - generic [ref=f4e126]:
+                      - generic [ref=f4e128] [cursor=pointer]:
+                        - term [ref=f4e129]: Before
+                        - definition [ref=f4e130]: 6 business days
+                      - button "Edit Baseline value" [ref=f4e131]
+                    - generic [ref=f4e134]:
+                      - generic [ref=f4e136] [cursor=pointer]:
+                        - term [ref=f4e137]: Unit
+                        - definition [ref=f4e138]: business days
+                      - button "Edit Unit" [ref=f4e139]
+                    - generic [ref=f4e142]:
+                      - generic [ref=f4e144] [cursor=pointer]:
+                        - term [ref=f4e145]: After
+                        - definition [ref=f4e146]: not measured yet
+                      - button "Edit Post value" [ref=f4e147]
+                    - generic [ref=f4e150]:
+                      - generic [ref=f4e152] [cursor=pointer]:
+                        - term [ref=f4e153]: Method
+                        - definition [ref=f4e154]: Contract log dates, trailing quarter
+                      - button "Edit Measurement method" [ref=f4e155]
+                    - generic [ref=f4e158]:
+                      - generic [ref=f4e160] [cursor=pointer]:
+                        - term [ref=f4e161]: Net impact
+                        - definition [ref=f4e162]: one plain sentence of net impact
+                      - button "Edit Net impact statement" [ref=f4e163]
+                    - generic [ref=f4e166]:
+                      - generic [ref=f4e168] [cursor=pointer]:
+                        - term [ref=f4e169]: Outcome
+                        - definition [ref=f4e170]: Not yet assessed
+                      - button "Edit Whether the outcome is positive" [ref=f4e171]
+                  - generic [ref=f4e174]:
+                    - generic [ref=f4e176] [cursor=pointer]:
+                      - paragraph [ref=f4e177]: Build effort
+                      - paragraph [ref=f4e178]: not estimated yet
+                    - button "Edit Hours spent building" [ref=f4e179]
+                  - generic [ref=f4e182]:
+                    - paragraph [ref=f4e183]: "Standing between this record and Confirmed Positive ROI:"
+                    - list [ref=f4e184]:
+                      - listitem [ref=f4e185]: Success criterion not yet evaluated
+                      - listitem [ref=f4e186]: No post-measurement
+                      - listitem [ref=f4e187]: No net-impact statement
+                      - listitem [ref=f4e188]: Net outcome not assessed
+                      - listitem [ref=f4e189]: ROI scoring not marked complete
+                  - paragraph [ref=f4e190]: Counts and rates, never dollars. Baseline and post measurement must use the same method.
+              - generic [ref=f4e191]:
+                - heading "Related workflows" [level=2] [ref=f4e192]
+                - paragraph [ref=f4e193]: Nothing linked yet. Link a workflow when this one builds on it, repeats it, or belongs beside it — any AI lead can, on any record.
+                - button "Link a workflow" [ref=f4e194]
+              - generic [ref=f4e195]:
+                - heading "Activity" [level=2] [ref=f4e196]
+                - list [ref=f4e197]:
+                  - listitem [ref=f4e198]:
+                    - generic [ref=f4e199]: Jul 23, 2026
+                    - generic [ref=f4e200]:
+                      - text: Logged into the casebook at In Discovery
+                      - generic [ref=f4e201]: · Tom Leger
+                  - listitem [ref=f4e202]:
+                    - generic [ref=f4e203]: Aug 6, 2026
+                    - generic [ref=f4e204]:
+                      - text: In Discovery → Launched
+                      - generic [ref=f4e205]: · Tom Leger
+                  - listitem [ref=f4e206]:
+                    - generic [ref=f4e207]: Aug 13, 2026
+                    - generic [ref=f4e208]:
+                      - text: Launched → Qualified
+                      - generic [ref=f4e209]: · Tom Leger
+                - paragraph [ref=f4e210]: No comments yet. Questions, ideas, and requests all belong here.
+                - generic [ref=f4e212]:
+                  - textbox "Comment" [ref=f4e214]:
+                    - /placeholder: Add a comment. Markdown works; type @ to mention someone.
+                  - button "Comment" [disabled] [ref=f4e216]
+              - button "Delete this use case" [ref=f4e218]
+            - complementary [ref=f4e219]:
+              - generic [ref=f4e220]:
+                - heading "Credit" [level=2] [ref=f4e221]
+                - generic [ref=f4e222]:
+                  - generic [ref=f4e223]:
+                    - generic [ref=f4e225] [cursor=pointer]:
+                      - term [ref=f4e226]: Author
+                      - definition [ref=f4e227]:
+                        - link "Wendy Yu" [ref=f4e229]:
+                          - /url: /use-cases?person=e51c8479-9cdb-42d4-a60e-5a13011a077b
+                    - button "Edit Authors" [ref=f4e230]
+                  - generic [ref=f4e233]:
+                    - generic [ref=f4e235] [cursor=pointer]:
+                      - term [ref=f4e236]: Owner
+                      - definition [ref=f4e237]:
+                        - link "Wendy Yu" [ref=f4e238]:
+                          - /url: /use-cases?person=e51c8479-9cdb-42d4-a60e-5a13011a077b
+                    - button "Edit Owner" [ref=f4e239]
+                  - generic [ref=f4e242]:
+                    - generic [ref=f4e244] [cursor=pointer]:
+                      - term [ref=f4e245]: Counts toward
+                      - definition [ref=f4e246]: Amy Lee (CFO)
+                    - button "Edit Counts toward (ELT org)" [ref=f4e247]
+                  - generic [ref=f4e250]:
+                    - generic [ref=f4e252] [cursor=pointer]:
+                      - term [ref=f4e253]: Team
+                      - definition [ref=f4e254]: Finance / Legal · Legal
+                    - button "Edit Department and team" [ref=f4e255]
+                  - generic [ref=f4e258]:
+                    - term [ref=f4e259]: Logged
+                    - definition [ref=f4e260]: Jul 23, 2026 by Tom Leger · via form
+              - generic [ref=f4e261]:
+                - heading "Documented gates · all four met" [level=2] [ref=f4e262]
+                - list [ref=f4e263]:
+                  - listitem "The title names one specific workflow and the description explains it in plain language." [ref=f4e264]:
+                    - generic [ref=f4e265]:
+                      - checkbox "Named workflow, clear description" [checked] [ref=f4e266]
+                      - generic [ref=f4e267]: Named workflow, clear description
+                  - listitem "The record says which AI tool does the work, and how it is applied." [ref=f4e268]:
+                    - generic [ref=f4e269]:
+                      - checkbox "AI tool & approach identified" [checked] [ref=f4e270]
+                      - generic [ref=f4e271]: AI tool & approach identified
+                  - listitem "Someone beyond the author(s) actively uses it." [ref=f4e272]:
+                    - generic [ref=f4e273]:
+                      - checkbox "Adoption beyond the author(s)" [checked] [ref=f4e274]
+                      - generic [ref=f4e275]: Adoption beyond the author(s)
+                  - generic [ref=f4e276]:
+                    - paragraph [ref=f4e278] [cursor=pointer]: Both counsel and the contracts manager use it on every inbound redline.
+                    - button "Edit Adoption evidence" [ref=f4e279]
+                  - listitem "One specific person is responsible for keeping it running." [ref=f4e282]:
+                    - generic [ref=f4e283]:
+                      - checkbox "A named owner" [checked] [ref=f4e284]
+                      - generic [ref=f4e285]: A named owner
+              - generic [ref=f4e286]:
+                - heading "Move it forward" [level=2] [ref=f4e287]
+                - generic [ref=f4e288]:
+                  - combobox "New status" [ref=f4e289]:
+                    - option "Change status…"
+                    - option "In Discovery"
+                    - option "Approved by Functional Leader"
+                    - option "Under Construction"
+                    - option "In Testing"
+                    - option "Launched"
+                    - option "Confirmed Positive ROI (counts toward the 15)" [selected]
+                  - generic [ref=f4e301]:
+                    - paragraph [ref=f4e302]: "Heads up — the ROI checklist still lists:"
+                    - list [ref=f4e303]:
+                      - listitem [ref=f4e304]: Success criterion not yet evaluated
+                      - listitem [ref=f4e305]: No post-measurement
+                      - listitem [ref=f4e306]: No net-impact statement
+                      - listitem [ref=f4e307]: Net outcome not assessed
+                      - listitem [ref=f4e308]: ROI scoring not marked complete
+                    - paragraph [ref=f4e309]: You can still confirm — the call is yours.
+                  - generic [ref=f4e310]: Annual ROI (required)
+                  - textbox "Annual ROI (required)" [ref=f4e311]:
+                    - /placeholder: State the measured annual ROI — this line rolls up into the end-of-year wins report.
+                  - button "Move to Confirmed Positive ROI" [disabled] [ref=f4e312]
+                - button "Reject at the Qualified gate…" [ref=f4e291]
+  - button "Open Next.js Dev Tools" [ref=f4e297] [cursor=pointer]
+  - alert [ref=f4e313]

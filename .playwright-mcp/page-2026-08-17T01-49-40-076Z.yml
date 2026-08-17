@@ -1,0 +1,508 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]
+  - alert [ref=e25]: The program, at a glance
+  - generic [ref=e26]:
+    - link "Skip to content" [ref=e27] [cursor=pointer]:
+      - /url: "#main"
+    - banner [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - link "Casespace" [ref=e31] [cursor=pointer]:
+            - /url: /
+          - navigation "Primary" [ref=e32]:
+            - link "Dashboard" [ref=e33] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Use cases" [ref=e34] [cursor=pointer]:
+              - /url: /use-cases
+            - link "Goals" [ref=e35] [cursor=pointer]:
+              - /url: /goals
+            - link "Wins" [ref=e36] [cursor=pointer]:
+              - /url: /wins
+            - link "Learnings" [ref=e37] [cursor=pointer]:
+              - /url: /learnings
+            - link "AI Leads" [ref=e38] [cursor=pointer]:
+              - /url: /roster
+            - link "What’s New" [ref=e39] [cursor=pointer]:
+              - /url: /whats-new
+            - link "Docs" [ref=e40] [cursor=pointer]:
+              - /url: /docs
+        - generic [ref=e41]:
+          - link "Log a use case" [ref=e42] [cursor=pointer]:
+            - /url: /use-cases/new
+          - group [ref=e43]:
+            - generic "Notifications" [ref=e44] [cursor=pointer]
+          - group [ref=e48]:
+            - generic "Tom Leger" [ref=e49] [cursor=pointer]
+    - main [ref=e50]:
+      - generic [ref=e51]:
+        - generic [ref=e53]:
+          - heading "The program, at a glance" [level=1] [ref=e54]
+          - paragraph [ref=e55]: 45 documented use cases and 15 with quantified, positive ROI by December 31.
+        - generic [ref=e57]:
+          - region "Program targets" [ref=e58]:
+            - generic [ref=e59]:
+              - link "Documented use cases — Qualified or better 3 of 45 3 of 45, plus 14 in flight 14 in flight — 2 have all four gates met, waiting on the Qualified gate." [ref=e60] [cursor=pointer]:
+                - /url: /use-cases?status=documented
+                - paragraph [ref=e61]: Documented use cases — Qualified or better
+                - paragraph [ref=e62]:
+                  - text: "3"
+                  - generic [ref=e63]: of 45
+                - img "3 of 45, plus 14 in flight" [ref=e64]
+                - paragraph [ref=e67]: 14 in flight — 2 have all four gates met, waiting on the Qualified gate.
+              - link "Quantified, positive ROI — Confirmed 1 of 15 1 of 15, plus 2 in flight 2 Qualified records are awaiting ROI confirmation." [ref=e68] [cursor=pointer]:
+                - /url: /use-cases?status=confirmed_positive_roi
+                - paragraph [ref=e69]: Quantified, positive ROI — Confirmed
+                - paragraph [ref=e70]:
+                  - text: "1"
+                  - generic [ref=e71]: of 15
+                - img "1 of 15, plus 2 in flight" [ref=e72]
+                - paragraph [ref=e75]: 2 Qualified records are awaiting ROI confirmation.
+          - region "Pipeline" [ref=e76]:
+            - heading "The pipeline" [level=2] [ref=e77]
+            - paragraph [ref=e78]: All 17 use cases by status. Every figure is one record, standing where it sits today. Click a station to see its records.
+            - img [ref=e81]:
+              - link "In Discovery — 6 use cases" [ref=e82] [cursor=pointer]:
+                - /url: /use-cases?status=in_discovery
+                - generic [ref=e105]: "6"
+                - generic [ref=e106]: Discovery
+              - link "Approved by Functional Leader — 1 use case" [ref=e107] [cursor=pointer]:
+                - /url: /use-cases?status=approved_by_fl
+                - generic [ref=e115]: "1"
+                - generic [ref=e116]: FL Approved
+              - link "Under Construction — 2 use cases" [ref=e117] [cursor=pointer]:
+                - /url: /use-cases?status=under_construction
+                - generic [ref=e128]: "2"
+                - generic [ref=e129]: Building
+              - link "In Testing — 2 use cases" [ref=e130] [cursor=pointer]:
+                - /url: /use-cases?status=in_testing
+                - generic [ref=e141]: "2"
+                - generic [ref=e142]: Testing
+              - link "Launched — 3 use cases" [ref=e143] [cursor=pointer]:
+                - /url: /use-cases?status=launched
+                - generic [ref=e157]: "3"
+                - generic [ref=e158]: Launched
+              - link "Qualified — 2 use cases" [ref=e159] [cursor=pointer]:
+                - /url: /use-cases?status=qualified
+                - generic [ref=e170]: "2"
+                - generic [ref=e171]: Qualified
+              - link "Confirmed Positive ROI — 1 use case" [ref=e172] [cursor=pointer]:
+                - /url: /use-cases?status=confirmed_positive_roi
+                - generic [ref=e180]: "1"
+                - generic [ref=e181]: ROI Confirmed
+          - region "The 15 by ELT org" [ref=e182]:
+            - heading "The 15, by ELT owner" [level=2] [ref=e183]
+            - paragraph [ref=e184]: Confirmed Positive ROI counts against each owner’s share of the 15. Shades show how far along the rest is. Click an owner to see their records.
+            - list [ref=e185]:
+              - listitem [ref=e186]: Counts toward the 15
+              - listitem [ref=e188]: Qualified, ROI pending
+              - listitem [ref=e190]: In the pipeline
+            - list [ref=e192]:
+              - listitem [ref=e193]:
+                - 'link "Amy Lee (CFO) 0 of 2 · 1 Qualified awaiting ROI confirmation · 1 in the pipeline Amy Lee (CFO): 0 of 2 counted, 1 Qualified awaiting ROI confirmation · 1 in the pipeline" [ref=e194] [cursor=pointer]':
+                  - /url: /use-cases?elt=a6059291-57fb-4bc9-ba14-f8e466c705aa
+                  - generic [ref=e195]:
+                    - generic [ref=e196]: Amy Lee (CFO)
+                    - generic [ref=e197]:
+                      - text: 0 of 2
+                      - generic [ref=e198]: · 1 Qualified awaiting ROI confirmation · 1 in the pipeline
+                  - 'img "Amy Lee (CFO): 0 of 2 counted, 1 Qualified awaiting ROI confirmation · 1 in the pipeline" [ref=e199]'
+              - listitem [ref=e202]:
+                - 'link "Eric Krugler (CTO) 0 of 3 · 1 Qualified awaiting ROI confirmation · 1 in the pipeline Eric Krugler (CTO): 0 of 3 counted, 1 Qualified awaiting ROI confirmation · 1 in the pipeline" [ref=e203] [cursor=pointer]':
+                  - /url: /use-cases?elt=ce0c369c-36b7-4751-bd89-2c3ee46f1d94
+                  - generic [ref=e204]:
+                    - generic [ref=e205]: Eric Krugler (CTO)
+                    - generic [ref=e206]:
+                      - text: 0 of 3
+                      - generic [ref=e207]: · 1 Qualified awaiting ROI confirmation · 1 in the pipeline
+                  - 'img "Eric Krugler (CTO): 0 of 3 counted, 1 Qualified awaiting ROI confirmation · 1 in the pipeline" [ref=e208]'
+              - listitem [ref=e212]:
+                - 'link "Jamie Reffell (CPO) 0 of 2 · 1 in the pipeline Jamie Reffell (CPO): 0 of 2 counted, 1 in the pipeline" [ref=e213] [cursor=pointer]':
+                  - /url: /use-cases?elt=0bd3597c-d0ec-41ea-b376-44b79e0b7a36
+                  - generic [ref=e214]:
+                    - generic [ref=e215]: Jamie Reffell (CPO)
+                    - generic [ref=e216]:
+                      - text: 0 of 2
+                      - generic [ref=e217]: · 1 in the pipeline
+                  - 'img "Jamie Reffell (CPO): 0 of 2 counted, 1 in the pipeline" [ref=e218]'
+              - listitem [ref=e221]:
+                - 'link "Phillip Mikula (CRO) 0 of 3 · 3 in the pipeline Phillip Mikula (CRO): 0 of 3 counted, 3 in the pipeline" [ref=e222] [cursor=pointer]':
+                  - /url: /use-cases?elt=604bb947-ab61-41f9-8be8-c08d322156b4
+                  - generic [ref=e223]:
+                    - generic [ref=e224]: Phillip Mikula (CRO)
+                    - generic [ref=e225]:
+                      - text: 0 of 3
+                      - generic [ref=e226]: · 3 in the pipeline
+                  - 'img "Phillip Mikula (CRO): 0 of 3 counted, 3 in the pipeline" [ref=e227]'
+              - listitem [ref=e231]:
+                - 'link "Kate SchaffNote: Confirm semantics: Kate''s own sponsored use cases, or a floating program-wide bucket? Modeled as a program-wide bucket (no department mapping) until confirmed. 0 of 3 Kate Schaff: 0 of 3 counted" [ref=e232] [cursor=pointer]':
+                  - /url: /use-cases?elt=a85dae14-909e-4b11-92b4-917bf514d1e9
+                  - generic [ref=e233]:
+                    - generic [ref=e234]: Kate Schaff⚠
+                    - generic [ref=e235]: 0 of 3
+                  - 'img "Kate Schaff: 0 of 3 counted" [ref=e236]'
+              - listitem [ref=e240]:
+                - 'link "Trish Sparks (CEO)Note: Slide says “POps/GA” — mapped to the People grouping here; confirm. CSS, Business Operations, and Business Analytics deliberately remain unmapped until Tom/Kate confirm owners. 0 of 2 · 1 in the pipeline Trish Sparks (CEO): 0 of 2 counted, 1 in the pipeline" [ref=e241] [cursor=pointer]':
+                  - /url: /use-cases?elt=01378f2b-527b-4358-8abb-77ec2e1daf51
+                  - generic [ref=e242]:
+                    - generic [ref=e243]: Trish Sparks (CEO)⚠
+                    - generic [ref=e244]:
+                      - text: 0 of 2
+                      - generic [ref=e245]: · 1 in the pipeline
+                  - 'img "Trish Sparks (CEO): 0 of 2 counted, 1 in the pipeline" [ref=e246]'
+              - listitem [ref=e249]:
+                - 'link "UnallocatedNote: Work in departments with no confirmed ELT owner. 1 · 7 in the pipeline" [ref=e250] [cursor=pointer]':
+                  - /url: /use-cases?elt=none
+                  - generic [ref=e251]:
+                    - generic [ref=e252]: Unallocated⚠
+                    - generic [ref=e253]:
+                      - text: "1"
+                      - generic [ref=e254]: · 7 in the pipeline
+          - region "Team coverage" [ref=e255]:
+            - heading "Coverage by team" [level=2] [ref=e256]
+            - paragraph [ref=e257]: Every AI Lead builds two workflows for their function. 8 teams have nothing logged yet.
+            - table [ref=e259]:
+              - rowgroup [ref=e260]:
+                - row [ref=e261]:
+                  - columnheader "Team" [ref=e262]
+                  - columnheader "AI Lead(s)" [ref=e263]
+                  - columnheader "Logged" [ref=e264]
+                  - columnheader "Toward 2 per lead" [ref=e265]
+              - rowgroup [ref=e266]:
+                - row [ref=e267]:
+                  - cell "Business Operations Business Analytics" [ref=e268]:
+                    - text: Business Operations
+                    - generic [ref=e269]: Business Analytics
+                  - cell [ref=e270]:
+                    - link "Lotte Petersen-Buckley" [ref=e272] [cursor=pointer]:
+                      - /url: /use-cases?person=82ac6e0e-aadb-43de-85fc-9846d0613010
+                  - cell "1" [ref=e273]
+                  - cell [ref=e274]:
+                    - img "1 of 2" [ref=e275]
+                - row [ref=e278]:
+                  - cell "Business Operations Business Operations" [ref=e279]:
+                    - text: Business Operations
+                    - generic [ref=e280]: Business Operations
+                  - cell [ref=e281]:
+                    - link "Alex Armstead" [ref=e283] [cursor=pointer]:
+                      - /url: /use-cases?person=472ed59b-e6f5-47a8-80a5-b7c7b9606487
+                  - cell "1" [ref=e284]
+                  - cell [ref=e285]:
+                    - img "1 of 2" [ref=e286]
+                - row [ref=e289]:
+                  - cell "CSS Clever Core Onboarding" [ref=e290]:
+                    - text: CSS
+                    - generic [ref=e291]: Clever Core Onboarding
+                  - cell [ref=e292]:
+                    - link "Sinclair Blackmon" [ref=e294] [cursor=pointer]:
+                      - /url: /use-cases?person=cf29c5af-71b5-4a8d-b4a1-0812357d94a6
+                  - cell "1" [ref=e295]
+                  - cell [ref=e296]:
+                    - img "1 of 2" [ref=e297]
+                - row [ref=e300]:
+                  - cell "CSS Clever+ Onboarding" [ref=e301]:
+                    - text: CSS
+                    - generic [ref=e302]: Clever+ Onboarding
+                  - cell [ref=e303]:
+                    - link "Jonathan Boutin" [ref=e305] [cursor=pointer]:
+                      - /url: /use-cases?person=31c4461a-845f-4eaa-875d-296ad1900c61
+                  - cell "0" [ref=e306]
+                  - cell [ref=e307]:
+                    - img "0 of 2" [ref=e308]
+                - row [ref=e311]:
+                  - cell "CSS Customer Education" [ref=e312]:
+                    - text: CSS
+                    - generic [ref=e313]: Customer Education
+                  - cell [ref=e314]:
+                    - link "Marley Koschel" [ref=e316] [cursor=pointer]:
+                      - /url: /use-cases?person=e637d16f-73c0-47a6-98cc-dc9d78302e6b
+                  - cell "0" [ref=e317]
+                  - cell [ref=e318]:
+                    - img "0 of 2" [ref=e319]
+                - row [ref=e322]:
+                  - cell "CSS Customer Support" [ref=e323]:
+                    - text: CSS
+                    - generic [ref=e324]: Customer Support
+                  - cell [ref=e325]:
+                    - link "Arraine Siefert" [ref=e327] [cursor=pointer]:
+                      - /url: /use-cases?person=7da651f4-05bf-4456-b2e1-33084eb73b77
+                    - generic [ref=e328]:
+                      - text: ","
+                      - link "Katie Clarkson" [ref=e329] [cursor=pointer]:
+                        - /url: /use-cases?person=a6754976-094d-4c11-8bbb-21f566b47cb4
+                  - cell "1" [ref=e330]
+                  - cell [ref=e331]:
+                    - img "1 of 4" [ref=e332]
+                - row [ref=e337]:
+                  - cell "CSS Integration Engineering" [ref=e338]:
+                    - text: CSS
+                    - generic [ref=e339]: Integration Engineering
+                  - cell [ref=e340]:
+                    - link "Victoria Crow Dog" [ref=e342] [cursor=pointer]:
+                      - /url: /use-cases?person=8f08f444-15f8-4be5-bca5-c2d134164673
+                    - generic [ref=e343]:
+                      - text: ","
+                      - link "Meghana Gangadharswami Balihallimath" [ref=e344] [cursor=pointer]:
+                        - /url: /use-cases?person=3587f59b-13cf-412b-b264-2137b0e1313c
+                  - cell "1" [ref=e345]
+                  - cell [ref=e346]:
+                    - img "1 of 4" [ref=e347]
+                - row [ref=e352]:
+                  - cell "CSS Partner Engineering" [ref=e353]:
+                    - text: CSS
+                    - generic [ref=e354]: Partner Engineering
+                  - cell [ref=e355]:
+                    - link "Dotun Oni" [ref=e357] [cursor=pointer]:
+                      - /url: /use-cases?person=5e18d093-92aa-46f9-aee6-0e3952964371
+                  - cell "0" [ref=e358]
+                  - cell [ref=e359]:
+                    - img "0 of 2" [ref=e360]
+                - row [ref=e363]:
+                  - cell "CSS Technical Account Managers" [ref=e364]:
+                    - text: CSS
+                    - generic [ref=e365]: Technical Account Managers
+                  - cell [ref=e366]:
+                    - link "Shaun Hudgins" [ref=e368] [cursor=pointer]:
+                      - /url: /use-cases?person=a56575b4-8c38-4d03-9d13-304234955665
+                  - cell "0" [ref=e369]
+                  - cell [ref=e370]:
+                    - img "0 of 2" [ref=e371]
+                - row [ref=e374]:
+                  - cell "CSS Technical Pre-sales" [ref=e375]:
+                    - text: CSS
+                    - generic [ref=e376]: Technical Pre-sales
+                  - cell [ref=e377]:
+                    - link "David McGeary" [ref=e379] [cursor=pointer]:
+                      - /url: /use-cases?person=4e50983f-5e26-4f92-9f1e-2095b0b55d7e
+                  - cell "1" [ref=e380]
+                  - cell [ref=e381]:
+                    - img "1 of 2" [ref=e382]
+                - row [ref=e385]:
+                  - cell "Engineering Engineering" [ref=e386]:
+                    - text: Engineering
+                    - generic [ref=e387]: Engineering
+                  - cell [ref=e388]:
+                    - link "Vamsi Chunduru" [ref=e390] [cursor=pointer]:
+                      - /url: /use-cases?person=1671f39c-24fe-4ec1-9bb2-580d457e9162
+                  - cell "1" [ref=e391]
+                  - cell [ref=e392]:
+                    - img "1 of 2" [ref=e393]
+                - row [ref=e396]:
+                  - cell "Finance / Legal Finance" [ref=e397]:
+                    - text: Finance / Legal
+                    - generic [ref=e398]: Finance
+                  - cell [ref=e399]:
+                    - link "Kenton Lu" [ref=e401] [cursor=pointer]:
+                      - /url: /use-cases?person=2eba9ed0-4c9b-444f-a714-6028af5000b2
+                  - cell "1" [ref=e402]
+                  - cell [ref=e403]:
+                    - img "1 of 2" [ref=e404]
+                - row [ref=e407]:
+                  - cell "Finance / Legal Legal" [ref=e408]:
+                    - text: Finance / Legal
+                    - generic [ref=e409]: Legal
+                  - cell [ref=e410]:
+                    - link "Wendy Yu" [ref=e412] [cursor=pointer]:
+                      - /url: /use-cases?person=e51c8479-9cdb-42d4-a60e-5a13011a077b
+                  - cell "1" [ref=e413]
+                  - cell [ref=e414]:
+                    - img "1 of 2" [ref=e415]
+                - row [ref=e418]:
+                  - cell "MSS App Partnerships" [ref=e419]:
+                    - text: MSS
+                    - generic [ref=e420]: App Partnerships
+                  - cell [ref=e421]:
+                    - link "Zachary Gladnick" [ref=e423] [cursor=pointer]:
+                      - /url: /use-cases?person=c9de6fe8-ffae-4877-81c1-f71a063b31d8
+                  - cell "0" [ref=e424]
+                  - cell [ref=e425]:
+                    - img "0 of 2" [ref=e426]
+                - row [ref=e429]:
+                  - cell "MSS App Success" [ref=e430]:
+                    - text: MSS
+                    - generic [ref=e431]: App Success
+                  - cell [ref=e432]:
+                    - link "Jennifer Pluma" [ref=e434] [cursor=pointer]:
+                      - /url: /use-cases?person=2e456db4-d4eb-4b7d-915d-46895d7bcc0e
+                  - cell "0" [ref=e435]
+                  - cell [ref=e436]:
+                    - img "0 of 2" [ref=e437]
+                - row [ref=e440]:
+                  - cell "MSS Marketing" [ref=e441]:
+                    - text: MSS
+                    - generic [ref=e442]: Marketing
+                  - cell [ref=e443]:
+                    - link "Evelyn Wong" [ref=e445] [cursor=pointer]:
+                      - /url: /use-cases?person=5bbe2c3b-9342-407d-a3f1-31c0dc8f870c
+                  - cell "1" [ref=e446]
+                  - cell [ref=e447]:
+                    - img "1 of 2" [ref=e448]
+                - row [ref=e451]:
+                  - cell "MSS School Partnerships – Domestic" [ref=e452]:
+                    - text: MSS
+                    - generic [ref=e453]: School Partnerships – Domestic
+                  - cell [ref=e454]:
+                    - link "Melissa Pevitz" [ref=e456] [cursor=pointer]:
+                      - /url: /use-cases?person=4fae2f0f-fc1d-4553-8086-1762eceec088
+                  - cell "1" [ref=e457]
+                  - cell [ref=e458]:
+                    - img "1 of 2" [ref=e459]
+                - row [ref=e462]:
+                  - cell "MSS School Partnerships – International" [ref=e463]:
+                    - text: MSS
+                    - generic [ref=e464]: School Partnerships – International
+                  - cell [ref=e465]:
+                    - link "Aerin Bowers" [ref=e467] [cursor=pointer]:
+                      - /url: /use-cases?person=4463efa9-b9c3-47bf-aea1-bdc814258066
+                  - cell "0" [ref=e468]
+                  - cell [ref=e469]:
+                    - img "0 of 2" [ref=e470]
+                - row [ref=e473]:
+                  - cell "MSS School Success – Global" [ref=e474]:
+                    - text: MSS
+                    - generic [ref=e475]: School Success – Global
+                  - cell [ref=e476]:
+                    - link "Lauren Raulerson" [ref=e478] [cursor=pointer]:
+                      - /url: /use-cases?person=e4b017f1-4e2e-45c2-acf6-793febb7d016
+                    - generic [ref=e479]:
+                      - text: ","
+                      - link "Patricia Henriquez" [ref=e480] [cursor=pointer]:
+                        - /url: /use-cases?person=a386f9ec-4b87-4821-a2f3-df2103c3dc9d
+                  - cell "1" [ref=e481]
+                  - cell [ref=e482]:
+                    - img "1 of 4" [ref=e483]
+                - row [ref=e488]:
+                  - cell "People POps" [ref=e489]:
+                    - text: People
+                    - generic [ref=e490]: POps
+                  - cell [ref=e491]:
+                    - link "Jen Kampf" [ref=e493] [cursor=pointer]:
+                      - /url: /use-cases?person=4917f8e8-c816-4b9e-a977-76c1a561e310
+                  - cell "0" [ref=e494]
+                  - cell [ref=e495]:
+                    - img "0 of 2" [ref=e496]
+                - row [ref=e499]:
+                  - cell "People Talent Acquisition" [ref=e500]:
+                    - text: People
+                    - generic [ref=e501]: Talent Acquisition
+                  - cell [ref=e502]:
+                    - link "Jen Kampf" [ref=e504] [cursor=pointer]:
+                      - /url: /use-cases?person=4917f8e8-c816-4b9e-a977-76c1a561e310
+                  - cell "1" [ref=e505]
+                  - cell [ref=e506]:
+                    - img "1 of 2" [ref=e507]
+                - row [ref=e510]:
+                  - cell "Product / Design Product & Design" [ref=e511]:
+                    - text: Product / Design
+                    - generic [ref=e512]: Product & Design
+                  - cell [ref=e513]:
+                    - link "Yowan Ramchoreeter" [ref=e515] [cursor=pointer]:
+                      - /url: /use-cases?person=d80ec11d-21dc-4eb3-b320-2c5feccebbef
+                    - generic [ref=e516]:
+                      - text: ","
+                      - link "Justine Edrozo" [ref=e517] [cursor=pointer]:
+                        - /url: /use-cases?person=286e6319-6db3-4c02-8af3-c9db679c8dd2
+                  - cell "1" [ref=e518]
+                  - cell [ref=e519]:
+                    - img "1 of 4" [ref=e520]
+          - generic [ref=e525]:
+            - region "Movement this week" [ref=e526]:
+              - heading "Movement this week" [level=2] [ref=e527]
+              - list [ref=e528]:
+                - listitem [ref=e529]:
+                  - generic [ref=e530]: Aug 15
+                  - generic [ref=e531]:
+                    - link "Support macro drafter" [ref=e532] [cursor=pointer]:
+                      - /url: /use-cases/e70a3530-4676-4c7a-ace0-ae7279c70047
+                    - generic [ref=e533]: confirmed positive ROI — counts toward the 15 · Tom Leger
+                - listitem [ref=e534]:
+                  - generic [ref=e535]: Aug 14
+                  - generic [ref=e536]:
+                    - link "Sprint retro summarizer" [ref=e537] [cursor=pointer]:
+                      - /url: /use-cases/1b82bd45-9f20-4267-9a40-e42a110beeef
+                    - generic [ref=e538]: moved to Qualified · Tom Leger
+                - listitem [ref=e539]:
+                  - generic [ref=e540]: Aug 14
+                  - generic [ref=e541]:
+                    - link "Renewal-risk digest" [ref=e542] [cursor=pointer]:
+                      - /url: /use-cases/d2378486-369b-417e-983b-a88d11f7d0d0
+                    - generic [ref=e543]: moved to Approved by Functional Leader · Tom Leger
+                - listitem [ref=e544]:
+                  - generic [ref=e545]: Aug 14
+                  - generic [ref=e546]:
+                    - link "Design-crit notetaker" [ref=e547] [cursor=pointer]:
+                      - /url: /use-cases/58269d2b-86a8-4fcf-a148-27f2c05537c4
+                    - generic [ref=e548]: moved to Under Construction · Tom Leger
+                - listitem [ref=e549]:
+                  - generic [ref=e550]: Aug 13
+                  - generic [ref=e551]:
+                    - link "Integration error triager" [ref=e552] [cursor=pointer]:
+                      - /url: /use-cases/4315d1ef-c4c8-4d0e-a967-be928d4f5568
+                    - generic [ref=e553]: moved to In Testing · Tom Leger
+                - listitem [ref=e554]:
+                  - generic [ref=e555]: Aug 13
+                  - generic [ref=e556]:
+                    - link "Board-pack first drafts" [ref=e557] [cursor=pointer]:
+                      - /url: /use-cases/d1a6b14d-7b7d-4966-912e-0798a7e414e6
+                    - generic [ref=e558]: moved to Under Construction · Tom Leger
+                - listitem [ref=e559]:
+                  - generic [ref=e560]: Aug 13
+                  - generic [ref=e561]:
+                    - link "Contract clause summarizer" [ref=e562] [cursor=pointer]:
+                      - /url: /use-cases/ea3aa7c4-392c-4b45-9a7b-88263a4c9ea7
+                    - generic [ref=e563]: moved to Qualified · Tom Leger
+                - listitem [ref=e564]:
+                  - generic [ref=e565]: Aug 13
+                  - generic [ref=e566]:
+                    - link "Pre-sales architecture explainer" [ref=e567] [cursor=pointer]:
+                      - /url: /use-cases/03559564-6718-40ac-a429-bdc2978be9b8
+                    - generic [ref=e568]: logged at In Discovery · Tom Leger
+                - listitem [ref=e569]:
+                  - generic [ref=e570]: Aug 12
+                  - generic [ref=e571]:
+                    - link "Candidate screen summarizer" [ref=e572] [cursor=pointer]:
+                      - /url: /use-cases/74963654-c9bf-4c27-afc4-f3165b1b48d8
+                    - generic [ref=e573]: moved to In Testing · Tom Leger
+                - listitem [ref=e574]:
+                  - generic [ref=e575]: Aug 12
+                  - generic [ref=e576]:
+                    - link "Support macro drafter" [ref=e577] [cursor=pointer]:
+                      - /url: /use-cases/e70a3530-4676-4c7a-ace0-ae7279c70047
+                    - generic [ref=e578]: moved to Qualified · Tom Leger
+                - listitem [ref=e579]:
+                  - generic [ref=e580]: Aug 11
+                  - generic [ref=e581]:
+                    - link "Campaign brief generator" [ref=e582] [cursor=pointer]:
+                      - /url: /use-cases/a3ae195b-3880-43d8-803e-7a0f7204d4af
+                    - generic [ref=e583]: moved to Launched · Tom Leger
+                - listitem [ref=e584]:
+                  - generic [ref=e585]: Aug 11
+                  - generic [ref=e586]:
+                    - link "Invoice-matching assistant" [ref=e587] [cursor=pointer]:
+                      - /url: /use-cases/5d71c63a-1fce-4528-87d5-8457eb38f213
+                    - generic [ref=e588]: logged at In Discovery · Tom Leger
+            - region "Needs attention" [ref=e589]:
+              - heading "Needs attention" [level=2] [ref=e590]
+              - generic [ref=e591]:
+                - generic [ref=e592]:
+                  - heading "Sitting still 21+ days" [level=3] [ref=e593]
+                  - list [ref=e594]:
+                    - listitem [ref=e595]:
+                      - link "Sales-call objection miner" [ref=e596] [cursor=pointer]:
+                        - /url: /use-cases/9172e396-ddb8-47ae-8f7f-dff2128a3c51
+                      - generic [ref=e597]: — 32 days in In Discovery
+                - generic [ref=e598]:
+                  - heading "Launched, ROI not yet scored" [level=3] [ref=e599]
+                  - paragraph [ref=e600]: The pipeline of future confirmed wins the ROI review should chase.
+                  - list [ref=e601]:
+                    - listitem [ref=e602]:
+                      - link "Onboarding call-notes to CRM" [ref=e603] [cursor=pointer]:
+                        - /url: /use-cases/27ae19ca-c164-444b-a4fa-93504d7f39f3
+                      - generic [ref=e604]: — not yet measurable
+                    - listitem [ref=e605]:
+                      - link "RFP question-bank answerer" [ref=e606] [cursor=pointer]:
+                        - /url: /use-cases/a65c5e87-e34c-4089-bb47-888ec0370ca5
+                      - generic [ref=e607]: — measurement in progress
+                    - listitem [ref=e608]:
+                      - link "Campaign brief generator" [ref=e609] [cursor=pointer]:
+                        - /url: /use-cases/a3ae195b-3880-43d8-803e-7a0f7204d4af
+                      - generic [ref=e610]: — not yet measurable

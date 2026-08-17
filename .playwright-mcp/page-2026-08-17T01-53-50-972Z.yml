@@ -1,0 +1,191 @@
+- generic [active] [ref=f5e1]:
+  - generic [ref=f5e2]:
+    - link "Skip to content" [ref=f5e3] [cursor=pointer]:
+      - /url: "#main"
+    - banner [ref=f5e4]:
+      - generic [ref=f5e5]:
+        - generic [ref=f5e6]:
+          - link "Casespace" [ref=f5e7] [cursor=pointer]:
+            - /url: /
+          - navigation "Primary" [ref=f5e8]:
+            - link "Dashboard" [ref=f5e9] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Use cases" [ref=f5e10] [cursor=pointer]:
+              - /url: /use-cases
+            - link "Goals" [ref=f5e11] [cursor=pointer]:
+              - /url: /goals
+            - link "Wins" [ref=f5e12] [cursor=pointer]:
+              - /url: /wins
+            - link "Learnings" [ref=f5e13] [cursor=pointer]:
+              - /url: /learnings
+            - link "AI Leads" [ref=f5e14] [cursor=pointer]:
+              - /url: /roster
+            - link "What’s New" [ref=f5e15] [cursor=pointer]:
+              - /url: /whats-new
+            - link "Docs" [ref=f5e16] [cursor=pointer]:
+              - /url: /docs
+        - generic [ref=f5e17]:
+          - link "Log a use case" [ref=f5e18] [cursor=pointer]:
+            - /url: /use-cases/new
+          - group [ref=f5e19]:
+            - generic "Notifications" [ref=f5e20] [cursor=pointer]
+          - group [ref=f5e24]:
+            - generic "Tom Leger" [ref=f5e25] [cursor=pointer]
+    - main [ref=f5e26]:
+      - article [ref=f5e27]:
+        - link "← All documentation" [ref=f5e28] [cursor=pointer]:
+          - /url: /docs
+        - generic [ref=f5e29]:
+          - heading "Changelog" [level=1] [ref=f5e30]
+          - paragraph [ref=f5e31]:
+            - text: What shipped in Casespace, newest first. The
+            - link "weekly post" [ref=f5e32] [cursor=pointer]:
+              - /url: /docs/features/whats-new
+            - text: reads this file and writes up the week's entries, so an entry here is how a change reaches everyone at Clever.
+          - paragraph [ref=f5e33]:
+            - strong [ref=f5e34]: Adding a feature? Add an entry in the same commit.
+            - text: "Write it for the person who will read the newsletter, not for the person who wrote the code: what changed, and what they can now do. Name whoever asked — that is the whole point of the attribution line, and recognition in this program is names on work."
+          - heading "The format" [level=2] [ref=f5e35]
+          - paragraph [ref=f5e36]:
+            - text: Entries are grouped under an
+            - code [ref=f5e37]: "## YYYY-MM-DD"
+            - text: ship date, newest date first. Each entry is an
+            - code [ref=f5e38]: "### Title"
+            - text: ", an optional"
+            - code [ref=f5e39]: "Requested by:"
+            - text: line, and a short paragraph.
+          - code [ref=f5e41]: "## 2026-08-14 ### One human, however their name is spelled Requested by: Kate Schaff \"Mine\" and person links now find records credited under either spelling of someone's name."
+          - paragraph [ref=f5e42]:
+            - code [ref=f5e43]: "Requested by:"
+            - text: takes a person's name as the directory spells it; accents and case don't matter. Leave the line off when nobody asked — an unattributed entry is honest, an invented one is not. Add
+            - code [ref=f5e44]: "Feedback: <id>"
+            - text: to point at the in-app report it came from.
+          - separator [ref=f5e45]
+          - heading "2026-08-16" [level=2] [ref=f5e46]
+          - heading "Records now ask what the workflow cost to build" [level=3] [ref=f5e47]
+          - paragraph [ref=f5e48]: "Requested by: Kate Schaff"
+          - paragraph [ref=f5e49]:
+            - text: Every use case can now carry a rough estimate of the hours that went into building it — asked when you log a workflow, editable inline in the ROI panel, and shown next to the measurements as
+            - strong [ref=f5e50]: Build effort
+            - text: . That lets the program weigh time spent building against time saved. A rough number is fine, it's optional, and it never blocks a status change.
+          - heading "A record's history and comments now read as one story" [level=3] [ref=f5e51]
+          - paragraph [ref=f5e52]: "Requested by: Kate Schaff"
+          - paragraph [ref=f5e53]:
+            - text: The History and Comments sections on a record have merged into a single
+            - strong [ref=f5e54]: Activity
+            - text: "stream: status changes and comments, interleaved in the order they happened, oldest first. The comment box now sits at the bottom of the stream — where you land after reading — instead of floating between the heading and the comments, where it was easy to lose. Threads still nest exactly as before."
+          - heading "Sign-in opens on the program" [level=3] [ref=f5e55]
+          - paragraph [ref=f5e56]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e57]:
+            - text: Everyone now lands on the full program dashboard, not just admins. AI Leads still get their own use cases and the
+            - strong [ref=f5e58]: Log a use case
+            - text: button — they sit under the dashboard rather than in front of it. Viewers get the most recently updated records in the same spot.
+          - heading "Victoria Crow Dog comes off the AI Leads roster" [level=3] [ref=f5e59]
+          - paragraph [ref=f5e60]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e61]: She is no longer an AI lead, so a fresh environment no longer seeds her onto the roster. She stays in the directory and stays credited on the records she authored — coming off the roster is not coming off the team.
+          - heading "The pipeline is a subway map now" [level=3] [ref=f5e62]
+          - paragraph [ref=f5e63]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e64]: "The pipeline on the dashboard is drawn as a transit line: one station per status, and one standing figure for every record waiting there. A busy stage is a crowded platform, so you can see at a glance where work is queuing up instead of comparing seven bars that all looked the same length. Every station still clicks through to its records."
+          - heading "2026-08-15" [level=2] [ref=f5e65]
+          - heading "History notes read in the app, not over the API" [level=3] [ref=f5e66]
+          - paragraph [ref=f5e67]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e68]: Status-change notes — rejection reasons, confirmation notes — are context for people reading a record, so that's where they live. Over the REST API, notes now come back only to admin tokens; every other token sees the history's steps, dates, and names, and reads the notes in the app.
+          - heading "The annual-ROI note stays on the Wins page" [level=3] [ref=f5e69]
+          - paragraph [ref=f5e70]: "The note an admin writes when confirming positive ROI can carry the kind of figures that stay off open surfaces — the reason Wins is admin-only. That note now follows the same rule everywhere it could appear: on a record's History, over the REST API, and in the Coach, admins see it and everyone else sees the status change without the note. Every other history note — Qualified-gate rejection reasons included — shows exactly as before."
+          - heading "Confirmed Positive ROI is set by an admin, and only by an admin" [level=3] [ref=f5e71]
+          - paragraph [ref=f5e72]: Confirmed Positive ROI and Qualified record Kate's decisions, and now the only way a record reaches either is that decision. Every door for logging a use case — the form, the wizard, the notes parser, the REST API, and MCP — starts records in one of the five working statuses; the two decision stages are granted afterward, in the app, by an admin. The status dropdown on the create form matches what the server accepts.
+          - heading "What's New reads like a blog now" [level=3] [ref=f5e73]
+          - paragraph [ref=f5e74]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e75]:
+            - text: Every weekly post has a permanent address — the Monday of its week, like
+            - code [ref=f5e76]: /whats-new/2026-08-10
+            - text: "— so you can link a colleague straight to an article and the link keeps working forever. The What's New page is now a proper archive: the latest post in full, earlier weeks beneath it with excerpts. And nothing is ever silently overwritten anymore: the Monday draft never touches an existing post, and regenerating or editing one archives the version it replaces."
+          - heading "A link to Casespace explains itself" [level=3] [ref=f5e77]
+          - paragraph [ref=f5e78]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e79]: Pasting a Casespace link into Slack used to unfurl as "Sign in · Casespace" and nothing else. The sign-in page now says what the app actually is, every page carries a proper social-preview card and description, and structured data tells search engines and AI tools what they're looking at — so a shared link makes sense to someone who hasn't opened the app yet.
+          - heading "A save lands whole, or not at all" [level=3] [ref=f5e80]
+          - paragraph [ref=f5e81]: Saving a record writes several things at once — the record, its credited authors, its history. Those now land together or not at all, so a save that fails partway can no longer strip authors from a record or leave one missing from the movement log. The same goes for comments and links with the notifications they raise. And if two people move the same record's status at the same moment, the second mover now gets a clear "reload and try again" instead of the history quietly recording a move that never happened.
+          - heading "The Coach keeps its own report card" [level=3] [ref=f5e82]
+          - paragraph [ref=f5e83]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e84]: When the Coach proposes a use case, what you do next now counts for something. Save it, fix it first, or dismiss it — and if you dismiss it, there's a line where you can say what was off. That goes to whoever tunes the Coach, so the next person gets a better guess instead of the same wrong one.
+          - paragraph [ref=f5e85]: "Admins get a new Learnings page reading the whole picture back: which fields the Coach gets wrong most often, how far people get through the intake interview before giving up, and every dismissal in the dismisser's own words. It reports fields and steps, never conversations — nobody's chat with the Coach is readable from it."
+          - heading "See a record from someone else's view" [level=3] [ref=f5e86]
+          - paragraph [ref=f5e87]: You can now switch perspective and see the casebook or a record as someone else would see it — useful for understanding what information they have access to and how the program looks from their role.
+          - heading "2026-08-14" [level=2] [ref=f5e88]
+          - heading "A changelog the weekly letter can read" [level=3] [ref=f5e89]
+          - paragraph [ref=f5e90]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e91]: Casespace now keeps a record of its own improvements, and the Monday post writes them up alongside the casebook's movement. Previously the tool that tracks everyone's AI work was the one piece of AI work no post ever covered.
+          - heading "A fuller guide to the Coach" [level=3] [ref=f5e92]
+          - paragraph [ref=f5e93]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e94]: The Coach's documentation now covers all four things it does — answering questions about the program, the wizard interview, ROI review packets, and asking about text you highlight — and explains why it structurally cannot save a record on its own.
+          - heading "Documentation, in the repo and in the app" [level=3] [ref=f5e95]
+          - paragraph [ref=f5e96]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e97]: Thirty-three pages covering every feature, concept, integration and runbook, readable at Docs in the top nav. A test fails when a page of the app has no documentation, so the two cannot drift apart quietly.
+          - heading "One human, however their name is spelled" [level=3] [ref=f5e98]
+          - paragraph [ref=f5e99]: A login name and a directory name are often spelled differently — "Tom Leger" signing in, "Tom Léger" on the org chart — and credit typed by hand uses whichever one the writer reached for. "Mine" and person links now find records credited under either.
+          - heading "Mentions that look like mentions" [level=3] [ref=f5e100]
+          - paragraph [ref=f5e101]:
+            - text: Typing
+            - code [ref=f5e102]: "@"
+            - text: in a comment opens a picker, and the person you choose renders as a chip linking to their records. Editing a comment can name someone who wasn't named when it was posted, and they hear about it; removing a name notifies nobody.
+          - heading "One workflow can point at another" [level=3] [ref=f5e103]
+          - paragraph [ref=f5e104]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e105]:
+            - text: Records can now be linked as
+            - emphasis [ref=f5e106]: builds on
+            - text: ","
+            - emphasis [ref=f5e107]: duplicates
+            - text: ", or"
+            - emphasis [ref=f5e108]: relates to
+            - text: . Any AI Lead can link any two records — spotting that two workflows are the same thing is program knowledge, and the lead who spots it usually owns neither. Everyone credited on either record is told.
+          - heading "The field is the control" [level=3] [ref=f5e109]
+          - paragraph [ref=f5e110]: Editing controls on a record used to appear only on hover, which kept them a secret and made them unreachable on a touch screen. They are visible all the time now, drawn quietly, with the field reserving their width so text wraps instead of running underneath.
+          - heading "Errors that say what happened, and a way to report them" [level=3] [ref=f5e111]
+          - paragraph [ref=f5e112]: When something breaks, the message now says what broke and offers to file it as feedback with the context attached, instead of asking you to describe an error you never saw.
+          - heading "Records are editable where you read them" [level=3] [ref=f5e113]
+          - paragraph [ref=f5e114]: Fields on a record can be changed in place, without a round trip through a separate form. The AI approach is a set rather than a single choice, so a workflow can be both AI-built and agentic — as Casespace itself is.
+          - heading "Collect feedback on records" [level=3] [ref=f5e115]
+          - paragraph [ref=f5e116]: Every record now has a feedback section where anyone can share input — a simpler alternative to comments when the conversation is optional. Feedback is visible to admins and the record's owners, helping close the loop on what's working and what isn't.
+          - heading "Wins, the admin view of program success" [level=3] [ref=f5e117]
+          - paragraph [ref=f5e118]: Admins have a dedicated Wins page showing all records at Confirmed Positive ROI, with the notes explaining the annual impact for each. Use it to build the end-of-year impact report and surface the work that moved the needle.
+          - heading "2026-08-13" [level=2] [ref=f5e119]
+          - 'heading "Confirmed Positive ROI: the stage Kate sets" [level=3] [ref=f5e120]'
+          - paragraph [ref=f5e121]: "Requested by: Kate Schaff"
+          - paragraph [ref=f5e122]: An explicit stage after Qualified, set only by an admin and only with a note articulating the annual ROI. The 15 counts records at this stage — never derived from the ROI fields, always a subset of the 45. The notes roll up on the admin-only Wins page for the end-of-year report.
+          - heading "Comments on records, and a bell that tells you about them" [level=3] [ref=f5e123]
+          - paragraph [ref=f5e124]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e125]: Every record carries a threaded conversation, and everyone can join it — viewers included, the one place a read-only account can write. Everyone on the record and everyone already talking on it hears about a new comment, once, carrying the most specific reason they have.
+          - heading "The top nav collapses on a small screen" [level=3] [ref=f5e126]
+          - paragraph [ref=f5e127]: Below a certain width the navigation folds into a menu instead of wrapping.
+          - heading "2026-08-12" [level=2] [ref=f5e128]
+          - heading "Three clear doors instead of a form with subtext" [level=3] [ref=f5e129]
+          - paragraph [ref=f5e130]: "Requested by: Tom Leger"
+          - paragraph [ref=f5e131]: "Logging a use case starts with a choice: walk me through it, start from notes, or just the form. All three converge on the same review screen, and nothing is written until a person confirms it."
+          - heading "Plain language on every unclear field" [level=3] [ref=f5e132]
+          - paragraph [ref=f5e133]: Gate explanations, ELT spelled out, and the worksheet, baseline and functional-leader jargon defined — as hints on the form and tooltips on the record page. Prompted by "what does a named workflow mean?" arriving from more than one person.
+          - heading "What's New is open to everyone" [level=3] [ref=f5e134]
+          - paragraph [ref=f5e135]: Reading the weekly post is no longer admin-only. Writing and editing it still is.
+          - heading "The adoption pulse charts are admin-only" [level=3] [ref=f5e136]
+          - paragraph [ref=f5e137]: Survey readings about people sit behind an admin check. The casebook, every record, and every record's status stay open to all.
+          - heading "2026-08-05" [level=2] [ref=f5e138]
+          - heading "Casespace opens" [level=3] [ref=f5e139]
+          - paragraph [ref=f5e140]: "The casebook and the program scoreboard: use-case records with a seven-stage pipeline, a logged history behind every status change, the dashboard's pipeline and coverage views, goals and the AI Leads roster, and Google sign-in for anyone with a Clever address."
+          - heading "The Coach, and two doors that aren't forms" [level=3] [ref=f5e141]
+          - paragraph [ref=f5e142]: A conversation that helps scope a workflow and file it, a wizard that walks through logging one, and a notes door that turns a pasted dump into a draft record. The AI proposes; a person confirms. It has never had a path to write a record on its own.
+          - heading "File from anywhere" [level=3] [ref=f5e143]
+          - paragraph [ref=f5e144]:
+            - text: Personal access tokens on your profile, a REST API under
+            - code [ref=f5e145]: /api/v1
+            - text: ", and an MCP server so a use case can be logged from Claude Code without leaving the editor. Title and description are enough."
+        - generic [ref=f5e146]:
+          - paragraph [ref=f5e147]: Last updated 2026-08-16.
+          - paragraph [ref=f5e148]: "Described code: src/lib/changelog.ts, src/server/changelog.ts"
+          - paragraph [ref=f5e149]:
+            - text: Something wrong or missing?
+            - link "Tell us" [ref=f5e150] [cursor=pointer]:
+              - /url: /feedback
+            - text: ", or edit"
+            - generic [ref=f5e151]: docs/changelog.md
+            - text: in the repo.
+  - button "Open Next.js Dev Tools" [ref=f5e157] [cursor=pointer]
+  - alert [ref=f5e161]

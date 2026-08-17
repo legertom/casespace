@@ -1,0 +1,247 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - link "Skip to content" [ref=f1e3] [cursor=pointer]:
+      - /url: "#main"
+    - banner [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - generic [ref=f1e6]:
+          - link "Casespace" [ref=f1e7] [cursor=pointer]:
+            - /url: /
+          - navigation "Primary" [ref=f1e8]:
+            - link "Dashboard" [ref=f1e9] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Use cases" [ref=f1e10] [cursor=pointer]:
+              - /url: /use-cases
+            - link "Goals" [ref=f1e11] [cursor=pointer]:
+              - /url: /goals
+            - link "AI Leads" [ref=f1e14] [cursor=pointer]:
+              - /url: /roster
+            - link "What’s New" [ref=f1e15] [cursor=pointer]:
+              - /url: /whats-new
+            - link "Docs" [ref=f1e16] [cursor=pointer]:
+              - /url: /docs
+        - generic [ref=f1e17]:
+          - group [ref=f1e19]:
+            - generic "Notifications" [ref=f1e20] [cursor=pointer]
+          - group [ref=f1e24]:
+            - generic "Tom Leger" [ref=f1e25] [cursor=pointer]
+            - generic [ref=f1e351]:
+              - paragraph [ref=f1e352]: tom.leger@clever.com
+              - paragraph [ref=f1e353]: admin · viewing as Viewer
+              - generic [ref=f1e354]:
+                - paragraph [ref=f1e355]: View as
+                - button "AI Lead" [ref=f1e357]
+                - button "Viewer (current)" [disabled] [ref=f1e365]
+                - button "Back to admin" [ref=f1e367]
+              - generic [ref=f1e360]:
+                - link "Profile & API tokens" [ref=f1e361] [cursor=pointer]:
+                  - /url: /profile
+                - button "Sign out" [ref=f1e364]
+    - generic [ref=f1e369]:
+      - paragraph [ref=f1e370]:
+        - text: Previewing as
+        - strong [ref=f1e371]: a Viewer
+        - text: — writes and admin surfaces are restricted to match.
+      - button "Back to admin" [ref=f1e373]
+    - main [ref=f1e26]:
+      - article [ref=f1e27]:
+        - generic [ref=f1e28]:
+          - generic [ref=f1e30]:
+            - paragraph [ref=f1e31]:
+              - link "Use cases" [ref=f1e32] [cursor=pointer]:
+                - /url: /use-cases
+              - text: / CSS
+            - heading "Support macro drafter" [level=1] [ref=f1e374]
+            - generic [ref=f1e39]:
+              - generic [ref=f1e40]: Confirmed Positive ROI
+              - generic "Kate confirmed measured, positive annual ROI — counts toward the 15 (and the 45)." [ref=f1e42]: Confirmed ROI
+          - generic [ref=f1e46]:
+            - generic [ref=f1e47]:
+              - generic [ref=f1e48]:
+                - heading "What it does" [level=2] [ref=f1e49]
+                - paragraph [ref=f1e375]: Drafts first-pass replies for common district support tickets from the knowledge base, which reps review and send. Cuts the blank-page problem on the 20 highest-volume intents.
+                - paragraph [ref=f1e376]:
+                  - strong [ref=f1e377]: "Tools:"
+                  - text: Claude
+                - paragraph [ref=f1e378]:
+                  - strong [ref=f1e379]: "Approach:"
+                  - text: Prompt
+              - generic [ref=f1e70]:
+                - heading "The workflow, start to finish" [level=2] [ref=f1e71]
+                - list [ref=f1e380]:
+                  - listitem [ref=f1e381]: Rep reads the incoming ticket
+                  - listitem [ref=f1e382]: Searches the KB for the matching article
+                  - listitem [ref=f1e383]: Writes a reply from scratch
+                  - listitem [ref=f1e384]: Peer review for tone on tricky districts
+                  - listitem [ref=f1e385]: Send and tag the ticket
+              - generic [ref=f1e83]:
+                - heading "Worksheet ratings" [level=2] [ref=f1e84]
+                - generic [ref=f1e386]:
+                  - generic [ref=f1e387]:
+                    - term [ref=f1e388]: Frequency
+                    - definition [ref=f1e389]: 5 / 5
+                  - generic [ref=f1e390]:
+                    - term [ref=f1e391]: Pain
+                    - definition [ref=f1e392]: 4 / 5
+                  - generic [ref=f1e393]:
+                    - term [ref=f1e394]: Data availability
+                    - definition [ref=f1e395]: 4 / 5
+                  - generic [ref=f1e396]:
+                    - term [ref=f1e397]: Risk
+                    - definition [ref=f1e398]: 2 / 5
+                  - generic [ref=f1e399]:
+                    - term [ref=f1e400]: Ownership clarity
+                    - definition [ref=f1e401]: 5 / 5
+                  - generic [ref=f1e402]:
+                    - term [ref=f1e403]: Evaluation clarity
+                    - definition [ref=f1e404]: 4 / 5
+                  - generic [ref=f1e405]:
+                    - term [ref=f1e406]: Maintenance burden
+                    - definition [ref=f1e407]: 2 / 5
+              - generic [ref=f1e120]:
+                - heading "Success & ROI" [level=2] [ref=f1e121]
+                - paragraph [ref=f1e408]:
+                  - strong [ref=f1e409]: "Success criterion:"
+                  - text: Median first-response time under 2 hours on the top-20 intents
+                - paragraph [ref=f1e410]: Met.
+                - generic [ref=f1e135]:
+                  - paragraph [ref=f1e411]:
+                    - strong [ref=f1e412]: "ROI:"
+                    - text: scoring complete
+                  - generic [ref=f1e143]:
+                    - generic [ref=f1e145]:
+                      - term [ref=f1e413]: Baseline metric
+                      - definition [ref=f1e414]: Median first-response time (top-20 intents)
+                    - generic [ref=f1e153]:
+                      - term [ref=f1e415]: Before
+                      - definition [ref=f1e416]: 5.8 hours
+                    - generic [ref=f1e161]:
+                      - term [ref=f1e417]: Unit
+                      - definition [ref=f1e418]: hours
+                    - generic [ref=f1e169]:
+                      - term [ref=f1e419]: After
+                      - definition [ref=f1e420]: 1.6 hours
+                    - generic [ref=f1e177]:
+                      - term [ref=f1e421]: Method
+                      - definition [ref=f1e422]: Zendesk explore report, trailing 4 weeks, same intent set and business-hours window
+                    - generic [ref=f1e185]:
+                      - term [ref=f1e423]: Net impact
+                      - definition [ref=f1e424]: First responses on the highest-volume tickets now land in under a quarter of the previous time, with CSAT flat.
+                    - generic [ref=f1e193]:
+                      - term [ref=f1e425]: Outcome
+                      - definition [ref=f1e426]: Positive, attributable to the AI workflow
+                  - generic [ref=f1e201]:
+                    - paragraph [ref=f1e427]: Build effort
+                    - paragraph [ref=f1e428]: ~12 hours (estimated)
+                  - paragraph [ref=f1e208]:
+                    - generic "Kate confirmed measured, positive annual ROI — counts toward the 15 (and the 45)." [ref=f1e209]: Confirmed ROI
+                    - text: — confirmed Aug 15, 2026. The annual-ROI note is in the history below and rolls up into the end-of-year wins report.
+                  - paragraph [ref=f1e210]: Counts and rates, never dollars. Baseline and post measurement must use the same method.
+              - generic [ref=f1e211]:
+                - heading "Related workflows" [level=2] [ref=f1e212]
+                - paragraph [ref=f1e213]: Nothing linked yet. Link a workflow when this one builds on it, repeats it, or belongs beside it — any AI lead can, on any record.
+              - generic [ref=f1e215]:
+                - heading "Activity · 2" [level=2] [ref=f1e216]
+                - list [ref=f1e217]:
+                  - listitem [ref=f1e218]:
+                    - generic [ref=f1e219]: Jul 17, 2026
+                    - generic [ref=f1e220]:
+                      - text: Logged into the casebook at In Discovery
+                      - generic [ref=f1e221]: · Tom Leger
+                  - listitem [ref=f1e222]:
+                    - generic [ref=f1e223]: Jul 21, 2026
+                    - generic [ref=f1e224]:
+                      - text: In Discovery → Under Construction
+                      - generic [ref=f1e225]: · Tom Leger
+                  - listitem [ref=f1e226]:
+                    - generic [ref=f1e227]: Jul 27, 2026
+                    - generic [ref=f1e228]:
+                      - text: Under Construction → In Testing
+                      - generic [ref=f1e229]: · Tom Leger
+                  - listitem [ref=f1e230]:
+                    - generic [ref=f1e231]: Aug 2, 2026
+                    - generic [ref=f1e232]:
+                      - text: In Testing → Launched
+                      - generic [ref=f1e233]: · Tom Leger
+                  - listitem [ref=f1e234]:
+                    - paragraph [ref=f1e235]: Tom Leger · Aug 3, 2026
+                    - paragraph [ref=f1e237]: Nice result — 12 build hours against ~1,100 rep-hours saved a year is exactly the ROI story we want to tell in December.
+                    - generic [ref=f1e238]:
+                      - button "Reply" [ref=f1e239]
+                      - button "Edit" [ref=f1e240]
+                      - button "Remove" [ref=f1e241]
+                    - list [ref=f1e242]:
+                      - listitem [ref=f1e243]:
+                        - paragraph [ref=f1e244]: Tom Leger · Aug 16, 2026
+                        - paragraph [ref=f1e246]: Adding it to the December wins deck — the build-effort line makes the payback obvious at a glance.
+                        - generic [ref=f1e247]:
+                          - button "Reply" [ref=f1e248]
+                          - button "Edit" [ref=f1e249]
+                          - button "Remove" [ref=f1e250]
+                  - listitem [ref=f1e251]:
+                    - generic [ref=f1e252]: Aug 12, 2026
+                    - generic [ref=f1e253]:
+                      - text: Launched → Qualified
+                      - generic [ref=f1e254]: · Tom Leger
+                  - listitem [ref=f1e255]:
+                    - generic [ref=f1e256]: Aug 15, 2026
+                    - generic [ref=f1e257]:
+                      - text: Qualified → Confirmed Positive ROI
+                      - generic [ref=f1e258]: · Tom Leger
+                - generic [ref=f1e261]:
+                  - textbox "Comment" [ref=f1e263]:
+                    - /placeholder: Add a comment. Markdown works; type @ to mention someone.
+                  - button "Comment" [disabled] [ref=f1e265]
+            - complementary [ref=f1e268]:
+              - generic [ref=f1e269]:
+                - heading "Credit" [level=2] [ref=f1e270]
+                - generic [ref=f1e271]:
+                  - generic [ref=f1e273]:
+                    - term [ref=f1e429]: Authors
+                    - definition [ref=f1e430]:
+                      - link "Katie Clarkson" [ref=f1e432] [cursor=pointer]:
+                        - /url: /use-cases?person=a6754976-094d-4c11-8bbb-21f566b47cb4
+                      - generic [ref=f1e433]:
+                        - text: ","
+                        - link "Arraine Siefert" [ref=f1e434] [cursor=pointer]:
+                          - /url: /use-cases?person=7da651f4-05bf-4456-b2e1-33084eb73b77
+                  - generic [ref=f1e285]:
+                    - term [ref=f1e435]: Owner
+                    - definition [ref=f1e436]:
+                      - link "Katie Clarkson" [ref=f1e437] [cursor=pointer]:
+                        - /url: /use-cases?person=a6754976-094d-4c11-8bbb-21f566b47cb4
+                  - generic [ref=f1e294]:
+                    - term [ref=f1e438]: Counts toward
+                    - definition [ref=f1e439]: Unallocated
+                  - generic [ref=f1e302]:
+                    - term [ref=f1e440]: Team
+                    - definition [ref=f1e441]: CSS · Customer Support
+                  - generic [ref=f1e309]:
+                    - term [ref=f1e310]: Logged
+                    - definition [ref=f1e311]: Jul 17, 2026 by Tom Leger · via form
+              - generic [ref=f1e312]:
+                - heading "Documented gates · all four met" [level=2] [ref=f1e313]
+                - list [ref=f1e314]:
+                  - listitem "The title names one specific workflow and the description explains it in plain language." [ref=f1e442]:
+                    - generic [ref=f1e443]: ✓
+                    - generic [ref=f1e444]:
+                      - text: Named workflow, clear description
+                      - generic [ref=f1e445]: — met
+                  - listitem "The record says which AI tool does the work, and how it is applied." [ref=f1e446]:
+                    - generic [ref=f1e447]: ✓
+                    - generic [ref=f1e448]:
+                      - text: AI tool & approach identified
+                      - generic [ref=f1e449]: — met
+                  - listitem "Someone beyond the author(s) actively uses it." [ref=f1e450]:
+                    - generic [ref=f1e451]: ✓
+                    - generic [ref=f1e452]:
+                      - text: Adoption beyond the author(s)
+                      - generic [ref=f1e453]: 12 reps across both support pods use it daily; usage visible in the shared prompt library analytics.
+                      - generic [ref=f1e454]: — met
+                  - listitem "One specific person is responsible for keeping it running." [ref=f1e455]:
+                    - generic [ref=f1e456]: ✓
+                    - generic [ref=f1e457]:
+                      - text: A named owner
+                      - generic [ref=f1e458]: — met
+  - button "Open Next.js Dev Tools" [ref=f1e346] [cursor=pointer]
+  - alert [ref=f1e350]

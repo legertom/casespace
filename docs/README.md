@@ -38,6 +38,7 @@ One doc per surface.
 |---|---|
 | [Home](features/home.md) | `/` |
 | [The dashboard](features/dashboard.md) | `/dashboard` |
+| [Pipeline drawings](features/graphs.md) | `/graphs` |
 | [The casebook](features/casebook.md) | `/use-cases` |
 | [The record page](features/record.md) | `/use-cases/[id]` |
 | [Logging a use case](features/logging-a-use-case.md) | `/use-cases/new`, `/use-cases/from-notes` |

@@ -1,0 +1,21 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Casespace" [level=1] [ref=e4]
+      - paragraph [ref=e5]: Clever’s casebook of AI use cases — and the live scoreboard for the H2 2026 AI Enablement program.
+      - paragraph [ref=e6]: "Inside: every documented AI workflow as a record with a named owner, its status in a seven-stage pipeline, and measured ROI evidence; a program dashboard tracking 45 documented use cases and 15 with confirmed positive ROI; a weekly What’s New post; and an AI Coach that drafts records a human confirms. For Clever employees — sign in with a clever.com Google account."
+      - generic [ref=e7]:
+        - paragraph [ref=e8]:
+          - text: Google sign-in isn’t configured yet — set
+          - code [ref=e9]: AUTH_GOOGLE_ID
+          - text: and
+          - code [ref=e10]: AUTH_GOOGLE_SECRET
+          - text: .
+        - generic [ref=e11]:
+          - generic [ref=e12]: Dev sign-in (local only) — any allowed email
+          - generic [ref=e13]:
+            - textbox "Dev sign-in (local only) — any allowed email" [ref=e14]:
+              - /placeholder: you@clever.com
+            - button "Enter" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]
+  - alert [ref=e25]
