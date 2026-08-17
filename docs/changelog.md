@@ -44,6 +44,15 @@ in-app report it came from.
 
 ## 2026-08-17
 
+### The pipeline, five ways, as a sales funnel
+Requested by: Kate Schaff
+
+**/graphs** now carries five ways to restructure the pipeline chart as a
+sales funnel, for review. Two of them keep the standing figures from the
+chart on the dashboard and simply taper it; three are funnels proper, with
+conversion between stages and — in one — the widths needed to hit 45
+documented and 15 confirmed. Nothing on the dashboard has changed yet.
+
 ### The pipeline chart shows its working
 Requested by: Tom Leger
 

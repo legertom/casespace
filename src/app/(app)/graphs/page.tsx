@@ -14,11 +14,12 @@ export default async function GraphsPage() {
     <div>
       <h1 className="font-serif text-4xl">Pipeline drawings</h1>
       <p className="mt-2 max-w-prose text-ink-muted">
-        Twenty-one drawings of the same seven counts: the bar chart this
-        replaced, the fifteen the current one was chosen from, and five we
-        have not built yet. Every drawing reads the live casebook — switch the
-        data at the top and they all redraw together, which is how they were
-        compared in the first place.
+        Twenty-six drawings of the same seven counts: the bar chart this
+        replaced, the fifteen the current one was chosen from, five ways to
+        restructure it as a sales funnel, and five we have not built yet. Every
+        drawing reads the live casebook — switch the data at the top and they
+        all redraw together, which is how they were compared in the first
+        place.
       </p>
       <div className="mt-10">
         <GraphGallery live={live} />

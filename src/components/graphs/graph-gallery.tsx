@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TARGET_DOCUMENTED } from "@/lib/domain";
+import { TARGET_DOCUMENTED, TARGET_ROI } from "@/lib/domain";
 import { distinctSplit } from "@/lib/pipeline-shapes";
 import {
   AttritionRibbon,
@@ -29,6 +29,13 @@ import {
   PipelineOverTime,
   StageByTeam,
 } from "./proposals";
+import {
+  ClassicFunnel,
+  ConversionReport,
+  FunnelAgainstTarget,
+  StandingFunnel,
+  TaperedTrack,
+} from "./funnels";
 
 /** A plausible shape for the pipeline at the 45-record target. */
 const AT_TARGET = [12, 9, 6, 7, 4, 4, 3];
@@ -39,7 +46,7 @@ interface Entry {
   name: string;
   verdict: string;
   draw: Draw;
-  badge?: "shipped" | "replaced" | "needs-data";
+  badge?: "shipped" | "replaced" | "needs-data" | "keeps-figures";
 }
 
 const REPLACED: Entry = {
@@ -163,6 +170,41 @@ const FAMILIES: { title: string; note: string; entries: Entry[] }[] = [
   },
 ];
 
+const FUNNELS: Entry[] = [
+  {
+    name: "Tapered track",
+    badge: "keeps-figures",
+    verdict:
+      "The chart on the dashboard, unchanged, except the track thickens toward Discovery and thins toward ROI. Everything about the current design survives; the funnel is the line itself. The smallest possible change that answers the ask.",
+    draw: TaperedTrack,
+  },
+  {
+    name: "Standing funnel",
+    badge: "keeps-figures",
+    verdict:
+      "Upright, in the orientation a funnel is normally drawn, with the records waiting at each stage standing inside its band. Keeps the crowd and gains the funnel.",
+    draw: StandingFunnel,
+  },
+  {
+    name: "Classic funnel",
+    verdict:
+      "The canonical trapezoid: count reaching each stage inside the band, conversion from the stage above beside it, and how many stopped there. What a sales leader expects to see.",
+    draw: ClassicFunnel,
+  },
+  {
+    name: "Conversion report",
+    verdict:
+      "The layout a CRM actually renders. Least pictorial, most informative, and the only one where a weak step announces itself rather than having to be inferred from a shape.",
+    draw: ConversionReport,
+  },
+  {
+    name: "Funnel against target",
+    verdict:
+      `Scaled to the ${TARGET_DOCUMENTED} rather than to today, with the widths needed for ${TARGET_DOCUMENTED} documented and ${TARGET_ROI} confirmed drawn as dashed outlines. The only one that shows the gap rather than the shape.`,
+    draw: FunnelAgainstTarget,
+  },
+];
+
 const PROPOSALS: Entry[] = [
   {
     name: "Dwell platform",
@@ -207,17 +249,22 @@ const PROPOSALS: Entry[] = [
  * reordering a family renumbers everything after it automatically.
  *
  * 00 is the chart that was replaced; it was never a candidate. 01 is the one
- * that shipped, then the fourteen it beat, then the five proposals.
+ * that shipped, then the five funnels, the fourteen it beat, and the five
+ * proposals.
  */
 const NUMBERS = new Map<Entry, string>([[REPLACED, "00"]]);
-[SHIPPED, ...FAMILIES.flatMap((f) => f.entries), ...PROPOSALS].forEach(
-  (entry, i) => NUMBERS.set(entry, String(i + 1).padStart(2, "0")),
-);
+[
+  SHIPPED,
+  ...FUNNELS,
+  ...FAMILIES.flatMap((f) => f.entries),
+  ...PROPOSALS,
+].forEach((entry, i) => NUMBERS.set(entry, String(i + 1).padStart(2, "0")));
 
 const BADGES = {
   shipped: { text: "On the dashboard", cls: "bg-st-confirmed/12 text-st-confirmed" },
   replaced: { text: "Replaced", cls: "bg-accent-wash text-accent" },
   "needs-data": { text: "Needs new data", cls: "bg-flag-wash text-flag" },
+  "keeps-figures": { text: "Keeps the figures", cls: "bg-accent-wash text-accent" },
 } as const;
 
 function Specimen({ entry, n }: { entry: Entry; n: number[] }) {
@@ -326,6 +373,51 @@ export function GraphGallery({ live }: { live: number[] }) {
             </p>
           </div>
           <Specimen entry={SHIPPED} n={n} />
+        </section>
+
+        <section className="space-y-5">
+          <div className="max-w-prose space-y-3">
+            <h2 className="font-serif text-2xl">As a sales funnel</h2>
+            <p className="text-ink-muted">
+              Five ways to restructure it the way Kate asked. All of them encode{" "}
+              <strong className="font-medium text-ink">cumulative reach</strong>{" "}
+              — the width at a stage is how many records are at that stage or
+              beyond — which is what makes a funnel a funnel. The first two keep
+              the standing figures from the current chart; the last three are
+              funnels proper.
+            </p>
+            <div className="space-y-2 rounded-md border border-flag/30 bg-flag-wash/60 px-4 py-3 text-sm">
+              <p className="font-medium">Two things to weigh before choosing one</p>
+              <p className="text-ink-muted">
+                <strong className="font-medium text-ink">
+                  A funnel implies passed through; this shows at or beyond.
+                </strong>{" "}
+                An admin can move a record from any status to any other,
+                including straight to Confirmed Positive ROI without it ever
+                being Qualified. So the widths are true of the casebook right
+                now, but the conversion percentages are computed from that
+                snapshot rather than from the transitions in{" "}
+                <code className="rounded bg-accent-wash px-1">status_changes</code>
+                . Reading them as real conversion needs that query first.
+              </p>
+              <p className="text-ink-muted">
+                <strong className="font-medium text-ink">
+                  A funnel can never look wrong.
+                </strong>{" "}
+                Cumulative reach only falls as you move down the pipeline, so
+                every drawing here narrows tidily whatever the data does — hit{" "}
+                <em>Shuffle</em> and watch none of them look surprised. That is
+                the property the rest of this page argues against. It is a fair
+                trade for a shape everyone already reads fluently, but it should
+                be a knowing one.
+              </p>
+            </div>
+          </div>
+          <div className="space-y-5">
+            {FUNNELS.map((entry) => (
+              <Specimen key={entry.name} entry={entry} n={n} />
+            ))}
+          </div>
         </section>
 
         <section className="space-y-12">

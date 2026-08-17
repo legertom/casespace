@@ -15,16 +15,18 @@ code:
 # Pipeline drawings
 
 The design review behind the pipeline chart on [the dashboard](dashboard.md),
-kept in the app rather than in a slide deck. Twenty-one drawings of the same
+kept in the app rather than in a slide deck. Twenty-six drawings of the same
 seven counts:
 
 | Group | Numbered | Count |
 |---|---|---|
 | The bar chart that was replaced | 00 | 1 |
-| Designs it was chosen from — 01 shipped, 14 did not | 01–15 | 15 |
-| Proposals needing data we do not query yet | 16–20 | 5 |
+| The design that shipped | 01 | 1 |
+| Sales-funnel restructurings, under review | 02–06 | 5 |
+| Designs 01 was chosen over | 07–20 | 14 |
+| Proposals needing data we do not query yet | 21–25 | 5 |
 
-If those numbers stop adding to 21, the copy on the page is wrong: the intro,
+If those numbers stop adding to 26, the copy on the page is wrong: the intro,
 the alternatives heading, and the link from the dashboard each state a count.
 
 Numbers are **assigned from display order**, not written next to each drawing
