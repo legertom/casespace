@@ -1,7 +1,7 @@
 ---
 title: Changelog
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-16
 code:
   - src/lib/changelog.ts
   - src/server/changelog.ts
@@ -43,6 +43,16 @@ in-app report it came from.
 ---
 
 ## 2026-08-16
+
+### A record's history and comments now read as one story
+Requested by: Kate Schaff
+
+The History and Comments sections on a record have merged into a single
+**Activity** stream: status changes and comments, interleaved in the order
+they happened, oldest first. The comment box now sits at the bottom of the
+stream — where you land after reading — instead of floating between the
+heading and the comments, where it was easy to lose. Threads still nest
+exactly as before.
 
 ### Sign-in opens on the program
 Requested by: Tom Leger

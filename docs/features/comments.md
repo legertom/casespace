@@ -1,20 +1,25 @@
 ---
 title: Comments
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-16
 code:
   - src/components/comments/comment-thread.tsx
   - src/components/comments/comment-composer.tsx
   - src/components/comments/comment-controls.tsx
   - src/components/comments/comment-body.tsx
+  - src/components/record/record-activity.tsx
   - src/server/actions-comments.ts
   - src/lib/comment-tree.ts
+  - src/lib/activity.ts
 ---
 
 # Comments
 
-Every record carries a comment thread. The model is Jira's — with one
-difference: ours thread.
+Every record carries comments. The model is Jira's — with one difference:
+ours thread. Comments don't have their own section on the page: they render
+inside the record's **Activity** stream, interleaved with status changes at
+the moment they were written, and the composer sits at the bottom of the
+stream.
 
 ## Threading
 
@@ -51,6 +56,15 @@ See [notifications](notifications.md).
 Comments are **the one deliberate exception** to viewers being read-only.
 Commentary is not record data, and the point of comments is that people who
 don't build workflows still get a voice on them.
+
+## Rules that surprise people
+
+- **Activity reads oldest-first.** Every other timeline in the app is
+  newest-first. This one is deliberately backwards: the stream ends at the
+  composer, so you arrive at the box having just read the story — which is
+  also what keeps the box from getting lost mid-page. Replies stay nested
+  under the comment they answer, at that comment's place in time, not at
+  their own.
 
 ## The Coach is not here
 

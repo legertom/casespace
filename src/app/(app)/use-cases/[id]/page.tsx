@@ -19,14 +19,13 @@ import {
 } from "@/server/use-case-link-queries";
 import { getUseCase } from "@/server/use-case-queries";
 import { AskCoachSelection } from "@/components/coach/ask-coach-selection";
-import { CommentThread } from "@/components/comments/comment-thread";
 import { DeleteUseCase } from "@/components/delete-use-case";
 import type { Choice, TeamChoice } from "@/components/record/inline-field";
 import { RecordAbout } from "@/components/record/record-about";
+import { RecordActivity } from "@/components/record/record-activity";
 import { RecordCredit } from "@/components/record/record-credit";
 import { RecordGates } from "@/components/record/record-gates";
 import { RecordHeader } from "@/components/record/record-header";
-import { RecordHistory } from "@/components/record/record-history";
 import { RecordRoi } from "@/components/record/record-roi";
 import { RecordWorksheet } from "@/components/record/record-worksheet";
 import { RelatedWorkflows } from "@/components/record/related-workflows";
@@ -121,15 +120,12 @@ export default async function UseCaseDetailPage({
 
             {/* Redacted here, server-side, so the annual-ROI note (which may
                 carry dollars) never reaches a non-admin's HTML. */}
-            <RecordHistory
+            <RecordActivity
+              useCaseId={uc.id}
               history={uc.history.map((h) => ({
                 ...h,
                 note: visibleHistoryNote(h, user.role),
               }))}
-            />
-
-            <CommentThread
-              useCaseId={uc.id}
               comments={comments}
               people={mentionable}
               currentUserId={user.id}

@@ -4,7 +4,7 @@ surface:
   - /use-cases/[id]
   - /use-cases/[id]/edit
 audience: everyone
-updated: 2026-08-15
+updated: 2026-08-16
 code:
   - src/app/(app)/use-cases/[id]/page.tsx
   - src/app/(app)/use-cases/[id]/edit/page.tsx
@@ -12,7 +12,8 @@ code:
   - src/components/record/record-about.tsx
   - src/components/record/record-worksheet.tsx
   - src/components/record/record-roi.tsx
-  - src/components/record/record-history.tsx
+  - src/components/record/record-activity.tsx
+  - src/lib/activity.ts
   - src/components/record/record-credit.tsx
   - src/components/record/record-gates.tsx
   - src/components/record/inline-field.tsx
@@ -31,16 +32,19 @@ whoever owns it.
 - **Title, description, owner, authors, team, department, AI tools,
   approaches** — approaches are a set, so a record can be both Agentic and
   AI-built.
-- **Status** with its controls, and the full status history. History notes
-  show with their entries — except the annual-ROI confirmation note, which
-  only admins see here, for [the same reason Wins is gated](wins.md): it may
-  carry dollar figures.
+- **Status** with its controls.
 - **The four documented gates**, as toggles.
 - **The ROI panel** — success criterion, baseline and post with a stated
   methodology, net-impact statement, positive/negative.
 - **The seven scoping-worksheet ratings**.
 - **[Linked workflows](linked-workflows.md)**.
-- **[Comments](comments.md)**.
+- **Activity** — the record's story in one stream: every status change and
+  every [comment](comments.md), interleaved oldest-first, with the comment
+  box at the bottom where the story ends. Status events stay compact
+  one-liners; comments keep their cards and their threading. History notes
+  show with their entries — except the annual-ROI confirmation note, which
+  only admins see here, for [the same reason Wins is gated](wins.md): it may
+  carry dollar figures.
 
 ## Editing where you read
 
