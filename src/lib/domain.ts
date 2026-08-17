@@ -213,22 +213,23 @@ export type Role = (typeof ROLES)[number];
 
 /**
  * Who may move a record from one status to another.
+ * - Admins move any record from any status to any other. Nothing blocks
+ *   Kate — not the record's contents, and not the shape of the graph.
+ *   (Kate's call, relayed by Tom, 2026-08-16; the 15 stays a subset of the
+ *   45 through the counting rules, not through a required path.)
  * - Editors move records freely among the five pre-Qualified statuses
  *   (forward or back — people fix mistakes).
  * - Anything entering or leaving Qualified or Confirmed Positive ROI is
  *   admin-only: both record Kate's decisions.
- * - Confirmed Positive ROI is reachable only from Qualified — the 15 is a
- *   subset of the 45 by construction, and Kate's flow is qualify first,
- *   confirm ROI once it's measured.
  */
 export function canSetStatus(role: Role, from: UcStatus, to: UcStatus): boolean {
   if (role === "viewer") return false;
   if (from === to) return false;
-  if (to === "confirmed_positive_roi" && from !== "qualified") return false;
-  if (statusRank(from) >= statusRank("qualified") || to === "qualified") {
-    return role === "admin";
-  }
-  return true;
+  if (role === "admin") return true;
+  return (
+    statusRank(from) < statusRank("qualified") &&
+    statusRank(to) < statusRank("qualified")
+  );
 }
 
 // ---------------------------------------------------------------------------

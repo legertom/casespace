@@ -119,15 +119,27 @@ describe("status transitions", () => {
     expect(canSetStatus("admin", "launched", "launched")).toBe(false);
   });
 
-  it("Confirmed Positive ROI is admin-only and reachable only from Qualified", () => {
+  it("admins move any record from any status to any other — nothing blocks Kate", () => {
     expect(canSetStatus("admin", "qualified", "confirmed_positive_roi")).toBe(
       true,
     );
     expect(canSetStatus("admin", "launched", "confirmed_positive_roi")).toBe(
-      false,
+      true,
     );
     expect(
+      canSetStatus("admin", "in_discovery", "confirmed_positive_roi"),
+    ).toBe(true);
+    expect(canSetStatus("admin", "confirmed_positive_roi", "in_discovery")).toBe(
+      true,
+    );
+  });
+
+  it("Confirmed Positive ROI stays admin-only, from anywhere", () => {
+    expect(
       canSetStatus("contributor", "qualified", "confirmed_positive_roi"),
+    ).toBe(false);
+    expect(
+      canSetStatus("contributor", "launched", "confirmed_positive_roi"),
     ).toBe(false);
   });
 

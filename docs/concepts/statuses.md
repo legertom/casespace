@@ -1,7 +1,7 @@
 ---
 title: Statuses
 audience: everyone
-updated: 2026-08-15
+updated: 2026-08-16
 code:
   - src/lib/domain.ts
   - src/components/status-controls.tsx
@@ -36,9 +36,11 @@ as an author on the record (`canEditUseCase`).
   should be able to go back.
 - **Anything entering or leaving Qualified or Confirmed Positive ROI is
   admin-only.** Both record Kate's decisions, in both directions.
-- **Confirmed Positive ROI is reachable only from Qualified.** This is what
-  makes the 15 a subset of the 45 structurally rather than by agreement, and
-  it matches Kate's flow: qualify first, confirm ROI once it's measured.
+- **Admins are never blocked.** An admin can move any record from any status
+  to any other — including straight to Confirmed Positive ROI without
+  passing through Qualified (Kate's call, 2026-08-16). The 15 stays a subset
+  of the 45 through the [counting rules](counting-rules.md) — every
+  confirmed record counts toward the 45 — not through a required path.
 - **A record is never created at a gated status.** Every door — the form,
   the wizard, the notes parser, the REST API, and MCP — can start a record
   at any of the first five statuses (`SETTABLE_STATUSES`), and only those.
@@ -58,7 +60,9 @@ Promoting to Confirmed Positive ROI **requires a note** articulating the
 annual ROI. That note is the artifact the end-of-year report is built from;
 it is why the note is mandatory and why [Wins](../features/wins.md) is
 admin-only. The [ROI evidence checklist](gates-and-roi.md) warns about gaps
-at confirmation time but never blocks — the call is Kate's.
+at confirmation time but never blocks — the call is Kate's, from whatever
+status the record stands at. Confirming also clears any standing rejection
+reason: it is promotion past the gate, wherever the record stood.
 
 ## Every change is logged
 

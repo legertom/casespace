@@ -245,11 +245,6 @@ export async function setStatus(
     throw new ForbiddenError("You can only move use cases you created, own, or authored.");
   }
   if (!canSetStatus(actor.role, from, to)) {
-    if (to === "confirmed_positive_roi" && from !== "qualified") {
-      throw new ForbiddenError(
-        "Only Qualified records can be confirmed — every confirmed win must have passed the Qualified gate first.",
-      );
-    }
     throw new ForbiddenError(
       to === "qualified" ||
         from === "qualified" ||
@@ -275,6 +270,9 @@ export async function setStatus(
   if (to === "confirmed_positive_roi") {
     patch.roiConfirmedAt = new Date();
     patch.roiConfirmedById = actor.id;
+    // Confirming is promotion past the Qualified gate, wherever the record
+    // stood — a stale rejection reason must not outlive it.
+    patch.rejectionReason = null;
   }
   if (from === "confirmed_positive_roi") {
     patch.roiConfirmedAt = null;

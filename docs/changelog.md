@@ -44,6 +44,16 @@ in-app report it came from.
 
 ## 2026-08-16
 
+### Nothing blocks Kate
+Requested by: Kate Schaff
+
+Admins can now move a record from any status to any other — including
+straight to Confirmed Positive ROI, without passing through Qualified
+first. The annual-ROI note is still required to confirm, Qualified and
+Confirmed Positive ROI are still admin-only in both directions, and the 15
+still counts as a subset of the 45. What changed is that the pipeline's
+order never stands between Kate and a decision she has already made.
+
 ### Records now ask what the workflow cost to build
 Requested by: Kate Schaff
 
