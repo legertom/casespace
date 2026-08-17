@@ -353,7 +353,8 @@ export async function ProgramDashboard() {
           <Link href="/graphs" className="hover:text-accent">
             Why it looks like this
           </Link>{" "}
-          — twenty ways this chart was drawn before one was chosen.
+          — the fifteen drawings this one was chosen from, and five more worth
+          building.
         </p>
       </section>
 

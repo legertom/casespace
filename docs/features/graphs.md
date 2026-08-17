@@ -15,10 +15,17 @@ code:
 # Pipeline drawings
 
 The design review behind the pipeline chart on [the dashboard](dashboard.md),
-kept in the app rather than in a slide deck. Twenty drawings of the same seven
-numbers: the bar chart that was replaced, the platform queues that shipped,
-fourteen alternatives that were not chosen, and five proposals that need data
-we do not query yet.
+kept in the app rather than in a slide deck. Twenty-one drawings of the same
+seven counts:
+
+| Group | Numbered | Count |
+|---|---|---|
+| The bar chart that was replaced | 00 | 1 |
+| Designs it was chosen from — 12 shipped, 14 did not | 01–15 | 15 |
+| Proposals needing data we do not query yet | 16–20 | 5 |
+
+If those numbers stop adding to 21, the copy on the page is wrong: the intro,
+the alternatives heading, and the link from the dashboard each state a count.
 
 Open to everyone, read-only, nothing on it is editable.
 

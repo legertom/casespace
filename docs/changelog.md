@@ -47,9 +47,9 @@ in-app report it came from.
 ### The pipeline chart shows its working
 Requested by: Tom Leger
 
-A new page at **/graphs** lays out twenty ways the pipeline was drawn before
-one was chosen: the bar chart it replaced, the platform queues that shipped,
-fourteen alternatives, and five proposals we have not built yet. Switch the
+A new page at **/graphs** lays out twenty-one drawings of the same seven
+counts: the bar chart the pipeline replaced, the fifteen designs the current
+one was chosen from, and five proposals we have not built yet. Switch the
 data at the top — live casebook, the 45-record target, or a random shuffle —
 and every drawing redraws together, which is how they were compared. Reached
 from the pipeline section of the dashboard.

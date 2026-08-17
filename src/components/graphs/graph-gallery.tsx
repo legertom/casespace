@@ -335,10 +335,11 @@ export function GraphGallery({ live }: { live: number[] }) {
           <div className="max-w-prose space-y-3">
             <h2 className="font-serif text-2xl">The alternatives</h2>
             <p className="text-ink-muted">
-              Fourteen others were drawn against the same data. They fall into
-              three families by what they encode — and the family matters more
-              than the styling, because it decides which question the chart can
-              answer at all.
+              Fifteen designs were drawn against the same data; the one above
+              is the fifteenth. Here are the fourteen that were not chosen,
+              grouped into three families by what they encode — the family
+              matters more than the styling, because it decides which question
+              a chart can answer at all.
             </p>
           </div>
           {FAMILIES.map((family) => (
