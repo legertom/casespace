@@ -44,6 +44,17 @@ in-app report it came from.
 
 ## 2026-08-17
 
+### Pick the pipeline chart you prefer
+Requested by: Kate Schaff
+
+The dashboard now offers two drawings of the pipeline and remembers which one
+you chose, so it looks the way you left it next time you sign in. **Funnel**
+shows how many records reached each stage or beyond, with the conversion
+between stages and weak steps flagged. **Platforms** is the transit line with
+a standing figure for every record waiting. Everyone starts on Funnel; switch
+whenever you like, including viewers. Either way, clicking a stage still takes
+you to that stage's own records.
+
 ### The pipeline, five ways, as a sales funnel
 Requested by: Kate Schaff
 

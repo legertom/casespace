@@ -2,11 +2,15 @@
 title: The dashboard
 surface: /dashboard
 audience: everyone
-updated: 2026-08-16
+updated: 2026-08-17
 code:
   - src/app/(app)/dashboard/page.tsx
   - src/components/dashboard/program-dashboard.tsx
+  - src/components/dashboard/pipeline-conversion.tsx
+  - src/components/dashboard/pipeline-switcher.tsx
+  - src/lib/pipeline-chart.ts
   - src/lib/platform-queue.ts
+  - src/server/actions-preferences.ts
   - src/server/dashboard-queries.ts
 ---
 
@@ -26,14 +30,26 @@ nothing computes ahead/behind — see [counting rules](../concepts/counting-rule
 
 ### The pipeline
 
-A transit line. One station per status in pipeline order, and one standing
-figure for every record waiting at that station now. Shaded by depth through
-the pipeline, and each station clicks through to its records.
+Two drawings of the same seven counts, and **you pick which one you see**.
+The choice is remembered on your user row (`users.pipeline_chart`), so it
+follows you between devices rather than living in a cookie. Everyone starts
+on **Funnel**.
 
-A crowd wraps into ranks of eight (`queueRanks()`), spread evenly rather than
-filling the front rank first — a greedy fill leaves the back rank holding
-whatever is left over, and one figure standing alone reads as a rendering
-bug. The drawing grows only as tall as the deepest crowd needs.
+- **Funnel** — bar length is how many records reached that stage *or any
+  stage beyond it*, with the step conversion from the stage above. Steps
+  under 60% are flagged.
+- **Platforms** — a transit line: one station per status, one standing figure
+  for every record waiting there now. A crowd wraps into ranks of eight
+  (`queueRanks()`), spread evenly rather than filling the front rank first,
+  because a greedy fill leaves one figure standing alone in the back rank and
+  that reads as a rendering bug.
+
+Both are rendered on the server and handed to the switcher, so changing view
+costs a click and not a page load. Every stage in either drawing clicks
+through to its own records.
+
+The reasoning behind both, and the twenty-four drawings that lost, is at
+[/graphs](graphs.md).
 
 ### The 15, by ELT owner
 
@@ -70,10 +86,33 @@ record wherever it is. Past roughly sixteen at a single station the crowd
 reads as an area rather than a queue length, which is why the count sits
 under every platform in numerals.
 
-**The pipeline chart says nothing about how far work got.** It is a snapshot
-of where records are sitting today, not a funnel — nothing on it is
-cumulative, so a thin station means "few here", never "few made it this
-far". Attrition is a different question and does not have a view yet.
+**Funnel bars are two-tone, and the solid part is the clickable one.** The
+pale bar is how many reached that stage or beyond; the solid bar inside it is
+how many are sitting there now, which is what the row's link delivers. A
+single-tone funnel would show one number and hand you a different one on
+click. The invariant — solid never exceeds pale — is asserted in
+`pipeline-conversion.test.ts`.
+
+**Funnel widths cannot warn you.** Reaching a stage or beyond is a suffix sum,
+so it only ever falls along the pipeline: the funnel narrows tidily whatever
+the data does. Platforms is the drawing that can look wrong, which is the
+whole reason both are offered rather than one being settled on.
+
+**A funnel implies "passed through"; this shows "at or beyond".** An admin can
+move a record from any status to any other, including straight to Confirmed
+Positive ROI without it ever being Qualified. The widths stay true of the
+casebook right now, but the conversion percentages are computed from that
+snapshot rather than from the transitions in `status_changes`. Reading them as
+real conversion needs that query first.
+
+**Viewers can set this, and only this.** Viewers are read-only everywhere
+else; the preference is the exception, because it writes nothing about the
+program and shows nobody anything they could not already see.
+
+**A figure is always the same size** in Platforms. A busier station stands
+deeper, never denser, so one record looks like one record wherever it is. Past
+roughly sixteen at a single station the crowd reads as an area rather than a
+queue length, which is why the count sits under every platform in numerals.
 
 ## Who can do what
 

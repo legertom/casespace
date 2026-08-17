@@ -22,6 +22,7 @@ import {
   ROLES,
   STATUSES,
 } from "../lib/domain";
+import { DEFAULT_PIPELINE_CHART, PIPELINE_CHARTS } from "../lib/pipeline-chart";
 
 // ---------------------------------------------------------------------------
 // Enums — value lists live in lib/domain (single source; the two cannot
@@ -40,6 +41,8 @@ export const leadStateEnum = pgEnum("lead_state", [
 ]);
 
 export const ucStatusEnum = pgEnum("uc_status", STATUSES);
+
+export const pipelineChartEnum = pgEnum("pipeline_chart", PIPELINE_CHARTS);
 
 export const approachEnum = pgEnum("approach", APPROACHES);
 
@@ -99,6 +102,10 @@ export const users = pgTable("users", {
   primaryEmail: text("primary_email").notNull().unique(),
   role: roleEnum("role").notNull().default("viewer"),
   image: text("image"),
+  /** Which pipeline drawing this person sees on the dashboard. */
+  pipelineChart: pipelineChartEnum("pipeline_chart")
+    .notNull()
+    .default(DEFAULT_PIPELINE_CHART),
   personId: uuid("person_id").references(() => people.id),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

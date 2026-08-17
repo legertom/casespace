@@ -8,8 +8,12 @@ import {
   targetSumWarning,
 } from "@/lib/domain";
 import { fmtDateShort } from "@/lib/format";
+import { getCurrentUser } from "@/lib/current-user";
+import { parsePipelineChart } from "@/lib/pipeline-chart";
 import { PIPELINE_RAMP } from "@/lib/pipeline-ramp";
 import { maxRankDepth, queueRanks } from "@/lib/platform-queue";
+import { PipelineConversion } from "./pipeline-conversion";
+import { PipelineSwitcher } from "./pipeline-switcher";
 import {
   getAttentionFlags,
   getEltProgress,
@@ -285,6 +289,7 @@ function inFlightNote(inFlight: number, readyForGate: number): string | undefine
 }
 
 export async function ProgramDashboard() {
+  const chart = parsePipelineChart((await getCurrentUser())?.pipelineChart);
   const [counts, elt, coverage, movement, attention] = await Promise.all([
     getProgramCounts(),
     getEltProgress(),
@@ -343,11 +348,19 @@ export async function ProgramDashboard() {
       <section aria-label="Pipeline">
         <h2 className="font-serif text-2xl">The pipeline</h2>
         <p className="mt-1 max-w-prose text-sm text-ink-muted">
-          All {counts.total} use cases by status. Every figure is one record,
-          standing where it sits today. Click a station to see its records.
+          All {counts.total} use cases by status. Click a stage to see its
+          records.
         </p>
         <div className="mt-5">
-          <PipelineQueues byStatus={counts.byStatus} />
+          {/* Both drawings render here; the switcher shows one and remembers
+              which, so the choice costs a click and never a page load. */}
+          <PipelineSwitcher
+            initial={chart}
+            charts={{
+              conversion: <PipelineConversion byStatus={counts.byStatus} />,
+              platforms: <PipelineQueues byStatus={counts.byStatus} />,
+            }}
+          />
         </div>
         <p className="mt-4 text-sm text-ink-muted">
           <Link href="/graphs" className="hover:text-accent">

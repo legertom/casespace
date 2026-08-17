@@ -217,8 +217,10 @@ export function ConversionReport({ n }: SpecimenProps) {
   const top = Math.max(1, reach[0]);
   const conv = steps(reach);
   const rowH = 30;
-  const x0 = 150;
-  const barW = 330;
+  // 184px of gutter: the longest status name measures 176px at 12px in the
+  // app's font, and at 150 it ran off the left edge.
+  const x0 = 196;
+  const barW = 300;
 
   return (
     <Frame height={14 + 7 * rowH + 12} label={`Conversion report: records reaching each stage and the step conversion. ${describe(n)}`}>

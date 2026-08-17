@@ -71,6 +71,13 @@
       "when": 1786930821940,
       "tag": "0009_young_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787001817918,
+      "tag": "0010_gifted_vampiro",
+      "breakpoints": true
     }
   ]
 }
