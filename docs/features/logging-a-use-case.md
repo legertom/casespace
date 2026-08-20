@@ -32,14 +32,22 @@ The Coach's guided wizard (`/coach?intent=wizard`). A conversation that asks
 what it needs and builds a proposal. Good when you're not sure what the
 program wants.
 
-The wizard asks for **everything the form asks for**, one question at a time:
-the workflow and its steps, team and people, which tools and which
-approaches, where to find it, build effort, the seven ratings, the success
-criterion and whether it's met, ROI, adoption evidence, and where the record
-stands today. Anything you don't know is skipped rather than guessed. The
-proposal card then **shows what it captured** before you click Log it — so a
-field it got wrong is one you can see and correct rather than discover
+The wizard asks for **what the form asks for**, one question at a time: the
+workflow and its steps, team and people, which tools and which approaches,
+where to find it, build effort, the seven ratings, the success criterion and
+whether it's met, ROI and the net impact, adoption evidence, and where the
+record stands today. Anything you don't know is skipped rather than guessed.
+The proposal card then **shows what it captured** before you click Log it —
+so a field it got wrong is one you can see and correct rather than discover
 later.
+
+It finishes on **the four documented gates**: it reads back which ones it
+believes the record meets and what each is based on, and asks you to confirm
+before ticking. It sets only what you confirm — never a gate you didn't
+answer, and never one on its own judgement. The card lists all four either
+way. This is deliberate: the gates decide what counts toward the 45, and an
+admin reading a record months later cannot tell a confirmed tick from a
+guessed one, so a missing tick is far cheaper than a wrong one.
 
 ### 2. Start from notes
 

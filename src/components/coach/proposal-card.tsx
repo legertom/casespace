@@ -17,6 +17,7 @@ import { computeGapFlags } from "@/lib/gap-flags";
 import {
   approachLabels,
   DEPARTMENT_LABELS,
+  GATE_FIELDS,
   RATING_FIELDS,
   STATUS_LABELS,
   SUCCESS_MET_LABELS,
@@ -221,6 +222,25 @@ export function ProposalCard({
           }
         />
         <Row label="Adoption" value={proposal.adoptionEvidence} />
+        {/* Shown in full, ticked or not: these four decide whether the record
+            counts as documented, and clicking Log it is the moment a person
+            takes responsibility for them. An unshown tick is a guess nobody
+            can audit later. */}
+        <Row
+          label="Gates"
+          value={
+            <ul className="space-y-0.5">
+              {GATE_FIELDS.map(([key, label]) => (
+                <li
+                  key={key}
+                  className={proposal[key] ? "" : "text-ink-faint"}
+                >
+                  {proposal[key] ? "✓" : "○"} {label}
+                </li>
+              ))}
+            </ul>
+          }
+        />
         <Row
           label="ROI"
           value={

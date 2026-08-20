@@ -56,15 +56,30 @@ time afterwards. These are links out of Casespace at the workflow itself,
 which is a different thing from **Related workflows** — that still connects
 one record to another.
 
-### The wizard now asks everything the form asks
+### The wizard asks what the form asks
 Requested by: Tom Leger
 
 Use cases logged through the Coach's wizard were arriving without build time,
 because the wizard never asked. It does now — along with which AI tool the
 workflow uses, where to find it, whether the success criterion has been met,
-and where the record stands today. The proposal card also shows what the
-wizard captured before you click Log it, so anything it got wrong is
-something you can correct on the spot rather than find later.
+the net impact in a sentence, and where the record stands today. The proposal
+card also shows what the wizard captured before you click Log it, so anything
+it got wrong is something you can correct on the spot rather than find later.
+
+### The wizard can tick the four gates, once you say so
+Requested by: Tom Leger
+
+Wizard-logged records used to arrive with all four documented gates
+unticked, even when the conversation had clearly established every one of
+them — so a record that was genuinely documented still counted as zero of
+four until someone went and ticked them by hand. The wizard now reads the
+four gates back at the end of the interview, says what each one is based on,
+and asks you to confirm before it ticks anything. It sets only what you
+confirm, and the proposal card lists all four, ticked and unticked, so the
+Log it click is the moment a person takes responsibility for them. Nothing
+is ever ticked on the Coach's own judgement — an admin reading the record
+later can't tell a confirmed tick from a guessed one, so a missing tick is
+much cheaper than a wrong one.
 
 ### Editing a record no longer loses your build time
 Requested by: Tom Leger

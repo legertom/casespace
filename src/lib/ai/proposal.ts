@@ -73,14 +73,37 @@ export const proposalSchema = z.object({
   ratingEvaluationClarity: rating,
   ratingMaintenanceBurden: rating,
   functionalLeaderSuccess: z.string().nullish(),
-  gateNamed: z.boolean().nullish(),
-  gateTool: z.boolean().nullish(),
-  gateAdoption: z.boolean().nullish(),
+  // The four gates decide whether a record counts as documented. Only ever
+  // true when the human confirmed it — an admin reading the record later
+  // cannot tell a confirmed tick from a guessed one.
+  gateNamed: z
+    .boolean()
+    .nullish()
+    .describe(
+      "Gate: the title names one specific workflow and the description explains it plainly. Only if the human confirmed it.",
+    ),
+  gateTool: z
+    .boolean()
+    .nullish()
+    .describe(
+      "Gate: which AI tool does the work, and how it's applied, are both on the record. Only if the human confirmed it.",
+    ),
+  gateAdoption: z
+    .boolean()
+    .nullish()
+    .describe(
+      "Gate: someone beyond the author(s) actively uses it. Only if the human confirmed it — never inferred from enthusiasm.",
+    ),
   adoptionEvidence: z
     .string()
     .nullish()
     .describe("Who beyond the authors uses it, and how we know"),
-  gateOwner: z.boolean().nullish(),
+  gateOwner: z
+    .boolean()
+    .nullish()
+    .describe(
+      "Gate: exactly one named person is responsible going forward. Only if the human confirmed it.",
+    ),
   successCriterion: z
     .string()
     .nullish()

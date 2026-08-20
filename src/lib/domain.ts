@@ -192,6 +192,21 @@ export const SUCCESS_MET_LABELS: Record<"yes" | "no" | "not_yet", string> = {
   not_yet: "Not yet",
 };
 
+/**
+ * The four gates that make a record "documented", in reading order. Used by
+ * the proposal card, where a person confirms them before saving; the record
+ * page spells the same four out longhand because each toggle there also
+ * carries its own help text.
+ */
+export const GATE_FIELDS = [
+  ["gateNamed", "Named workflow, clear description"],
+  ["gateTool", "AI tool & approach identified"],
+  ["gateAdoption", "Adoption beyond the author(s)"],
+  ["gateOwner", "A named owner"],
+] as const;
+
+export type GateKey = (typeof GATE_FIELDS)[number][0];
+
 // ---------------------------------------------------------------------------
 // Status pipeline
 // ---------------------------------------------------------------------------
