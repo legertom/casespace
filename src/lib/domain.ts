@@ -138,6 +138,37 @@ export function isLinkKind(value: string): value is LinkKind {
 }
 
 // ---------------------------------------------------------------------------
+// URLs on a record
+// ---------------------------------------------------------------------------
+
+/**
+ * What a URL on a record points at — where to find the thing itself. Distinct
+ * from LINK_KINDS above, which relates two *records* to each other.
+ *
+ * Three named kinds because they are the three people actually attach, plus
+ * `other` so the list never blocks a link nobody anticipated; that is what the
+ * free label is for.
+ */
+export const URL_KINDS = ["live", "github", "claude", "other"] as const;
+
+export type UrlKind = (typeof URL_KINDS)[number];
+
+export const URL_KIND_LABELS: Record<UrlKind, string> = {
+  live: "Live",
+  github: "GitHub",
+  claude: "Claude",
+  other: "Link",
+};
+
+/** What the picker offers, in display order, with a hint at what belongs. */
+export const URL_KIND_HINTS: Record<UrlKind, string> = {
+  live: "The working tool, where someone can use it",
+  github: "The repository",
+  claude: "A Claude artifact, project, or skill",
+  other: "Anything else — say what it is",
+};
+
+// ---------------------------------------------------------------------------
 // Worksheet ratings
 // ---------------------------------------------------------------------------
 
@@ -153,6 +184,13 @@ export const RATING_FIELDS = [
 ] as const;
 
 export type RatingKey = (typeof RATING_FIELDS)[number][0];
+
+/** Whether the success criterion has been met, as people read it. */
+export const SUCCESS_MET_LABELS: Record<"yes" | "no" | "not_yet", string> = {
+  yes: "Yes",
+  no: "No",
+  not_yet: "Not yet",
+};
 
 // ---------------------------------------------------------------------------
 // Status pipeline

@@ -7,10 +7,11 @@ import {
   statusChanges,
   teams,
   useCaseAuthors,
+  useCaseUrls,
   useCases,
   users,
 } from "@/db/schema";
-import type { Department, UcStatus } from "@/lib/domain";
+import type { Department, UcStatus, UrlKind } from "@/lib/domain";
 import { creditsIdentity, type Identity } from "@/lib/people-match";
 
 export interface UseCaseFilters {
@@ -28,10 +29,18 @@ export interface UseCaseFilters {
   credits?: Identity;
 }
 
+export interface UseCaseUrlEntry {
+  id: string;
+  kind: UrlKind;
+  label: string | null;
+  url: string;
+}
+
 export type UseCaseRow = typeof useCases.$inferSelect & {
   teamName: string | null;
   eltOrgName: string | null;
   authors: { id: string; displayName: string; personId: string | null; userId: string | null }[];
+  urls: UseCaseUrlEntry[];
 };
 
 export async function listUseCases(
@@ -88,11 +97,29 @@ export async function listUseCases(
     byCase.set(a.useCaseId, list);
   }
 
+  // One more round trip for the whole page, not one per record — the same
+  // shape as authors above. The casebook list doesn't render these, but
+  // toApiUseCase is the only REST serializer and it reads from this row.
+  const urls = ids.length
+    ? await db
+        .select()
+        .from(useCaseUrls)
+        .where(inArray(useCaseUrls.useCaseId, ids))
+        .orderBy(useCaseUrls.position)
+    : [];
+  const urlsByCase = new Map<string, UseCaseUrlEntry[]>();
+  for (const u of urls) {
+    const list = urlsByCase.get(u.useCaseId) ?? [];
+    list.push({ id: u.id, kind: u.kind, label: u.label, url: u.url });
+    urlsByCase.set(u.useCaseId, list);
+  }
+
   let result = rows.map((r) => ({
     ...r.uc,
     teamName: r.teamName,
     eltOrgName: r.eltOrgName,
     authors: byCase.get(r.uc.id) ?? [],
+    urls: urlsByCase.get(r.uc.id) ?? [],
   }));
 
   // Both views ask the same question of the same matcher, so "Mine" and
@@ -145,6 +172,17 @@ export async function getUseCase(id: string) {
     .where(eq(useCaseAuthors.useCaseId, id))
     .orderBy(useCaseAuthors.position);
 
+  const urls: UseCaseUrlEntry[] = await db
+    .select({
+      id: useCaseUrls.id,
+      kind: useCaseUrls.kind,
+      label: useCaseUrls.label,
+      url: useCaseUrls.url,
+    })
+    .from(useCaseUrls)
+    .where(eq(useCaseUrls.useCaseId, id))
+    .orderBy(useCaseUrls.position);
+
   const history: StatusChangeEntry[] = await db
     .select({
       id: statusChanges.id,
@@ -175,6 +213,7 @@ export async function getUseCase(id: string) {
     createdByName: row.createdByName,
     ownerPersonName,
     authors,
+    urls,
     history,
   };
 }

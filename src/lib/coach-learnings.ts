@@ -53,7 +53,9 @@ const FIELDS: { key: keyof DiffInput; label: string }[] = [
   { key: "authors", label: "Authors" },
   { key: "owner", label: "Owner" },
   { key: "aiTools", label: "AI tools" },
+  { key: "urls", label: "Links" },
   { key: "approaches", label: "Approaches" },
+  { key: "buildHours", label: "Build hours" },
   { key: "ratingFrequency", label: "Rating: frequency" },
   { key: "ratingPain", label: "Rating: pain" },
   { key: "ratingDataAvailability", label: "Rating: data availability" },
@@ -101,11 +103,22 @@ function isPersonRef(v: unknown): v is PersonRef {
   return typeof v === "object" && v !== null && "displayName" in v;
 }
 
+/** A record URL. Without this branch every links diff would read "[object Object]". */
+function isUrlRef(v: unknown): v is { url: string } {
+  return typeof v === "object" && v !== null && "url" in v;
+}
+
+function one(v: unknown): string {
+  if (isPersonRef(v)) return v.displayName;
+  if (isUrlRef(v)) return v.url;
+  return String(v);
+}
+
 /** One comparable, human-readable string per value. Empty means "nothing here". */
 function display(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (Array.isArray(value)) {
-    const parts = value.map((v) => (isPersonRef(v) ? v.displayName : String(v)));
+    const parts = value.map(one);
     return parts.filter((p) => p.trim() !== "").join("; ");
   }
   if (isPersonRef(value)) return value.displayName;

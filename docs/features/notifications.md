@@ -1,11 +1,12 @@
 ---
 title: Notifications
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-20
 code:
   - src/components/notifications/notification-bell.tsx
   - src/lib/comment-notifications.ts
   - src/lib/link-notifications.ts
+  - src/lib/new-use-case-notifications.ts
   - src/server/notification-queries.ts
   - src/server/actions-notifications.ts
 ---
@@ -22,6 +23,7 @@ A bell in the header. **In-app only** — Casespace sends no email.
 | `reply` | Someone replied to your comment |
 | `comment` | A new comment on a record you're part of |
 | `link` | Someone linked a record you're credited on to another |
+| `new_use_case` | Someone logged a use case — **admins only** |
 
 ## Who hears about a comment
 
@@ -55,6 +57,16 @@ people who do own it get told.
 One notification per person. Someone credited on both records is pointed at
 the record the link was made **from**, which is where the person who made it
 was looking.
+
+## Who hears about a new use case
+
+**Every admin**, every time a use case is logged — from any door: the form,
+the wizard, the notes parser, the REST API, or MCP. The count of documented
+use cases is what admins are accountable for, and a record nobody saw arrive
+is a record nobody can qualify.
+
+Nobody else is told. Everyone else meets new records on the casebook, which
+is open to all. An admin who logs a record is not told about their own.
 
 ## Reading them
 

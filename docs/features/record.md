@@ -4,7 +4,7 @@ surface:
   - /use-cases/[id]
   - /use-cases/[id]/edit
 audience: everyone
-updated: 2026-08-16
+updated: 2026-08-20
 code:
   - src/app/(app)/use-cases/[id]/page.tsx
   - src/app/(app)/use-cases/[id]/edit/page.tsx
@@ -17,6 +17,10 @@ code:
   - src/components/record/record-credit.tsx
   - src/components/record/record-gates.tsx
   - src/components/record/inline-field.tsx
+  - src/components/record/record-urls.tsx
+  - src/components/record/edit-urls.tsx
+  - src/components/use-case-url-rows.tsx
+  - src/lib/use-case-urls.ts
   - src/components/record/gate-toggle.tsx
   - src/components/status-controls.tsx
   - src/components/use-case-form.tsx
@@ -38,6 +42,10 @@ whoever owns it.
   methodology, net-impact statement, positive/negative, and **build effort**:
   a [self-reported estimate](../concepts/gates-and-roi.md#build-hours) of the
   hours spent building, shown whether or not ROI is measurable yet.
+- **Where to find it** — links to the thing itself: the live tool, the
+  GitHub repo, a Claude artifact/project/skill, or anything else with a label
+  you write. As many as the workflow has. Not to be confused with
+  [linked workflows](linked-workflows.md), which relate two *records*.
 - **The seven scoping-worksheet ratings**.
 - **[Linked workflows](linked-workflows.md)**.
 - **Activity** — the record's story in one stream: every status change and
@@ -57,6 +65,31 @@ still exists for editing everything at once.
 **Tooltips and hints** sit on every field whose name isn't self-explanatory.
 The vocabulary here is program jargon; the record page explains it rather
 than assuming.
+
+## Rules that surprise people
+
+**Links are edited as a set, not in place.** Every other field on this page
+is click-to-edit; "Where to find it" opens a small editor with a Save button
+instead. The in-place editor holds one value per field, and a list of links
+is neither — it needs add, remove, and reorder. Linked workflows work the
+same way, for the same reason.
+
+**A link must start with `http://` or `https://`.** Anything else is refused
+at save. These render as clickable anchors, so a `javascript:` or `data:`
+URL would be a way to attack anyone reading the record — and every signed-in
+person can read every record. The page checks a second time when it draws
+each link, so a row written before the check existed still can't become a
+dangerous one.
+
+**Localhost and single-word hostnames are refused too.** `http://localhost:3000`
+is useless to everyone except the person who pasted it.
+
+**Editing everything at once can no longer blank a field you didn't touch.**
+`/use-cases/[id]/edit` submits every field it holds, so any field the page
+forgot to load first would save as empty. Build effort was lost this way on
+every full-form edit until 2026-08-20. The form's starting values are now
+derived from the record rather than hand-listed, and a test fails if a new
+field is ever left out.
 
 ## Status controls
 

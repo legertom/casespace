@@ -17,6 +17,7 @@ import {
 import type { PersonRef, UseCaseCreateInput } from "@/lib/use-case-input";
 import { ErrorNote } from "./error-note";
 import { PeoplePicker, type PersonOption } from "./people-picker";
+import { cleanUrls, toRows, UrlRows } from "./use-case-url-rows";
 
 export interface TeamOption {
   id: string;
@@ -92,6 +93,7 @@ export function UseCaseForm({
     initial.owner ? [initial.owner] : [],
   );
   const [aiTools, setAiTools] = useState((initial.aiTools ?? []).join(", "));
+  const [urls, setUrls] = useState(() => toRows(initial.urls ?? []));
   const [approaches, setApproaches] = useState<Approach[]>(
     initial.approaches ?? [],
   );
@@ -175,6 +177,9 @@ export function UseCaseForm({
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean),
+      // Blank rows are dropped, not rejected: clicking "Add a link" and
+      // reconsidering shouldn't cost you the save.
+      urls: cleanUrls(urls),
       approaches,
       currentSteps: steps
         .split("\n")
@@ -352,6 +357,17 @@ export function UseCaseForm({
             ))}
           </div>
         </fieldset>
+      </section>
+
+      {/* ------------------------------------------------ where to find it */}
+      <section className="space-y-4">
+        <h2 className="font-serif text-2xl">Where to find it</h2>
+        <p className="max-w-prose text-sm text-ink-muted">
+          Links to the thing itself — the live tool, the repo, the Claude
+          artifact, project, or skill. Add as many as it has. For anything else,
+          pick Link and say what it is.
+        </p>
+        <UrlRows value={urls} onChange={setUrls} />
       </section>
 
       {/* ------------------------------------------------ discovery */}

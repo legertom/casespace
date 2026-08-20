@@ -20,6 +20,8 @@ export function toApiUseCase(uc: UseCaseRow) {
     owner: uc.ownerName,
     authors: uc.authors.map((a) => a.displayName),
     aiTools: uc.aiTools,
+    /** Where to find the thing itself. Distinct from related workflows. */
+    urls: uc.urls.map((u) => ({ kind: u.kind, label: u.label, url: u.url })),
     approaches: uc.approaches,
     /** @deprecated Singular until 2026-08-14; first of `approaches` for one release. */
     approach: uc.approaches[0] ?? null,

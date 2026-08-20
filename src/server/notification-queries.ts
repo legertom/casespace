@@ -12,7 +12,7 @@ import {
 
 export interface NotificationRow {
   id: string;
-  kind: "comment" | "reply" | "mention" | "link";
+  kind: "comment" | "reply" | "mention" | "link" | "new_use_case";
   useCaseId: string;
   commentId: string | null;
   actorName: string | null;

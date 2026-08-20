@@ -1,7 +1,18 @@
 import "server-only";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { eltOrgs, people, statusChanges, teams, useCaseAuthors, useCases, users } from "@/db/schema";
+import {
+  eltOrgs,
+  notifications,
+  people,
+  statusChanges,
+  teams,
+  useCaseAuthors,
+  useCaseUrls,
+  useCases,
+  users,
+} from "@/db/schema";
+import { newUseCaseNotifications } from "@/lib/new-use-case-notifications";
 import {
   canSetStatus,
   suggestEltOrg,
@@ -18,6 +29,7 @@ import {
   type UcSource,
   type UseCaseCreateInput,
   type UseCaseUpdateInput,
+  type UseCaseUrlInput,
 } from "@/lib/use-case-input";
 import { getOwnership } from "./use-case-queries";
 
@@ -101,6 +113,17 @@ async function suggestedEltOrgId(
   );
 }
 
+/** Validated URL input, positioned. Blank labels collapse to null. */
+function urlRows(useCaseId: string, urls: readonly UseCaseUrlInput[]) {
+  return urls.map((u, i) => ({
+    useCaseId,
+    kind: u.kind,
+    label: u.label?.trim() || null,
+    url: u.url,
+    position: i,
+  }));
+}
+
 export async function createUseCase(
   actor: Actor,
   input: UseCaseCreateInput,
@@ -124,10 +147,13 @@ export async function createUseCase(
 
   const authors = await resolveUserLinks(input.authors ?? []);
 
-  // One transaction: the record, its credit, and its birth event in the
-  // movement log exist together or not at all. A record without its birth
-  // event would vanish from the staleness map; one without its authors would
-  // strip credit, and credit is the program's currency.
+  const urls = input.urls ?? [];
+
+  // One transaction: the record, its credit, its links, its birth event in the
+  // movement log, and the admins' heads-up exist together or not at all. A
+  // record without its birth event would vanish from the staleness map; one
+  // without its authors would strip credit, and credit is the program's
+  // currency.
   return db.transaction(async (tx) => {
     const [created] = await tx.insert(useCases).values(row).returning();
 
@@ -143,12 +169,38 @@ export async function createUseCase(
       );
     }
 
+    if (urls.length) {
+      await tx.insert(useCaseUrls).values(urlRows(created.id, urls));
+    }
+
     await tx.insert(statusChanges).values({
       useCaseId: created.id,
       fromStatus: null,
       toStatus: created.status,
       changedById: actor.id,
     });
+
+    // Admins hear about every record, from every door — form, wizard, notes,
+    // REST, MCP all arrive here. The role comes from the table, not the
+    // session: an admin previewing as a viewer is still an admin.
+    const admins = await tx
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.role, "admin"));
+    const recipients = newUseCaseNotifications({
+      actorId: actor.id,
+      adminUserIds: admins.map((a) => a.id),
+    });
+    if (recipients.length > 0) {
+      await tx.insert(notifications).values(
+        recipients.map((r) => ({
+          userId: r.userId,
+          kind: "new_use_case" as const,
+          useCaseId: created.id,
+          actorId: actor.id,
+        })),
+      );
+    }
 
     return created.id;
   });
@@ -200,8 +252,12 @@ export async function updateUseCase(
       ? await resolveUserLinks(input.authors)
       : null;
 
-  // One transaction, chiefly for the authors swap: delete-then-insert with a
-  // failure in between would silently strip every credit from the record.
+  // Same contract as authors: `[]` clears the list, absent leaves it alone.
+  const urls = "urls" in input && input.urls ? input.urls : null;
+
+  // One transaction, chiefly for the two swaps: a delete-then-insert with a
+  // failure in between would silently strip every credit — or every link —
+  // from the record.
   await db.transaction(async (tx) => {
     if (Object.keys(patch).length > 0) {
       await tx.update(useCases).set(patch).where(eq(useCases.id, id));
@@ -219,6 +275,13 @@ export async function updateUseCase(
             position: i,
           })),
         );
+      }
+    }
+
+    if (urls) {
+      await tx.delete(useCaseUrls).where(eq(useCaseUrls.useCaseId, id));
+      if (urls.length) {
+        await tx.insert(useCaseUrls).values(urlRows(id, urls));
       }
     }
   });

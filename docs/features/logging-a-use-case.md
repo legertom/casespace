@@ -6,7 +6,7 @@ surface:
   - /use-cases/new/review
   - /use-cases/from-notes
 audience: everyone
-updated: 2026-08-16
+updated: 2026-08-20
 code:
   - src/app/(app)/use-cases/new/page.tsx
   - src/app/(app)/use-cases/new/form/page.tsx
@@ -14,6 +14,9 @@ code:
   - src/app/(app)/use-cases/from-notes/page.tsx
   - src/components/coach/notes-door.tsx
   - src/components/use-case-prefill.tsx
+  - src/components/use-case-form.tsx
+  - src/components/use-case-url-rows.tsx
+  - src/lib/ai/coach-prompt.ts
 ---
 
 # Logging a use case
@@ -28,6 +31,15 @@ chooser — three clear doors, not a form with subtext.
 The Coach's guided wizard (`/coach?intent=wizard`). A conversation that asks
 what it needs and builds a proposal. Good when you're not sure what the
 program wants.
+
+The wizard asks for **everything the form asks for**, one question at a time:
+the workflow and its steps, team and people, which tools and which
+approaches, where to find it, build effort, the seven ratings, the success
+criterion and whether it's met, ROI, adoption evidence, and where the record
+stands today. Anything you don't know is skipped rather than guessed. The
+proposal card then **shows what it captured** before you click Log it — so a
+field it got wrong is one you can see and correct rather than discover
+later.
 
 ### 2. Start from notes
 
@@ -59,6 +71,11 @@ That includes the Success & ROI section's intake question, *"Roughly how
 many hours went into building this?"* — a rough estimate is fine, it's
 optional, and it [never gates anything](../concepts/gates-and-roi.md#build-hours).
 It can also be added later, inline on the record's ROI panel.
+
+The same goes for **Where to find it** — links to the live tool, the repo, or
+a Claude artifact/project/skill. Add as many as the workflow has, or none;
+they can be added on the record page whenever the thing actually exists.
+Links must start with `http://` or `https://`.
 
 The [gap flags](../concepts/gates-and-roi.md#gap-flags-on-drafts) tell you
 what's missing. They are prompts, not validation — nothing blocks a save.

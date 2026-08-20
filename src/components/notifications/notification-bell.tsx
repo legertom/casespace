@@ -14,7 +14,14 @@ import {
  * no polling, no sockets: it refreshes on every navigation, which is right
  * for a program this size.
  */
-export async function NotificationBell({ userId }: { userId: string }) {
+export async function NotificationBell({
+  userId,
+  isAdmin = false,
+}: {
+  userId: string;
+  /** Only admins hear about newly logged records, so only they are promised it. */
+  isAdmin?: boolean;
+}) {
   const [items, unread] = await Promise.all([
     listNotifications(userId),
     unreadNotificationCount(userId),
@@ -68,6 +75,7 @@ export async function NotificationBell({ userId }: { userId: string }) {
         {items.length === 0 ? (
           <p className="mt-3 text-sm text-ink-muted">
             Nothing yet. Comments and links on your records land here.
+            {isAdmin && " So does every use case as it's logged."}
           </p>
         ) : (
           <ul className="mt-2 max-h-96 divide-y divide-hairline overflow-y-auto">
@@ -114,6 +122,8 @@ function line(n: NotificationRow): string {
       return `${actor} mentioned you on ${n.useCaseTitle}`;
     case "link":
       return `${actor} linked ${n.linkedTitle ?? "another workflow"} to ${n.useCaseTitle}`;
+    case "new_use_case":
+      return `${actor} logged ${n.useCaseTitle}`;
     default:
       return `${actor} commented on ${n.useCaseTitle}`;
   }

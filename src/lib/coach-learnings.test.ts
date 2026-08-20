@@ -56,6 +56,37 @@ describe("diffProposal", () => {
     ]);
   });
 
+  // Without a url branch in display(), every links diff reads
+  // "[object Object]" and every record scores as corrected.
+  it("shows links by their URL, not as objects", () => {
+    const changes = diffProposal(
+      { urls: [] },
+      { urls: [{ kind: "github", label: null, url: "https://github.com/a/b" }] },
+    );
+    expect(changes).toEqual([
+      {
+        field: "urls",
+        label: "Links",
+        kind: "filled",
+        from: "",
+        to: "https://github.com/a/b",
+      },
+    ]);
+  });
+
+  it("notices build hours the human had to supply", () => {
+    const changes = diffProposal({ buildHours: null }, { buildHours: 8 });
+    expect(changes).toEqual([
+      {
+        field: "buildHours",
+        label: "Build hours",
+        kind: "filled",
+        from: "",
+        to: "8",
+      },
+    ]);
+  });
+
   it("calls a deleted guess cleared", () => {
     const changes = diffProposal(
       { baselineMetric: "hours per week" },

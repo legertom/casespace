@@ -5,7 +5,10 @@
  */
 import { z } from "zod";
 import { APPROACHES, DEPARTMENTS, SETTABLE_STATUSES } from "@/lib/domain";
-import type { UseCaseCreateInput } from "@/lib/use-case-input";
+import {
+  useCaseUrlSchema,
+  type UseCaseCreateInput,
+} from "@/lib/use-case-input";
 
 const rating = z
   .number()
@@ -32,7 +35,24 @@ export const proposalSchema = z.object({
     .string()
     .nullish()
     .describe("Full name of the one person responsible going forward"),
-  aiTools: z.array(z.string()).max(20).default([]),
+  aiTools: z
+    .array(z.string())
+    .max(20)
+    .default([])
+    .describe("Which tools it uses by name — Claude, ChatGPT, Zapier, Cursor"),
+  /**
+   * Shares useCaseUrlSchema with every other door, deliberately: accepting a
+   * proposal goes straight to createUseCase without touching
+   * useCaseCreateSchema, so a lenient shape here would be the one way a
+   * javascript: URL could reach a page every authenticated user reads.
+   */
+  urls: useCaseUrlSchema
+    .array()
+    .max(20)
+    .default([])
+    .describe(
+      "Where to find the thing itself: the live tool, the repo, the Claude artifact, project, or skill. http(s) only. Only URLs the human actually gave — never invented, never guessed from a name.",
+    ),
   approaches: z
     .array(z.enum(APPROACHES))
     .max(APPROACHES.length)
@@ -65,13 +85,16 @@ export const proposalSchema = z.object({
     .string()
     .nullish()
     .describe("The measurable definition of success"),
-  successCriterionMet: z.enum(["yes", "no", "not_yet"]).nullish(),
+  successCriterionMet: z
+    .enum(["yes", "no", "not_yet"])
+    .nullish()
+    .describe("Whether the success criterion has actually been met yet"),
   buildHours: z
     .number()
     .min(0)
     .nullish()
     .describe(
-      "Rough hours spent building the workflow, only if the notes say — 'took me about a day' is 8, never invented",
+      "Rough hours spent building the workflow — 'took me about a day' is 8. Ask in a conversation; take it from the notes when parsing notes. A rough number is fine, an invented one is not.",
     ),
   baselineMetric: z.string().nullish(),
   baselineValue: z
@@ -131,6 +154,7 @@ export function proposalPatchToUpdateInput(
       ? { personId: null, userId: null, displayName: c.owner }
       : null;
   if ("aiTools" in c && c.aiTools) patch.aiTools = c.aiTools;
+  if ("urls" in c && c.urls) patch.urls = c.urls;
   if ("approaches" in c && c.approaches) patch.approaches = c.approaches;
   if ("currentSteps" in c && c.currentSteps) patch.currentSteps = c.currentSteps;
   for (const k of [
@@ -185,6 +209,7 @@ export function proposalToCreateInput(p: Proposal): UseCaseCreateInput {
       ? { personId: null, userId: null, displayName: p.owner }
       : null,
     aiTools: p.aiTools ?? [],
+    urls: p.urls ?? [],
     approaches: p.approaches ?? [],
     currentSteps: p.currentSteps ?? [],
     ratingFrequency: p.ratingFrequency ?? null,

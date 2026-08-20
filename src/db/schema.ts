@@ -21,6 +21,7 @@ import {
   LINK_KINDS,
   ROLES,
   STATUSES,
+  URL_KINDS,
 } from "../lib/domain";
 import { DEFAULT_PIPELINE_CHART, PIPELINE_CHARTS } from "../lib/pipeline-chart";
 
@@ -87,10 +88,14 @@ export const notificationKindEnum = pgEnum("notification_kind", [
   "reply",
   "mention",
   "link",
+  "new_use_case",
 ]);
 
 /** How one workflow relates to another — see LINK_KINDS in lib/domain. */
 export const linkKindEnum = pgEnum("link_kind", LINK_KINDS);
+
+/** What a URL on a record points at — see URL_KINDS in lib/domain. */
+export const urlKindEnum = pgEnum("url_kind", URL_KINDS);
 
 // ---------------------------------------------------------------------------
 // Identity & access
@@ -342,6 +347,33 @@ export const useCaseAuthors = pgTable("use_case_authors", {
   displayName: text("display_name").notNull(),
   position: integer("position").notNull().default(0),
 });
+
+/**
+ * Where to find the thing itself: the live tool, the repo, the Claude
+ * artifact. Any number, ordered, replaced wholesale on update — the same shape
+ * as use_case_authors above, for the same reason: the list is the value, not
+ * the rows. So no createdById/createdAt, which would become a lie on the first
+ * edit, and no unique constraint, which would turn a paste mistake into a 500.
+ *
+ * Not to be confused with use_case_links below, which relates two *records*.
+ * http/https is enforced by useCaseUrlSchema at every write door, and again at
+ * render by isSafeHttpUrl — these become clickable anchors.
+ */
+export const useCaseUrls = pgTable(
+  "use_case_urls",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    useCaseId: uuid("use_case_id")
+      .notNull()
+      .references(() => useCases.id, { onDelete: "cascade" }),
+    kind: urlKindEnum("kind").notNull().default("other"),
+    /** Free text where the kind isn't enough — "Runbook", "Loom walkthrough". */
+    label: text("label"),
+    url: text("url").notNull(),
+    position: integer("position").notNull().default(0),
+  },
+  (t) => [index("use_case_url_case_idx").on(t.useCaseId)],
+);
 
 /**
  * A link between two workflows. Any AI lead can make one, on any two records
@@ -622,9 +654,10 @@ export const useCaseComments = pgTable(
  * page-load freshness is enough — there is no queue, no cron, no polling.
  * Rows are written inline by the action that causes them.
  *
- * Exactly one of commentId / linkId is set, and it says what the row is
- * about: a comment on the record, or a link made to it. useCaseId is always
- * the record the recipient is credited on — the one they land on.
+ * At most one of commentId / linkId is set, and it says what the row is
+ * about: a comment on the record, or a link made to it. A "new_use_case" row
+ * has neither — the record itself is the whole news. useCaseId is always the
+ * record the recipient is credited on — the one they land on.
  */
 export const notifications = pgTable(
   "notifications",

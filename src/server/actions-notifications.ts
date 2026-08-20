@@ -9,8 +9,9 @@ import { requireUser } from "@/lib/current-user";
 
 /**
  * Open a notification: mark it read and land on what it is about — the
- * comment itself, or the record's Related workflows. Reading and navigating
- * are one act, so they're one action.
+ * comment itself, the record's Related workflows, or for a newly logged
+ * record, the record itself. Reading and navigating are one act, so they're
+ * one action.
  */
 export async function openNotificationAction(id: string): Promise<void> {
   const user = await requireUser();
@@ -20,16 +21,17 @@ export async function openNotificationAction(id: string): Promise<void> {
     .set({ readAt: new Date() })
     .where(and(eq(notifications.id, id), eq(notifications.userId, user.id)))
     .returning({
+      kind: notifications.kind,
       useCaseId: notifications.useCaseId,
       commentId: notifications.commentId,
     });
   if (!row) redirect("/");
   revalidatePath("/", "layout");
-  redirect(
-    row.commentId
-      ? `/use-cases/${row.useCaseId}#comment-${row.commentId}`
-      : `/use-cases/${row.useCaseId}#related`,
-  );
+
+  const record = `/use-cases/${row.useCaseId}`;
+  if (row.commentId) redirect(`${record}#comment-${row.commentId}`);
+  // A new record is its own news — the top of the page, not a section of it.
+  redirect(row.kind === "link" ? `${record}#related` : record);
 }
 
 /** Clear the badge without reading each one. Used as a form action. */

@@ -1,7 +1,7 @@
 ---
-title: Taxonomy — departments, approaches, ratings, links
+title: Taxonomy — departments, approaches, ratings, links, URLs
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-20
 code:
   - src/lib/domain.ts
   - src/db/schema.ts
@@ -62,7 +62,28 @@ was made from, and shows on both records — the far end reads the inverse:
 | `duplicates` | Duplicates | Duplicated by |
 | `relates_to` | Relates to | Relates to (symmetric) |
 
-See [linked workflows](../features/linked-workflows.md).
+See [linked workflows](../features/linked-workflows.md). **Link kinds are
+not URL kinds** — a link joins two records; a URL points out of Casespace at
+the thing itself.
+
+## URL kinds
+
+What a URL attached to a record points at. A record carries as many as it
+has, in the order they were entered:
+
+| Kind | Points at |
+|---|---|
+| `live` | The working tool, where someone can use it |
+| `github` | The repository |
+| `claude` | A Claude artifact, project, or skill |
+| `other` | Anything else — carries a free label, e.g. "Runbook" |
+
+Every kind may also carry a label; `other` is the only one that needs it,
+since the other three name themselves.
+
+Only `http://` and `https://` are stored — see
+[the record page](../features/record.md#rules-that-surprise-people) for why
+that is a security rule rather than a formatting preference.
 
 ## ROI vocabularies
 
@@ -71,7 +92,8 @@ See [linked workflows](../features/linked-workflows.md).
 
 ## Notification kinds
 
-`comment` · `reply` · `mention` · `link` — most specific wins. See
+`comment` · `reply` · `mention` · `link` · `new_use_case` — most specific
+wins among the comment kinds. `new_use_case` goes to admins only. See
 [notifications](../features/notifications.md).
 
 ## Related

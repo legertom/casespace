@@ -1,7 +1,7 @@
 ---
 title: Changelog
 audience: everyone
-updated: 2026-08-16
+updated: 2026-08-20
 code:
   - src/lib/changelog.ts
   - src/server/changelog.ts
@@ -39,6 +39,49 @@ someone's name.
 case don't matter. Leave the line off when nobody asked — an unattributed
 entry is honest, an invented one is not. Add `Feedback: <id>` to point at the
 in-app report it came from.
+
+---
+
+## 2026-08-20
+
+### Point a record at the thing itself
+Requested by: Tom Leger
+
+A use case can now carry links — the live tool, the GitHub repo, a Claude
+artifact, project, or skill, or anything else with a label you write. Add as
+many as the workflow has; they show near the top of the record, under **Where
+to find it**, and anyone can click straight through. The form asks for them
+when you log a use case, and you can add or change them on the record page any
+time afterwards. These are links out of Casespace at the workflow itself,
+which is a different thing from **Related workflows** — that still connects
+one record to another.
+
+### The wizard now asks everything the form asks
+Requested by: Tom Leger
+
+Use cases logged through the Coach's wizard were arriving without build time,
+because the wizard never asked. It does now — along with which AI tool the
+workflow uses, where to find it, whether the success criterion has been met,
+and where the record stands today. The proposal card also shows what the
+wizard captured before you click Log it, so anything it got wrong is
+something you can correct on the spot rather than find later.
+
+### Editing a record no longer loses your build time
+Requested by: Tom Leger
+
+Opening a record in **Edit everything** and saving used to quietly erase the
+build effort, even if you never touched that field. It doesn't any more, and
+the form now takes its starting values from the record itself, so no future
+field can go missing the same way. If a record of yours lost its build hours
+before today, it needs typing back in once.
+
+### Admins hear when a use case is logged
+Requested by: Tom Leger
+
+Every admin now gets a notification the moment anyone logs a use case, from
+any door — the form, the wizard, notes, the API, or MCP. It lands in the same
+header bell as comments and links and takes you straight to the new record.
+Logging your own record doesn't notify you about it.
 
 ---
 

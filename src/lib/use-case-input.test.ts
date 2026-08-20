@@ -2,8 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   applyCreateDefaults,
   UPDATE_PATCHABLE_KEYS,
+  useCaseCreateApiSchema,
   useCaseCreateSchema,
+  useCaseToFormInput,
   useCaseUpdateSchema,
+  useCaseUrlSchema,
+  type SavedUseCase,
+  type UseCaseCreateInput,
 } from "./use-case-input";
 
 describe("sparse API create", () => {
@@ -65,6 +70,7 @@ describe("the patchable-field list", () => {
       ...UPDATE_PATCHABLE_KEYS,
       "owner",
       "authors",
+      "urls",
       "status",
     ]);
     expect([...covered].sort()).toEqual(
@@ -79,5 +85,99 @@ describe("the patchable-field list", () => {
     expect(UPDATE_PATCHABLE_KEYS).toContain("title");
     expect(UPDATE_PATCHABLE_KEYS).toContain("gateNamed");
     expect(UPDATE_PATCHABLE_KEYS).toContain("roiStatus");
+  });
+
+  it("never patches urls — they are their own table, not a column", () => {
+    expect(UPDATE_PATCHABLE_KEYS).not.toContain("urls");
+  });
+});
+
+describe("record URLs", () => {
+  it("keeps a good link, trimmed, and defaults the kind", () => {
+    const parsed = useCaseUrlSchema.parse({ url: "  https://a.example.com/x  " });
+    expect(parsed.url).toBe("https://a.example.com/x");
+    expect(parsed.kind).toBe("other");
+  });
+
+  // The record page renders these as anchors — see also use-case-urls.test.ts,
+  // which covers the render-time guard.
+  it.each([
+    "javascript:alert(1)",
+    "javascript://example.com/%0aalert(1)",
+    "data:text/html;base64,PHNjcmlwdD4=",
+    "//evil.com",
+    "not a url",
+  ])("refuses %s at the door every write path shares", (url) => {
+    expect(useCaseUrlSchema.safeParse({ url }).success).toBe(false);
+  });
+});
+
+describe("the REST door", () => {
+  /**
+   * REST and MCP go through the legacy-`approach` preprocessor rather than the
+   * bare create schema, so links have to survive that rewrite — the routes
+   * themselves know nothing about urls.
+   */
+  it("carries urls through the legacy-approach rewrite", () => {
+    const parsed = useCaseCreateApiSchema.parse({
+      title: "T",
+      description: "D",
+      approach: "prompt",
+      urls: [{ kind: "live", url: "https://a.example.com" }],
+    }) as UseCaseCreateInput;
+    expect(parsed.approaches).toEqual(["prompt"]);
+    expect(parsed.urls).toEqual([
+      { kind: "live", url: "https://a.example.com" },
+    ]);
+  });
+
+  it("rejects a bad scheme at the REST door too", () => {
+    expect(
+      useCaseCreateApiSchema.safeParse({
+        title: "T",
+        description: "D",
+        urls: [{ url: "javascript:alert(1)" }],
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("a saved record, back into the edit form", () => {
+  const saved: SavedUseCase = {
+    ...applyCreateDefaults(
+      useCaseCreateSchema.parse({ title: "T", description: "D" }),
+      { source: "form", createdById: "user-1" },
+    ),
+    buildHours: 12,
+    authors: [{ personId: null, userId: "u2", displayName: "Ada" }],
+    urls: [{ kind: "github", label: null, url: "https://github.com/x/y" }],
+  };
+
+  /**
+   * The form submits every field it holds, so anything this mapper forgets is
+   * sent as null and overwrites what was saved. buildHours was the field that
+   * got erased this way; this test is why it can't happen again.
+   */
+  it("covers every field the create schema knows about, except status", () => {
+    const expected = Object.keys(useCaseCreateSchema.shape)
+      .filter((k) => k !== "status")
+      .sort();
+    expect(Object.keys(useCaseToFormInput(saved)).sort()).toEqual(expected);
+  });
+
+  it("round-trips the fields that were being lost", () => {
+    const out = useCaseToFormInput(saved);
+    expect(out.buildHours).toBe(12);
+    expect(out.urls).toEqual([
+      { kind: "github", label: null, url: "https://github.com/x/y" },
+    ]);
+  });
+
+  it("leaves the owner null rather than inventing an empty person", () => {
+    expect(useCaseToFormInput(saved).owner).toBeNull();
+    expect(
+      useCaseToFormInput({ ...saved, ownerName: "Kate", ownerUserId: "u9" })
+        .owner,
+    ).toEqual({ personId: null, userId: "u9", displayName: "Kate" });
   });
 });

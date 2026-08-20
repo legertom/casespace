@@ -17,10 +17,11 @@ import {
   statusChanges,
   teams,
   useCaseAuthors,
+  useCaseUrls,
   useCases,
   users,
 } from "../src/db/schema";
-import type { Department, UcStatus } from "../src/lib/domain";
+import type { Department, UcStatus, UrlKind } from "../src/lib/domain";
 
 const db = getDb();
 
@@ -40,6 +41,8 @@ interface DemoUc {
   /** The mandatory annual-ROI note on the move to confirmed_positive_roi. */
   confirmedNote?: string;
   currentSteps?: string[];
+  /** Where to find it — the record's "Where to find it" section. */
+  urls?: { kind: UrlKind; label?: string | null; url: string }[];
   gates?: Partial<{
     gateNamed: boolean;
     gateTool: boolean;
@@ -85,6 +88,10 @@ const DEMO: DemoUc[] = [
     owner: "Katie Clarkson",
     aiTools: ["Claude"],
     approaches: ["prompt"],
+    urls: [
+      { kind: "live", url: "https://support.example.com/macro-drafter" },
+      { kind: "claude", url: "https://claude.ai/project/demo-macro-drafter" },
+    ],
     status: "confirmed_positive_roi",
     daysAgoLogged: 30,
     moves: [
@@ -140,6 +147,14 @@ const DEMO: DemoUc[] = [
     owner: "Vamsi Chunduru",
     aiTools: ["Claude Code", "Linear MCP"],
     approaches: ["agentic"],
+    urls: [
+      { kind: "github", url: "https://github.com/clever-demo/retro-summarizer" },
+      {
+        kind: "other",
+        label: "Runbook",
+        url: "https://example.com/docs/retro-summarizer",
+      },
+    ],
     status: "qualified",
     daysAgoLogged: 27,
     moves: [
@@ -514,6 +529,18 @@ async function main() {
         position: i,
       })),
     );
+
+    if (d.urls?.length) {
+      await db.insert(useCaseUrls).values(
+        d.urls.map((u, i) => ({
+          useCaseId: created.id,
+          kind: u.kind,
+          label: u.label ?? null,
+          url: u.url,
+          position: i,
+        })),
+      );
+    }
 
     const changes: (typeof statusChanges.$inferInsert)[] = [
       {

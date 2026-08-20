@@ -143,7 +143,10 @@ export default async function AppLayout({
                 )}
               </div>
             </details>
-            <NotificationBell userId={user.id} />
+            <NotificationBell
+              userId={user.id}
+              isAdmin={user.role === "admin"}
+            />
             <details className="relative">
               <summary className="cursor-pointer list-none text-sm text-ink-muted hover:text-ink">
                 {user.name}

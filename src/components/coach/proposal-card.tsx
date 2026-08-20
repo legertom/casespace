@@ -14,7 +14,14 @@ import {
   UPDATED,
 } from "@/lib/ai/decision";
 import { computeGapFlags } from "@/lib/gap-flags";
-import { approachLabels, DEPARTMENT_LABELS, STATUS_LABELS } from "@/lib/domain";
+import {
+  approachLabels,
+  DEPARTMENT_LABELS,
+  RATING_FIELDS,
+  STATUS_LABELS,
+  SUCCESS_MET_LABELS,
+} from "@/lib/domain";
+import { urlDisplayLabel } from "@/lib/use-case-urls";
 import {
   acceptProposalAction,
   acceptUpdateProposalAction,
@@ -73,6 +80,11 @@ export function ProposalCard({
   const [thanked, setThanked] = useState(false);
   const logged = useRef(false);
   const gaps = computeGapFlags(proposalToCreateInput(proposal));
+  // Shown as a count, like Steps: seven rows of numbers would bury the fields
+  // people actually correct.
+  const ratingsGiven = RATING_FIELDS.filter(
+    ([key]) => proposal[key] != null,
+  ).length;
 
   // A record logged in an earlier sitting is still reachable: its id rode along
   // in the outcome, so the reopened card keeps its link to the record.
@@ -173,7 +185,42 @@ export function ProposalCard({
               : null
           }
         />
+        {/* Text, not anchors: nothing here is saved yet, and a link the human
+            hasn't accepted shouldn't be one click from opening. */}
+        <Row
+          label="Links"
+          value={
+            proposal.urls?.length
+              ? proposal.urls
+                  .map((u) => `${urlDisplayLabel(u)}: ${u.url}`)
+                  .join(" · ")
+              : null
+          }
+        />
+        <Row
+          label="Build time"
+          value={
+            proposal.buildHours != null
+              ? `${proposal.buildHours} ${proposal.buildHours === 1 ? "hour" : "hours"}`
+              : null
+          }
+        />
+        <Row
+          label="Ratings"
+          value={
+            ratingsGiven > 0 ? `${ratingsGiven} of 7 rated` : null
+          }
+        />
         <Row label="Success" value={proposal.successCriterion} />
+        <Row
+          label="Success met"
+          value={
+            proposal.successCriterionMet
+              ? SUCCESS_MET_LABELS[proposal.successCriterionMet]
+              : null
+          }
+        />
+        <Row label="Adoption" value={proposal.adoptionEvidence} />
         <Row
           label="ROI"
           value={

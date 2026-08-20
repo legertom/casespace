@@ -6,7 +6,7 @@ surface:
   - /api/v1/progress
   - /api/v1/roster
 audience: engineering
-updated: 2026-08-15
+updated: 2026-08-20
 code:
   - src/app/api/v1/use-cases/route.ts
   - src/app/api/v1/use-cases/[id]/route.ts
@@ -61,6 +61,24 @@ Returns `201` with `{ id, url }`. Everything not supplied defaults to the
 emptiest honest value — see
 [sparse is safe](../features/logging-a-use-case.md#sparse-is-safe).
 Records created this way are stamped `source: api`.
+
+## Links on a record
+
+`urls` is an array of `{ kind, label?, url }`, where `kind` is one of `live`,
+`github`, `claude`, or `other` (default `other`) — see
+[URL kinds](../concepts/taxonomy.md#url-kinds). It appears on every use-case
+response and is accepted on POST and PATCH. A PATCH replaces the whole list;
+`[]` clears it, and omitting the key leaves it alone.
+
+```bash
+-d '{"title":"…","description":"…","urls":[
+      {"kind":"github","url":"https://github.com/clever/thing"},
+      {"kind":"other","label":"Runbook","url":"https://example.com/runbook"}]}'
+```
+
+Only `http://` and `https://` are accepted; anything else is a `422`, as are
+single-label hosts like `http://localhost:3000`. This is a security rule —
+these render as clickable links inside the app.
 
 ## Status is not settable here
 

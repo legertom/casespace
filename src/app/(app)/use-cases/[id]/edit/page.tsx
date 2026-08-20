@@ -2,7 +2,10 @@ import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/current-user";
 import type { Department } from "@/lib/domain";
 import { canEditUseCase } from "@/lib/permissions";
-import type { UseCaseCreateInput } from "@/lib/use-case-input";
+import {
+  useCaseToFormInput,
+  type UseCaseCreateInput,
+} from "@/lib/use-case-input";
 import { updateUseCaseAction } from "@/server/actions";
 import { listEltOrgs, listPeopleLite, listTeams } from "@/server/reference";
 import { getUseCase } from "@/server/use-case-queries";
@@ -38,52 +41,10 @@ export default async function EditUseCasePage({
     listEltOrgs(),
   ]);
 
-  const initial: Partial<UseCaseCreateInput> = {
-    title: uc.title,
-    description: uc.description,
-    department: uc.department,
-    teamId: uc.teamId,
-    eltOrgId: uc.eltOrgId,
-    authors: uc.authors.map((a) => ({
-      personId: a.personId,
-      userId: a.userId,
-      displayName: a.displayName,
-    })),
-    owner: uc.ownerName
-      ? {
-          personId: uc.ownerPersonId,
-          userId: uc.ownerUserId,
-          displayName: uc.ownerName,
-        }
-      : null,
-    aiTools: uc.aiTools,
-    approaches: uc.approaches,
-    currentSteps: uc.currentSteps,
-    ratingFrequency: uc.ratingFrequency,
-    ratingPain: uc.ratingPain,
-    ratingDataAvailability: uc.ratingDataAvailability,
-    ratingRisk: uc.ratingRisk,
-    ratingOwnershipClarity: uc.ratingOwnershipClarity,
-    ratingEvaluationClarity: uc.ratingEvaluationClarity,
-    ratingMaintenanceBurden: uc.ratingMaintenanceBurden,
-    functionalLeaderSuccess: uc.functionalLeaderSuccess,
-    gateNamed: uc.gateNamed,
-    gateTool: uc.gateTool,
-    gateAdoption: uc.gateAdoption,
-    adoptionEvidence: uc.adoptionEvidence,
-    gateOwner: uc.gateOwner,
-    successCriterion: uc.successCriterion,
-    successCriterionMet: uc.successCriterionMet,
-    baselineMetric: uc.baselineMetric,
-    baselineValue: uc.baselineValue,
-    baselineUnit: uc.baselineUnit,
-    postValue: uc.postValue,
-    measurementMethod: uc.measurementMethod,
-    netImpactStatement: uc.netImpactStatement,
-    isPositive: uc.isPositive,
-    roiStatus: uc.roiStatus,
-    revisitOn: uc.revisitOn,
-  };
+  // Derived, never hand-listed: the form submits every field it holds, so a
+  // field this page forgot to prefill would arrive as null and overwrite what
+  // was saved. See useCaseToFormInput and its coverage test.
+  const initial: Partial<UseCaseCreateInput> = useCaseToFormInput(uc);
 
   async function submit(input: UseCaseCreateInput) {
     "use server";

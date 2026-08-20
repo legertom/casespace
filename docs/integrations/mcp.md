@@ -2,7 +2,7 @@
 title: MCP server
 surface: /api/mcp
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-20
 code:
   - src/app/api/mcp/route.ts
   - src/lib/ai/proposal.ts
@@ -26,7 +26,7 @@ claude mcp add --transport http casespace https://<your-domain>/api/mcp --header
 
 | Tool | Does |
 |---|---|
-| `log_use_case` | Files a use case. **Title + description suffice.** People are given as full names; the server links them to the directory |
+| `log_use_case` | Files a use case. **Title + description suffice.** People are given as full names; the server links them to the directory. `urls` takes `{ kind, label?, url }` entries — `http(s)` only, see [URL kinds](../concepts/taxonomy.md#url-kinds) |
 | `update_use_case` | Updates fields on a record you created, own, or authored. Only provided fields change |
 | `list_my_use_cases` | The records that credit you |
 | `get_progress` | The full scoreboard — counts, targets, in flight, pipeline, per-org and per-team splits, attention flags |

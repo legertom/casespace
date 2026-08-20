@@ -110,6 +110,7 @@ export async function POST(req: Request) {
           owner: uc.ownerName,
           authors: uc.authors.map((a) => a.displayName),
           aiTools: uc.aiTools,
+          urls: uc.urls.map((u) => ({ kind: u.kind, label: u.label, url: u.url })),
           approaches: uc.approaches,
           currentSteps: uc.currentSteps,
           ratings: {

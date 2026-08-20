@@ -27,6 +27,7 @@ import { RecordCredit } from "@/components/record/record-credit";
 import { RecordGates } from "@/components/record/record-gates";
 import { RecordHeader } from "@/components/record/record-header";
 import { RecordRoi } from "@/components/record/record-roi";
+import { RecordUrls } from "@/components/record/record-urls";
 import { RecordWorksheet } from "@/components/record/record-worksheet";
 import { RelatedWorkflows } from "@/components/record/related-workflows";
 import { StatusControls } from "@/components/status-controls";
@@ -104,6 +105,11 @@ export default async function UseCaseDetailPage({
               record={record}
               editable={editable}
               approachChoices={approachChoices}
+            />
+            <RecordUrls
+              useCaseId={uc.id}
+              urls={uc.urls}
+              editable={editable}
             />
             <RecordWorksheet uc={uc} record={record} editable={editable} />
             <RecordRoi uc={uc} record={record} editable={editable} />

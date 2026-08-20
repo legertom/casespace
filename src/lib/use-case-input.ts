@@ -7,9 +7,35 @@
  * exists beats a perfect record that doesn't.
  */
 import { z } from "zod";
-import { APPROACHES, DEPARTMENTS, SETTABLE_STATUSES } from "./domain";
+import {
+  APPROACHES,
+  DEPARTMENTS,
+  SETTABLE_STATUSES,
+  URL_KINDS,
+} from "./domain";
 
 const rating = z.number().int().min(1).max(5);
+
+/**
+ * One labelled link on a record. http/https only, and not by convention —
+ * these render as clickable anchors, so `javascript:` and `data:` have to be
+ * impossible at the schema every write door shares, not at each door.
+ *
+ * z.httpUrl() trims, requires a literal "http(s)://" prefix, parses with
+ * `new URL`, then re-checks the protocol — which is what stops
+ * `javascript://example.com/%0aalert(1)` from slipping past the prefix test.
+ * It also rejects single-label hosts, so `http://localhost:3000` is out: a
+ * localhost URL is useless to everyone but the person who pasted it.
+ */
+export const useCaseUrlSchema = z.object({
+  kind: z.enum(URL_KINDS).default("other"),
+  label: z.string().trim().max(80).nullish(),
+  url: z
+    .httpUrl("Links have to start with http:// or https://")
+    .max(2048, "That URL is too long to store"),
+});
+
+export type UseCaseUrlInput = z.infer<typeof useCaseUrlSchema>;
 
 /**
  * Statuses a non-admin write may set. Qualified and Confirmed Positive ROI
@@ -36,6 +62,9 @@ export const useCaseCreateSchema = z.object({
 
   authors: z.array(personRefSchema).max(20).optional(),
   owner: personRefSchema.nullish(),
+
+  /** Where to find the thing itself. Its own table — see UNPATCHABLE below. */
+  urls: z.array(useCaseUrlSchema).max(20).optional(),
 
   aiTools: z.array(z.string().trim().min(1)).max(20).optional(),
   approaches: z.array(z.enum(APPROACHES)).max(APPROACHES.length).optional(),
@@ -105,10 +134,11 @@ export type UseCaseUpdateInput = z.infer<typeof useCaseUpdateSchema>;
 
 /**
  * Fields `updateUseCase` never patches column-for-column: the person refs
- * (owner, authors) resolve against the directory first, and status only ever
- * moves through the transition helpers so the movement log stays complete.
+ * (owner, authors) resolve against the directory first, `urls` is its own
+ * table, and status only ever moves through the transition helpers so the
+ * movement log stays complete.
  */
-const UNPATCHABLE = ["owner", "authors", "status"] as const;
+const UNPATCHABLE = ["owner", "authors", "urls", "status"] as const;
 
 export type PatchableKey = Exclude<
   keyof UseCaseUpdateInput,
@@ -126,9 +156,99 @@ export const UPDATE_PATCHABLE_KEYS = Object.keys(useCaseUpdateSchema.shape).filt
 
 export type UcSource = "form" | "wizard" | "notes" | "api" | "mcp";
 
+/** What `useCaseToFormInput` reads: a saved record plus its two child lists. */
+export interface SavedUseCase
+  extends Omit<UseCaseCreateInput, "authors" | "owner" | "urls" | "status"> {
+  ownerPersonId?: string | null;
+  ownerUserId?: string | null;
+  ownerName?: string | null;
+  authors: readonly {
+    personId: string | null;
+    userId: string | null;
+    displayName: string;
+  }[];
+  urls: readonly {
+    kind: (typeof URL_KINDS)[number];
+    label: string | null;
+    url: string;
+  }[];
+}
+
 /**
- * Expand a validated sparse create into the full insert row (minus authors,
- * which are inserted separately). Defaults are the emptiest honest values.
+ * A saved record, back into the shape the edit form starts from.
+ *
+ * This exists as one derived function rather than a hand-written object in the
+ * edit page because the form always submits every field it holds: a field the
+ * page forgot to prefill arrives as null and *overwrites* what was saved. That
+ * is not hypothetical — `buildHours` was silently erased on every full-form
+ * edit from the day it shipped until 2026-08-20. The companion test asserts
+ * this covers every field the create schema knows about, so the next field
+ * added can't repeat it.
+ *
+ * `status` is deliberately absent: it moves only through the transition
+ * helpers, and the form offers it on create only.
+ */
+export function useCaseToFormInput(
+  uc: SavedUseCase,
+): Omit<UseCaseCreateInput, "status"> {
+  return {
+    title: uc.title,
+    description: uc.description,
+    department: uc.department,
+    teamId: uc.teamId,
+    eltOrgId: uc.eltOrgId,
+    authors: uc.authors.map((a) => ({
+      personId: a.personId,
+      userId: a.userId,
+      displayName: a.displayName,
+    })),
+    owner: uc.ownerName
+      ? {
+          personId: uc.ownerPersonId ?? null,
+          userId: uc.ownerUserId ?? null,
+          displayName: uc.ownerName,
+        }
+      : null,
+    urls: uc.urls.map((u) => ({
+      kind: u.kind,
+      label: u.label,
+      url: u.url,
+    })),
+    aiTools: uc.aiTools,
+    approaches: uc.approaches,
+    currentSteps: uc.currentSteps,
+    ratingFrequency: uc.ratingFrequency,
+    ratingPain: uc.ratingPain,
+    ratingDataAvailability: uc.ratingDataAvailability,
+    ratingRisk: uc.ratingRisk,
+    ratingOwnershipClarity: uc.ratingOwnershipClarity,
+    ratingEvaluationClarity: uc.ratingEvaluationClarity,
+    ratingMaintenanceBurden: uc.ratingMaintenanceBurden,
+    functionalLeaderSuccess: uc.functionalLeaderSuccess,
+    gateNamed: uc.gateNamed,
+    gateTool: uc.gateTool,
+    gateAdoption: uc.gateAdoption,
+    adoptionEvidence: uc.adoptionEvidence,
+    gateOwner: uc.gateOwner,
+    successCriterion: uc.successCriterion,
+    successCriterionMet: uc.successCriterionMet,
+    buildHours: uc.buildHours,
+    baselineMetric: uc.baselineMetric,
+    baselineValue: uc.baselineValue,
+    baselineUnit: uc.baselineUnit,
+    postValue: uc.postValue,
+    measurementMethod: uc.measurementMethod,
+    netImpactStatement: uc.netImpactStatement,
+    isPositive: uc.isPositive,
+    roiStatus: uc.roiStatus,
+    revisitOn: uc.revisitOn,
+  };
+}
+
+/**
+ * Expand a validated sparse create into the full insert row (minus authors and
+ * urls, which live in their own tables and are inserted separately). Defaults
+ * are the emptiest honest values.
  */
 export function applyCreateDefaults(
   input: UseCaseCreateInput,
