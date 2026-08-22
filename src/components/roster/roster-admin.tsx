@@ -11,10 +11,12 @@ import {
   addLeadAction,
   addTeamAction,
   removeLeadAction,
+  setLeadMonthlySyncAction,
   setLeadStateAction,
   setLeadTeamsAction,
   updateLeadEmailAction,
 } from "@/server/actions-roster";
+import { LEAD_SYNC_MONTHS } from "@/lib/lead-progress";
 import { PeoplePicker, type PersonOption } from "@/components/people-picker";
 import type { PersonRef } from "@/lib/use-case-input";
 
@@ -38,6 +40,7 @@ export function LeadRowAdmin({
     state: "assigned" | "unassigned" | "pending";
     department: Department;
     teams: { id: string; name: string }[];
+    completedSyncMonths: string[];
   };
   allTeams: TeamOpt[];
 }) {
@@ -45,9 +48,13 @@ export function LeadRowAdmin({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState(lead.email);
+  const [editingEmail, setEditingEmail] = useState(false);
   const [editingTeams, setEditingTeams] = useState(false);
   const [teamIds, setTeamIds] = useState(lead.teams.map((t) => t.id));
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [completedSyncMonths, setCompletedSyncMonths] = useState(
+    lead.completedSyncMonths,
+  );
 
   const run = (fn: () => Promise<{ error?: string }>) => {
     setError(null);
@@ -58,27 +65,95 @@ export function LeadRowAdmin({
     });
   };
 
+  const saveEmail = () => {
+    if (email === lead.email) {
+      setEditingEmail(false);
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      const res = await updateLeadEmailAction(lead.id, email);
+      if (res.error) setError(res.error);
+      else {
+        setEditingEmail(false);
+        router.refresh();
+      }
+    });
+  };
+
+  const toggleSync = (month: string, met: boolean) => {
+    const previous = completedSyncMonths;
+    setCompletedSyncMonths((months) =>
+      met ? [...months, month] : months.filter((value) => value !== month),
+    );
+    setError(null);
+    startTransition(async () => {
+      const res = await setLeadMonthlySyncAction(lead.id, month, met);
+      if (res.error) {
+        setCompletedSyncMonths(previous);
+        setError(res.error);
+      } else {
+        router.refresh();
+      }
+    });
+  };
+
   return (
     <div className="mt-2 space-y-2 border-t border-hairline pt-2">
       <div className="flex flex-wrap items-center gap-2">
-        <label className="sr-only" htmlFor={`email-${lead.id}`}>
-          Email for this lead
-        </label>
-        <input
-          id={`email-${lead.id}`}
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className={`${inputCls} w-72`}
-        />
-        {email !== lead.email && (
+        {editingEmail ? (
+          <form
+            className="flex flex-wrap items-center gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              saveEmail();
+            }}
+          >
+            <label className="sr-only" htmlFor={`email-${lead.id}`}>
+              Email for this lead
+            </label>
+            <input
+              autoFocus
+              id={`email-${lead.id}`}
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  setEmail(lead.email);
+                  setEditingEmail(false);
+                }
+              }}
+              className={`${inputCls} w-72 max-w-full`}
+            />
+            <button
+              type="submit"
+              disabled={pending || email === lead.email}
+              className="rounded-md bg-ink px-2.5 py-1.5 text-sm text-paper disabled:opacity-60"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => {
+                setEmail(lead.email);
+                setEditingEmail(false);
+              }}
+              className="text-sm text-ink-muted underline-offset-2 hover:text-accent hover:underline"
+            >
+              Cancel
+            </button>
+          </form>
+        ) : (
           <button
             type="button"
-            disabled={pending}
-            onClick={() => run(() => updateLeadEmailAction(lead.id, email))}
-            className="rounded-md bg-ink px-2.5 py-1.5 text-sm text-paper disabled:opacity-60"
+            onClick={() => setEditingEmail(true)}
+            className="text-sm text-ink underline-offset-2 hover:text-accent hover:underline"
+            title="Edit email"
+            aria-label={`Edit email ${lead.email}`}
           >
-            Save email
+            {lead.email}
           </button>
         )}
         {lead.emailUnverified && (
@@ -136,6 +211,33 @@ export function LeadRowAdmin({
           </span>
         )}
       </div>
+      <fieldset className="text-sm">
+        <legend className="text-xs font-medium uppercase tracking-wide text-ink-faint">
+          2026 monthly 1:1s
+        </legend>
+        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+          {LEAD_SYNC_MONTHS.map((month) => {
+            const checked = completedSyncMonths.includes(month.value);
+            return (
+              <label
+                key={month.value}
+                className={`inline-flex items-center gap-1.5 ${checked ? "text-ink" : "text-ink-muted"}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  disabled={pending}
+                  onChange={(event) =>
+                    toggleSync(month.value, event.target.checked)
+                  }
+                  aria-label={`${month.label} 1:1 completed`}
+                />
+                {month.shortLabel}
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
       {editingTeams && (
         <div className="flex flex-wrap items-center gap-3">
           {allTeams

@@ -1,7 +1,7 @@
 ---
 title: Changelog
 audience: everyone
-updated: 2026-08-20
+updated: 2026-08-22
 code:
   - src/lib/changelog.ts
   - src/server/changelog.ts
@@ -41,6 +41,14 @@ entry is honest, an invented one is not. Add `Feedback: <id>` to point at the
 in-app report it came from.
 
 ---
+
+## 2026-08-22
+
+### Monthly AI Lead check-ins, at a glance
+
+Admins can now privately track each AI Lead's August-through-December monthly
+1:1s from the roster. Email addresses no longer sit permanently inside input
+boxes, either: click an address when it needs editing, then save it in place.
 
 ## 2026-08-20
 

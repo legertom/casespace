@@ -232,6 +232,24 @@ export const aiLeadTeams = pgTable(
   (t) => [primaryKey({ columns: [t.leadId, t.teamId] })],
 );
 
+/** Admin-only record of completed monthly one-on-ones with each AI Lead. */
+export const aiLeadMonthlySyncs = pgTable(
+  "ai_lead_monthly_syncs",
+  {
+    leadId: uuid("lead_id")
+      .notNull()
+      .references(() => aiLeads.id, { onDelete: "cascade" }),
+    month: date("month").notNull(),
+    completedById: uuid("completed_by_id")
+      .notNull()
+      .references(() => users.id),
+    completedAt: timestamp("completed_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.leadId, t.month] })],
+);
+
 /** The allocation of the 15 ROI-quantified use cases across ELT owners. */
 export const eltOrgs = pgTable("elt_orgs", {
   id: uuid("id").primaryKey().defaultRandom(),

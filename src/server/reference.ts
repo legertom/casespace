@@ -1,7 +1,15 @@
 import "server-only";
 import { asc, eq, or } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { aiLeads, aiLeadTeams, appSettings, eltOrgs, people, teams } from "@/db/schema";
+import {
+  aiLeadMonthlySyncs,
+  aiLeads,
+  aiLeadTeams,
+  appSettings,
+  eltOrgs,
+  people,
+  teams,
+} from "@/db/schema";
 import { DEFAULT_STALE_DAYS, type Department } from "@/lib/domain";
 
 export async function listTeams() {
@@ -89,6 +97,15 @@ export async function listRoster() {
     ...l,
     teams: links.filter((x) => x.leadId === l.id).map((x) => ({ id: x.teamId, name: x.teamName })),
   }));
+}
+
+/** Kept separate from the public roster query so only the admin page path reads it. */
+export async function listLeadMonthlySyncs() {
+  const db = getDb();
+  return db
+    .select({ leadId: aiLeadMonthlySyncs.leadId, month: aiLeadMonthlySyncs.month })
+    .from(aiLeadMonthlySyncs)
+    .orderBy(asc(aiLeadMonthlySyncs.month));
 }
 
 export async function getStaleDays(): Promise<number> {

@@ -4,7 +4,12 @@ import {
   DEPARTMENT_LABELS,
   type Department,
 } from "@/lib/domain";
-import { listPeopleLite, listRoster, listTeams } from "@/server/reference";
+import {
+  listLeadMonthlySyncs,
+  listPeopleLite,
+  listRoster,
+  listTeams,
+} from "@/server/reference";
 import { PersonLink } from "@/components/person-link";
 import { AddLeadForm, LeadRowAdmin } from "@/components/roster/roster-admin";
 
@@ -12,12 +17,13 @@ export const metadata = { title: "AI Leads" };
 
 export default async function RosterPage() {
   const user = await requireUser();
-  const [roster, allTeams, people] = await Promise.all([
+  const isAdmin = user.role === "admin";
+  const [roster, allTeams, people, monthlySyncs] = await Promise.all([
     listRoster(),
     listTeams(),
-    user.role === "admin" ? listPeopleLite() : Promise.resolve([]),
+    isAdmin ? listPeopleLite() : Promise.resolve([]),
+    isAdmin ? listLeadMonthlySyncs() : Promise.resolve([]),
   ]);
-  const isAdmin = user.role === "admin";
 
   return (
     <div>
@@ -49,7 +55,14 @@ export default async function RosterPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-ink-muted">
-                        {!isAdmin && <span>{l.email}</span>}
+                        {!isAdmin && (
+                          <a
+                            href={`mailto:${l.email}`}
+                            className="underline-offset-2 hover:text-accent hover:underline"
+                          >
+                            {l.email}
+                          </a>
+                        )}
                         {!isAdmin && l.emailUnverified && (
                           <span className="rounded-sm bg-accent-wash px-1.5 py-0.5 text-xs text-accent-deep">
                             unverified
@@ -79,6 +92,9 @@ export default async function RosterPage() {
                           state: l.state,
                           department: l.department as Department,
                           teams: l.teams,
+                          completedSyncMonths: monthlySyncs
+                            .filter((sync) => sync.leadId === l.id)
+                            .map((sync) => sync.month),
                         }}
                         allTeams={
                           allTeams as {

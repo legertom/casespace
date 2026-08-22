@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/db/client";
-import { aiLeadTeams, aiLeads, teams } from "@/db/schema";
+import { aiLeadMonthlySyncs, aiLeadTeams, aiLeads, teams } from "@/db/schema";
 import { DEPARTMENTS } from "@/lib/domain";
+import { isLeadSyncMonth } from "@/lib/lead-progress";
 import type { ActionResult } from "./actions";
 import { requireAdminActor } from "./guards";
 
@@ -38,6 +39,51 @@ export async function setLeadStateAction(
   if (gate.denied) return gate.denied;
   const db = getDb();
   await db.update(aiLeads).set({ state }).where(eq(aiLeads.id, leadId));
+  revalidatePath("/roster");
+  return {};
+}
+
+export async function setLeadMonthlySyncAction(
+  leadId: string,
+  month: string,
+  met: boolean,
+): Promise<ActionResult> {
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
+  const parsed = z
+    .object({
+      leadId: z.string().uuid(),
+      month: z.string().refine(isLeadSyncMonth),
+      met: z.boolean(),
+    })
+    .safeParse({ leadId, month, met });
+  if (!parsed.success) {
+    return { error: "That monthly sync could not be updated." };
+  }
+
+  const db = getDb();
+  if (parsed.data.met) {
+    await db
+      .insert(aiLeadMonthlySyncs)
+      .values({
+        leadId: parsed.data.leadId,
+        month: parsed.data.month,
+        completedById: gate.user.id,
+      })
+      .onConflictDoUpdate({
+        target: [aiLeadMonthlySyncs.leadId, aiLeadMonthlySyncs.month],
+        set: { completedById: gate.user.id, completedAt: new Date() },
+      });
+  } else {
+    await db
+      .delete(aiLeadMonthlySyncs)
+      .where(
+        and(
+          eq(aiLeadMonthlySyncs.leadId, leadId),
+          eq(aiLeadMonthlySyncs.month, parsed.data.month),
+        ),
+      );
+  }
   revalidatePath("/roster");
   return {};
 }
