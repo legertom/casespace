@@ -5,7 +5,7 @@ surface:
   - /whats-new/[week]
   - /whats-new/[week]/edit
 audience: everyone
-updated: 2026-08-15
+updated: 2026-08-25
 code:
   - src/app/(app)/whats-new/page.tsx
   - src/app/(app)/whats-new/[week]/page.tsx
@@ -55,6 +55,15 @@ That is a deliberate trade — a weekly post nobody has to approve is a weekly
 post that actually goes out — but it means the model's prose reaches readers
 unreviewed. The [editorial instructions](../operations/ai-config.md) are the
 only thing standing between a bad sentence and the whole company.
+
+## From the community
+
+Anyone at Clever can log a use case, and the post says so. Records logged
+outside the AI Leads roster get their own short section naming the people and
+the teams they serve, stated plainly as not counting toward the two numbers.
+They are kept out of "New in the casebook", out of the opening paragraph's
+figures, and out of the scoreboard — every count in the post is program-only.
+The section is skipped in a week with none.
 
 ## What it never contains
 

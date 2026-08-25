@@ -26,7 +26,15 @@ export interface WinRow {
  * ROI — a record demoted and re-confirmed carries its latest confirmation.
  */
 export async function getWins(): Promise<WinRow[]> {
-  const rows = await listUseCases({ status: "confirmed_positive_roi" });
+  // Program-only, to match the dashboard's 15. Currently belt-and-braces
+  // (Confirmed is admin-gated), but it stops the one real divergence: an admin
+  // confirms a community record and forgets the toggle, and /wins then shows a
+  // row — with an annual-ROI note, possibly carrying dollars — that the
+  // scoreboard excludes.
+  const rows = await listUseCases({
+    status: "confirmed_positive_roi",
+    inProgram: true,
+  });
   if (rows.length === 0) return [];
 
   const db = getDb();

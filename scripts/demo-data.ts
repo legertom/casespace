@@ -35,6 +35,11 @@ interface DemoUc {
   aiTools: string[];
   approaches: ("prompt" | "automation" | "agentic")[];
   status: UcStatus;
+  /**
+   * Community submission — logged by someone outside the AI Leads roster.
+   * Omitted means in-program, which is the majority.
+   */
+  community?: boolean;
   daysAgoLogged: number;
   /** [status, daysAgo] after birth, in order. */
   moves?: [UcStatus, number][];
@@ -78,6 +83,42 @@ interface DemoUc {
 }
 
 const DEMO: DemoUc[] = [
+  // Two community submissions: logged by people outside the roster, so the
+  // Community badge, the casebook filter, and the dashboard card all have
+  // something to show in dev. Neither counts toward the 45 or the 15.
+  {
+    title: "Board-packet skim",
+    description:
+      "Summarizes the monthly board packet into a one-page brief with the three numbers that moved, so the exec staff meeting starts from the same read.",
+    department: "finance_legal",
+    team: "Finance",
+    authors: ["Dana Whitfield"],
+    owner: "Dana Whitfield",
+    aiTools: ["Claude"],
+    approaches: ["prompt"],
+    community: true,
+    status: "launched",
+    daysAgoLogged: 9,
+    moves: [
+      ["under_construction", 7],
+      ["launched", 2],
+    ],
+  },
+  {
+    title: "Onboarding FAQ answerer",
+    description:
+      "Answers new-hire questions from the internal handbook in Slack, with a link to the source section so people can check it.",
+    department: "people",
+    team: "POps",
+    authors: ["Renee Alvarado"],
+    owner: "Renee Alvarado",
+    aiTools: ["Claude"],
+    approaches: ["prompt", "automation"],
+    community: true,
+    status: "in_testing",
+    daysAgoLogged: 4,
+    moves: [["in_testing", 1]],
+  },
   {
     title: "Support macro drafter",
     description:
@@ -471,6 +512,7 @@ async function main() {
         aiTools: d.aiTools,
         approaches: d.approaches,
         source: "form",
+        inProgram: !d.community,
         currentSteps: d.currentSteps ?? [],
         ratingFrequency: d.ratings?.frequency ?? null,
         ratingPain: d.ratings?.pain ?? null,
@@ -515,6 +557,10 @@ async function main() {
               )
             : null,
         roiConfirmedById: d.status === "confirmed_positive_roi" ? tom.id : null,
+        // Every demo row is created by the seeded admin because that user is
+        // guaranteed to exist; the real builders are in `authors`. That is why
+        // in_program is set explicitly above rather than derived from this —
+        // the fixture depicts leads' work, not Tom's.
         createdById: tom.id,
         createdAt: loggedAt,
       })

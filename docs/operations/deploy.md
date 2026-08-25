@@ -1,7 +1,7 @@
 ---
 title: Deploying
 audience: engineering
-updated: 2026-08-14
+updated: 2026-08-25
 code:
   - vercel.json
   - package.json
@@ -61,6 +61,26 @@ A local `pnpm db:migrate` therefore lands on the production database, and
 production will be running the *old* code until you deploy. **Migrate and
 deploy in the same breath**, or point local at a local database — see
 [local development](local-dev.md).
+
+`drizzle.config.ts` loads `.env.local` through dotenv, which does **not**
+override variables already set in the environment. So an inline override
+genuinely wins, and this is the safe way to apply a migration locally:
+
+```bash
+DATABASE_URL=postgresql://localhost:5432/casespace pnpm db:migrate
+```
+
+Never run `pnpm db:migrate` bare on that machine.
+
+### Rolling back a role change
+
+Reverting the code is safe but not total: an added enum value and an added
+column both stay (see [data and seeds](data-and-seeds.md#migrations)). Rows
+already written with a newer role would be read by older code as an unknown
+role, which fails every permission check — so they degrade to **read-only**,
+not to elevated access. To close the app back up without a deploy, use the
+`open_to_employees` switch in
+[authentication](../integrations/auth.md#the-kill-switch).
 
 ## Related
 

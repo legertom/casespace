@@ -4,7 +4,7 @@ surface:
   - /coach
   - /api/coach
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-25
 code:
   - src/app/(app)/coach/page.tsx
   - src/app/api/coach/route.ts
@@ -114,6 +114,14 @@ about this" path prefills the box and leaves the caret at the end. You add
 your question — or think better of it — before anything reaches the model.
 Nothing is sent on your behalf.
 
+**It knows which records count.** `search_use_cases` returns program and
+community records alike — "has anyone tried X?" is answered wrong by hiding
+half the casebook — and each one carries `inProgram`. `get_progress` counts
+only program records. The instructions are explicit that the two must never
+be conflated, and that it must not tell someone their community record counts
+toward the 45. See
+[counting rules](../concepts/counting-rules.md#program-and-community).
+
 **It will not invent a number.** The instructions are explicit: never invent
 or estimate an ROI figure the human didn't give. If ROI isn't knowable, the
 record gets marked not-yet-measurable with a revisit date rather than a guess.
@@ -158,9 +166,10 @@ else in Casespace works. See [AI configuration](../operations/ai-config.md).
 
 ## Who can do what
 
-Everyone can talk to the Coach, viewers included. Accepting a proposal goes
-through the normal permission checks, so a viewer can ask and read but cannot
-accept a create.
+Everyone can talk to the Coach, guests included. Accepting a proposal goes
+through the normal permission checks, so a guest (viewer) can ask and read
+but cannot accept a create. Everyone at Clever can, and what they accept is a
+community record unless they are on the AI Leads roster.
 
 ## Related
 

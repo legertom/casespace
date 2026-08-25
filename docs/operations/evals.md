@@ -1,7 +1,7 @@
 ---
 title: Evals
 audience: engineering
-updated: 2026-08-15
+updated: 2026-08-25
 code:
   - evals/whats-new.eval.ts
   - evals/negative-control.eval.ts

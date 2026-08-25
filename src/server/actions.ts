@@ -11,10 +11,11 @@ import {
   type UseCaseUpdateInput,
 } from "@/lib/use-case-input";
 import { recordProposalEdit } from "./coach-events";
-import { failure } from "./guards";
+import { failure, requireAdminActor } from "./guards";
 import {
   createUseCase,
   rejectAtQualifiedGate,
+  setProgramMembership,
   setStatus,
   softDeleteUseCase,
   updateUseCase,
@@ -153,4 +154,32 @@ export async function deleteUseCaseAction(id: string): Promise<ActionResult> {
   }
   revalidatePath("/use-cases");
   redirect("/use-cases");
+}
+
+/**
+ * Add a record to the program or take it out. Admin-only, and deliberately not
+ * routed through patchUseCaseAction — that path is gated by canEditUseCase,
+ * which would give every record's owner the switch.
+ *
+ * Revalidates the dashboard too: flipping this moves the counts on "/".
+ */
+export async function setProgramMembershipAction(
+  id: string,
+  inProgram: boolean,
+): Promise<ActionResult> {
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
+  try {
+    await setProgramMembership(
+      { id: gate.user.id, role: gate.user.role },
+      id,
+      inProgram,
+    );
+  } catch (err) {
+    return failure(err);
+  }
+  revalidatePath("/use-cases");
+  revalidatePath(`/use-cases/${id}`);
+  revalidatePath("/");
+  return {};
 }

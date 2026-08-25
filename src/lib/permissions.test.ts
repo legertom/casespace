@@ -157,3 +157,55 @@ describe("linking workflows", () => {
     ).toBe(false);
   });
 });
+
+describe("employees", () => {
+  it("log use cases", () => {
+    expect(canCreateUseCase("employee")).toBe(true);
+  });
+
+  it("edit records they created, own, or authored — and no others", () => {
+    expect(canEditUseCase({ id: "creator", role: "employee" }, uc)).toBe(true);
+    expect(canEditUseCase({ id: "owner", role: "employee" }, uc)).toBe(true);
+    expect(canEditUseCase({ id: "author-1", role: "employee" }, uc)).toBe(true);
+    expect(canEditUseCase({ id: "stranger", role: "employee" }, uc)).toBe(false);
+  });
+
+  it("cannot link workflows — the one place they are narrower than an AI Lead", () => {
+    expect(canLinkUseCases("employee")).toBe(false);
+    expect(canLinkUseCases("contributor")).toBe(true);
+  });
+
+  it("can still unlink from a record they can edit", () => {
+    expect(
+      canUnlinkUseCases({ id: "creator", role: "employee" }, { createdById: "someone" }, [uc]),
+    ).toBe(true);
+  });
+
+  it("comment, like everyone", () => {
+    expect(canComment("employee")).toBe(true);
+  });
+
+  it("see none of the three admin-only reads", () => {
+    expect(canViewPulse("employee")).toBe(false);
+    expect(canViewCoachLearnings("employee")).toBe(false);
+    expect(canQualify("employee")).toBe(false);
+  });
+
+  it("do not see annual-ROI notes", () => {
+    expect(
+      visibleHistoryNote(
+        { toStatus: "confirmed_positive_roi", note: "saves 400 hours" },
+        "employee",
+      ),
+    ).toBeNull();
+  });
+});
+
+describe("viewers stay out of the casebook's write surface", () => {
+  it("is the only role that cannot create", () => {
+    expect(canCreateUseCase("viewer")).toBe(false);
+    expect(canCreateUseCase("employee")).toBe(true);
+    expect(canCreateUseCase("contributor")).toBe(true);
+    expect(canCreateUseCase("admin")).toBe(true);
+  });
+});

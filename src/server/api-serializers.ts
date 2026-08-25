@@ -14,6 +14,14 @@ export function toApiUseCase(uc: UseCaseRow) {
     description: uc.description,
     status: uc.status,
     confirmedPositiveRoi: countsTowardRoi(uc.status),
+    /**
+     * Whether this record counts toward the 45 and the 15. Anyone at Clever
+     * can log one; records logged by an AI Lead are in the program, and
+     * everything else — employees and admins alike — is a community
+     * submission until an admin says otherwise. This collection returns
+     * both — /api/v1/progress counts only the former.
+     */
+    inProgram: uc.inProgram,
     department: uc.department,
     team: uc.teamName,
     eltOrg: uc.eltOrgName,

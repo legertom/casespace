@@ -2,10 +2,15 @@
  * Permission rules — pure functions, unit-tested.
  *
  * Visibility rule: every page is visible to every authenticated user, with
- * two read exceptions — the adoption pulse charts on Goals (canViewPulse)
- * and the Wins report (canViewWins). The other helpers govern writes
- * (What's New drafting/editing goes through canManageProgram-style admin
- * checks in the server actions).
+ * three read exceptions — the adoption pulse charts on Goals (canViewPulse),
+ * the Wins report (canViewWins), and Coach learnings
+ * (canViewCoachLearnings). The other helpers govern writes (What's New
+ * drafting/editing goes through canManageProgram-style admin checks in the
+ * server actions).
+ *
+ * Note the Community submissions card on the dashboard is *not* a fourth
+ * exception: it is chrome hidden from non-admins because it is a queue of
+ * admin decisions, and every record on it is public in the casebook.
  */
 import type { Role, UcStatus } from "./domain";
 
@@ -20,7 +25,12 @@ export interface UseCaseOwnership {
   authorUserIds: string[];
 }
 
-/** Admins edit everything; contributors edit their own (creator, author, or owner). */
+/**
+ * Admins edit everything; AI Leads and employees edit their own (creator,
+ * author, or owner). Viewers edit nothing — the early return is what routes
+ * every writing role to the ownership check, so adding a role above viewer
+ * needs no change here.
+ */
 export function canEditUseCase(
   user: SessionUser,
   uc: UseCaseOwnership,
@@ -34,16 +44,28 @@ export function canEditUseCase(
   );
 }
 
+/**
+ * Everyone at Clever logs use cases — employees, AI Leads, admins. Only
+ * viewers (signed-in guests who are not employees) stay out.
+ *
+ * Whether a record *counts* toward the program is a separate question, settled
+ * once at creation by `inProgramAtCreation` and not by this helper.
+ */
 export function canCreateUseCase(role: Role): boolean {
-  return role === "admin" || role === "contributor";
+  return role !== "viewer";
 }
 
 /**
  * Linking two workflows is open to every AI lead, on any two records —
  * ownership is deliberately not consulted. Spotting that two workflows are
  * the same thing, or that one builds on another, is program knowledge, and
- * the lead who spots it usually owns neither record. Viewers stay out: a link
- * is record data, unlike a comment.
+ * the lead who spots it usually owns neither record.
+ *
+ * Employees stay out, and this is the one place they are narrower than an AI
+ * Lead: a link asserts a relationship between records they may not own, which
+ * is the program knowledge above. They can still remove a link from their own
+ * record (canUnlinkUseCases → canEditUseCase). Viewers stay out entirely: a
+ * link is record data, unlike a comment.
  */
 export function canLinkUseCases(role: Role): boolean {
   return role === "admin" || role === "contributor";

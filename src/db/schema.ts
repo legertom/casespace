@@ -293,6 +293,23 @@ export const useCases = pgTable("use_cases", {
   /** One workflow can be several at once — a prompt inside an automation, say. Empty means "not sure yet". */
   approaches: approachEnum("approaches").array().notNull().default([]),
   source: ucSourceEnum("source").notNull().default("form"),
+  /**
+   * Program membership: does this record count toward the 45 and the 15?
+   *
+   * Stamped once at creation from the logger's role (inProgramAtCreation) and
+   * never re-derived — see docs/concepts/counting-rules.md. Admins move it by
+   * hand, and promotion past the Qualified gate sets it. The default is true
+   * so the backfill is correct: every record that predates this column was
+   * logged when only leads and admins could write and every one of them was
+   * program work, which is what the stamp records. Note the rule going
+   * forward is narrower — leads only — so admin-logged rows from before this
+   * column keep counting while new ones do not. That is the durable stamp
+   * behaving as designed, not a bug.
+   *
+   * Deliberately unindexed. The table is small and every scoreboard query
+   * reads all of it anyway; an index on a low-cardinality boolean here is noise.
+   */
+  inProgram: boolean("in_program").notNull().default(true),
 
   // Workflow discovery (intake worksheet)
   currentSteps: jsonb("current_steps").$type<string[]>().notNull().default([]),

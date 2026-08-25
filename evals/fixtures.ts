@@ -68,6 +68,7 @@ function scoreboard(overrides: Partial<Scoreboard> = {}): Scoreboard {
         },
       ],
     },
+    community: { logged: 0 },
     ...overrides,
   };
 }
@@ -76,6 +77,14 @@ function scoreboard(overrides: Partial<Scoreboard> = {}): Scoreboard {
 export const richWeek: WeekData = {
   weekStart: "2026-08-03",
   weekEnd: "2026-08-09",
+  communityRecords: [
+    {
+      title: "Weekly board-packet skim",
+      department: "Finance & Legal",
+      owner: "Dana Whitfield",
+      by: "Dana Whitfield",
+    },
+  ],
   newRecords: [
     {
       title: "Invoice exception triage",
@@ -153,6 +162,7 @@ export const richWeek: WeekData = {
 export const dollarTrapWeek: WeekData = {
   weekStart: "2026-08-03",
   weekEnd: "2026-08-09",
+  communityRecords: [],
   newRecords: [],
   promotions: [],
   regressions: [
@@ -191,6 +201,7 @@ export const dollarTrapWeek: WeekData = {
 export const quietWeek: WeekData = {
   weekStart: "2026-08-03",
   weekEnd: "2026-08-09",
+  communityRecords: [],
   newRecords: [],
   promotions: [],
   regressions: [],

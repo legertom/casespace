@@ -7,6 +7,7 @@ import {
 } from "@/lib/domain";
 import {
   getAttentionFlags,
+  getCommunitySubmissions,
   getEltProgress,
   getProgramCounts,
   getTeamCoverage,
@@ -14,11 +15,12 @@ import {
 
 /** The scoreboard payload shared by the Coach, REST, and MCP surfaces. */
 export async function buildProgressReport() {
-  const [counts, elt, coverage, attention] = await Promise.all([
+  const [counts, elt, coverage, attention, community] = await Promise.all([
     getProgramCounts(),
     getEltProgress(),
     getTeamCoverage(),
     getAttentionFlags(),
+    getCommunitySubmissions(0),
   ]);
   const today = etDateString(new Date());
   return {
@@ -53,5 +55,13 @@ export async function buildProgressReport() {
       sittingStill: attention.stale,
       launchedUnscored: attention.launchedUnscored,
     },
+    /**
+     * Records logged outside the program — counted here and nowhere else in
+     * this payload. Every other number above is program-only, and without this
+     * field the exclusion is invisible: an admin comparing `pipeline` against
+     * the casebook's row count would see a gap with no explanation. One
+     * integer, deliberately not a parallel scoreboard — no target applies.
+     */
+    community: { logged: community.total },
   };
 }

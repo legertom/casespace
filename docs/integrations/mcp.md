@@ -2,7 +2,7 @@
 title: MCP server
 surface: /api/mcp
 audience: everyone
-updated: 2026-08-20
+updated: 2026-08-25
 code:
   - src/app/api/mcp/route.ts
   - src/lib/ai/proposal.ts
@@ -51,6 +51,18 @@ Bearer token, format `csp_` + 48 hex. Rejected tokens get no session at all
 records created this way are stamped `source: mcp`.
 
 Permissions follow the token owner's web role.
+
+## Program and community
+
+`log_use_case` stamps program membership from the **real** role of whoever
+owns the token — AI Lead or admin logs a program record, anyone else at
+Clever logs a community record. It is not an argument you can pass, and `view
+as` does not affect it.
+
+`list_my_use_cases` returns both, each with `inProgram`. `get_progress`
+counts program records only, plus a `community.logged` total. Don't add them
+together. See
+[counting rules](../concepts/counting-rules.md#program-and-community).
 
 ## Related
 

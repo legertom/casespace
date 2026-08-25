@@ -260,7 +260,21 @@ export const SETTABLE_STATUSES = STATUSES.filter(
 
 export type SettableStatus = (typeof SETTABLE_STATUSES)[number];
 
-export const ROLES = ["viewer", "contributor", "admin"] as const;
+/**
+ * The role ladder, conceptually viewer < employee < contributor < admin.
+ *
+ * Array order is the Postgres enum order and deliberately NOT the ladder:
+ * "employee" is appended last because `ALTER TYPE ... ADD VALUE` is
+ * irreversible and inserting mid-list invites drizzle-kit into a type
+ * recreation. Nothing reads ROLES ordinally — only STATUSES has a rank.
+ *
+ * - viewer      — signed in but not a Clever employee (an allow-listed guest).
+ * - employee    — anyone at Clever. Logs and edits their own records.
+ * - contributor — an AI Lead, i.e. on the ai_leads roster. Their records count
+ *                 toward the program (see inProgramAtCreation).
+ * - admin       — runs the program.
+ */
+export const ROLES = ["viewer", "contributor", "admin", "employee"] as const;
 
 export type Role = (typeof ROLES)[number];
 
@@ -270,8 +284,9 @@ export type Role = (typeof ROLES)[number];
  *   Kate — not the record's contents, and not the shape of the graph.
  *   (Kate's call, relayed by Tom, 2026-08-16; the 15 stays a subset of the
  *   45 through the counting rules, not through a required path.)
- * - Editors move records freely among the five pre-Qualified statuses
- *   (forward or back — people fix mistakes).
+ * - Editors — AI Leads and employees — move records they can edit freely
+ *   among the five pre-Qualified statuses (forward or back; people fix
+ *   mistakes). Ownership is enforced separately, in use-case-service.
  * - Anything entering or leaving Qualified or Confirmed Positive ROI is
  *   admin-only: both record Kate's decisions.
  */
@@ -362,6 +377,48 @@ export function countsTowardDocumented(status: UcStatus): boolean {
  */
 export function countsTowardRoi(status: UcStatus): boolean {
   return status === "confirmed_positive_roi";
+}
+
+/**
+ * Program membership at creation: true only when the person logging the record
+ * is an AI Lead.
+ *
+ * Admins are deliberately NOT counted. An admin logging a workflow is logging
+ * their own work, not discharging a lead's commitment — the 45 is what the AI
+ * Leads built, and an admin who wants their own record in it says so
+ * explicitly rather than having it assumed. (Tom's call, 2026-08-25.) In
+ * practice this costs nothing: the two gestures that admit a record to the
+ * program, setProgramMembership and promotion past the Qualified gate, are
+ * both admin-only anyway.
+ *
+ * Stamped once into use_cases.in_program and never re-derived. That is the
+ * whole point: a lead who leaves the roster does not retroactively empty the
+ * casebook, and a community record does not become program work because its
+ * author was later added to the roster.
+ */
+export function inProgramAtCreation(actorRole: Role): boolean {
+  return actorRole === "contributor";
+}
+
+/**
+ * Both halves of "counts toward the 45": in the program, and Qualified or
+ * better. The two rules above answer only "does this *status* count" — they
+ * are used on their own where membership was already filtered in SQL. Use
+ * these where you hold a record and want the whole truth.
+ */
+export function countsTowardProgramDocumented(uc: {
+  inProgram: boolean;
+  status: UcStatus;
+}): boolean {
+  return uc.inProgram && countsTowardDocumented(uc.status);
+}
+
+/** Both halves of "counts toward the 15". Every one of these is also in the 45. */
+export function countsTowardProgramRoi(uc: {
+  inProgram: boolean;
+  status: UcStatus;
+}): boolean {
+  return uc.inProgram && countsTowardRoi(uc.status);
 }
 
 // ---------------------------------------------------------------------------

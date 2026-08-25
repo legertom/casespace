@@ -1,7 +1,7 @@
 ---
 title: Changelog
 audience: everyone
-updated: 2026-08-22
+updated: 2026-08-25
 code:
   - src/lib/changelog.ts
   - src/server/changelog.ts
@@ -41,6 +41,41 @@ entry is honest, an invented one is not. Add `Feedback: <id>` to point at the
 in-app report it came from.
 
 ---
+
+## 2026-08-25
+
+### Casespace is open to everyone at Clever
+Requested by: Tom Leger
+
+Anyone with a clever.com address can now log a use case. You no longer need
+to be an AI Lead: sign in, click **Log a use case**, and use whichever of the
+three doors you like. What you log is yours — you can edit it, add links and
+authors, and move it through the first five statuses, exactly as an AI Lead
+does with theirs.
+
+If you'd like your record to count toward the program's 45, ask your team's
+AI Lead or an admin. Don't log it a second time; a duplicate doesn't help.
+
+### Program and community records
+
+Records now say which of the two they are. Anything logged by an AI Lead
+counts toward the 45 and the 15 as before. Anything logged by anyone else —
+including Tom and Kate, deliberately — is a **community** record — a full record in the casebook,
+searchable and linkable and every bit as real, just not part of the H2
+program's count. Community records carry a small "Community" badge so you
+never have to guess which you're looking at.
+
+The casebook opens on program records, with a filter for community
+submissions or both. Your own records on the home page always show, whichever
+kind they are. The dashboard, Goals, and Graphs count program records only,
+and admins get a Community submissions list showing what's come in.
+
+Two things worth flagging for anyone who watches the numbers. **Coverage by
+team got stricter**: a team's dots only fill from its AI Leads' records, so a
+team whose colleagues logged three things but whose lead logged none now
+reads as zero — which is the question that table was always asking. And the
+weekly post now has a short **From the community** section naming the people
+who logged something outside the program, kept separate from every count.
 
 ## 2026-08-22
 

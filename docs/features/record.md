@@ -4,7 +4,7 @@ surface:
   - /use-cases/[id]
   - /use-cases/[id]/edit
 audience: everyone
-updated: 2026-08-20
+updated: 2026-08-25
 code:
   - src/app/(app)/use-cases/[id]/page.tsx
   - src/app/(app)/use-cases/[id]/edit/page.tsx
@@ -115,6 +115,25 @@ incomplete ROI panel shows the gaps and proceeds anyway.
 | Delete | — | own | any |
 
 "Own" means creator, named owner, or credited author.
+
+## Program membership
+
+Admins see a **Program** card in the aside with one checkbox: *Counts toward
+the program*. Ticking it adds a community record to the 45 and the 15;
+unticking removes a record from every number on the dashboard. Nobody else
+sees the card, and the check is enforced server-side.
+
+Moving a record to Qualified or Confirmed Positive ROI ticks it on its own —
+that promotion *is* an admin saying the record counts.
+
+Admins reach for this on their own records too: only an AI Lead's record is
+stamped in-program at creation, so a workflow you log as an admin starts as a
+community record and you tick the box if you mean it to count.
+
+**There is no history entry for a membership change.** The status-change log
+is for statuses, and a no-op entry there would corrupt Movement and the
+weekly post, which both read it as a promotion or a regression. A record's
+badge tells you where it stands now, not who moved it.
 
 ## Related
 

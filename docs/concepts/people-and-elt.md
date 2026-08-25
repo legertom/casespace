@@ -43,7 +43,7 @@ exact-after-folding, never fuzzy.
 
 ## `ai_leads` — the roster
 
-The 25 AI Leads, each mapped to one or more `teams`. Emails were confirmed
+The AI Leads, each mapped to one or more `teams`. Emails were confirmed
 against the AI Leads Google Group; any address a human hasn't verified is
 **flagged on the roster page**. Re-seeding never clobbers an email a human
 verified in the app.

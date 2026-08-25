@@ -16,12 +16,14 @@ import { PipelineConversion } from "./pipeline-conversion";
 import { PipelineSwitcher } from "./pipeline-switcher";
 import {
   getAttentionFlags,
+  getCommunitySubmissions,
   getEltProgress,
   getMovement,
   getProgramCounts,
   getTeamCoverage,
   type EltProgressRow,
 } from "@/server/dashboard-queries";
+import { canManageProgram } from "@/lib/permissions";
 import { STATUSES, type UcStatus } from "@/lib/domain";
 import { PersonLinks } from "@/components/person-link";
 
@@ -289,7 +291,8 @@ function inFlightNote(inFlight: number, readyForGate: number): string | undefine
 }
 
 export async function ProgramDashboard() {
-  const chart = parsePipelineChart((await getCurrentUser())?.pipelineChart);
+  const user = await getCurrentUser();
+  const chart = parsePipelineChart(user?.pipelineChart);
   const [counts, elt, coverage, movement, attention] = await Promise.all([
     getProgramCounts(),
     getEltProgress(),
@@ -297,6 +300,14 @@ export async function ProgramDashboard() {
     getMovement(7),
     getAttentionFlags(),
   ]);
+
+  // The community queue is a list of decisions only an admin can make, so it
+  // is chrome they alone see — not a fourth read exception: every record on it
+  // is public in the casebook. Gate the fetch, not just the markup. This reads
+  // the effective role, so an admin previewing as an employee loses the card.
+  const community = canManageProgram(user?.role ?? "viewer")
+    ? await getCommunitySubmissions(5)
+    : null;
 
   const awaitingRoi = counts.byStatus.qualified;
   const targetWarning = targetSumWarning(
@@ -514,6 +525,45 @@ export async function ProgramDashboard() {
           </table>
         </div>
       </section>
+
+      {/* ------------------------------------ community submissions */}
+      {community && community.total > 0 && (
+        <section aria-label="Community submissions">
+          <h2 className="font-serif text-2xl">Community submissions</h2>
+          <p className="mt-2 max-w-prose text-sm text-ink-muted">
+            {community.total}{" "}
+            {community.total === 1 ? "record" : "records"} logged outside the
+            program. Nothing here counts toward the 45 or the 15 until an admin
+            says it does.
+          </p>
+          <ul className="mt-4 space-y-2.5">
+            {community.recent.map((c) => (
+              <li key={c.id} className="flex gap-3 text-sm">
+                <span className="w-14 shrink-0 text-ink-faint">
+                  {fmtDateShort(c.createdAt)}
+                </span>
+                <Link
+                  href={`/use-cases/${c.id}`}
+                  className="truncate hover:text-accent"
+                >
+                  {c.title}
+                </Link>
+                {c.ownerName && (
+                  <span className="shrink-0 text-ink-faint">
+                    {c.ownerName}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+          <Link
+            href="/use-cases?program=community"
+            className="mt-4 inline-block text-sm text-accent underline underline-offset-2"
+          >
+            See all {community.total}.
+          </Link>
+        </section>
+      )}
 
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
         {/* ---------------------------------------------- movement */}

@@ -57,6 +57,9 @@ export async function PATCH(
   }
   try {
     await updateUseCase({ id: user.id, role: user.role }, id, parsed.data);
+    // Deliberately unscoped: this is a by-id lookup wearing a list's clothes.
+    // A program filter here would make PATCH on a community record return a
+    // bare { id } with no body.
     const [row] = await listUseCases({}).then((rows) =>
       rows.filter((r) => r.id === id),
     );

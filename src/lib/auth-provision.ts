@@ -9,6 +9,7 @@ import {
   users,
 } from "@/db/schema";
 import type { Role } from "@/lib/domain";
+import { deriveLoginRole, loginAllowed } from "@/lib/login-role";
 
 export interface ProvisionedLogin {
   userId: string;
@@ -22,9 +23,15 @@ export interface ProvisionedLogin {
  *   allowlist.
  * - Aliases resolve to one user via user_emails (Tom's gmail + clever.com
  *   land in the same account).
- * - Role is derived on every login: admin_emails setting → admin; roster
- *   match → contributor (and the roster row links to this login); otherwise
- *   viewer.
+ * - Role is derived on every login, by deriveLoginRole: admin_emails setting →
+ *   admin; roster match → contributor (and the roster row links to this
+ *   login); any clever.com alias → employee; otherwise viewer. The ladder
+ *   itself is pure and unit-tested in lib/login-role.ts — this function is the
+ *   I/O around it.
+ *
+ * Because the role is recomputed every time, roster and admin_emails changes
+ * take effect on next sign-in with no migration, and the open_to_employees
+ * switch below is a genuine kill switch rather than a one-way door.
  */
 export async function provisionLogin(
   rawEmail: string,
@@ -34,13 +41,11 @@ export async function provisionLogin(
   if (!email.includes("@")) return null;
   const db = getDb();
 
-  if (!email.endsWith("@clever.com")) {
-    const [allowed] = await db
-      .select()
-      .from(allowedLoginEmails)
-      .where(eq(allowedLoginEmails.email, email));
-    if (!allowed) return null;
-  }
+  const [allowlisted] = await db
+    .select()
+    .from(allowedLoginEmails)
+    .where(eq(allowedLoginEmails.email, email));
+  if (!loginAllowed(email, Boolean(allowlisted))) return null;
 
   // Resolve or create the user via the alias table.
   const [alias] = await db
@@ -81,9 +86,17 @@ export async function provisionLogin(
     .from(appSettings)
     .where(eq(appSettings.key, "admin_emails"));
   const adminEmails = Array.isArray(adminSetting?.value)
-    ? (adminSetting.value as string[]).map((e) => e.toLowerCase())
+    ? (adminSetting.value as string[])
     : [];
-  const isAdmin = myAliases.some((a) => adminEmails.includes(a));
+
+  // The kill switch for opening the app to everyone at Clever. Absent means
+  // on: the setting exists so it can be turned off in one row without a
+  // deploy, not so the feature has to be turned on in one.
+  const [openSetting] = await db
+    .select()
+    .from(appSettings)
+    .where(eq(appSettings.key, "open_to_employees"));
+  const openToEmployees = openSetting?.value !== false;
 
   // Contributor when a roster row carries one of this user's emails.
   let leadPersonId: string | null = null;
@@ -102,7 +115,12 @@ export async function provisionLogin(
     }
   }
 
-  const role: Role = isAdmin ? "admin" : isLead ? "contributor" : "viewer";
+  const role: Role = deriveLoginRole({
+    aliases: myAliases,
+    adminEmails,
+    isLead,
+    openToEmployees,
+  });
 
   const [current] = await db.select().from(users).where(eq(users.id, userId));
   const patch: Partial<typeof users.$inferInsert> = {};

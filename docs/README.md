@@ -24,9 +24,9 @@ The rules everything else cites.
 |---|---|
 | [The program](concepts/program.md) | KR 5, the two numbers, the four gates, no dollars / no gamification |
 | [Statuses](concepts/statuses.md) | The seven statuses, who can move what, the Qualified gate |
-| [Counting rules](concepts/counting-rules.md) | What the 45 and the 15 actually count, and what "in flight" is |
+| [Counting rules](concepts/counting-rules.md) | What the 45 and the 15 actually count, program vs community, and what "in flight" is |
 | [Gates and ROI evidence](concepts/gates-and-roi.md) | The four gates, the ROI checklist, why gaps warn but never block |
-| [Roles and permissions](concepts/roles-and-permissions.md) | Viewer / AI Lead / admin, the two read exceptions, the three deliberate ones |
+| [Roles and permissions](concepts/roles-and-permissions.md) | Viewer / Employee / AI Lead / admin, the three read exceptions, the four deliberate ones |
 | [Taxonomy](concepts/taxonomy.md) | Departments, approaches, sources, ratings, link kinds |
 | [People, roster, and ELT](concepts/people-and-elt.md) | Directory vs users vs roster vs ELT allocation |
 

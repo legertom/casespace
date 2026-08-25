@@ -3,20 +3,24 @@ import { requireUser } from "@/lib/current-user";
 import { identityForUser } from "@/server/identity";
 import { listUseCases } from "@/server/use-case-queries";
 import { ProgramDashboard } from "@/components/dashboard/program-dashboard";
-import { StatusBadge } from "@/components/status-badge";
+import { CommunityBadge, StatusBadge } from "@/components/status-badge";
+import { canCreateUseCase } from "@/lib/permissions";
 
 export default async function Home() {
   const user = await requireUser();
-  const isContributor = user.role === "contributor";
+  // Anyone who can log gets their own records; guests get a recency list.
+  const canLog = canCreateUseCase(user.role);
 
   // Everyone opens onto the program. Admins stop there; everyone else gets
   // their own records underneath — first thing on the page, not the only
   // thing on it.
-  const recent = isContributor
+  //
+  // Deliberately unscoped by program: your own community submission shows up
+  // here exactly like anything else. Hiding someone's first record from them
+  // is the one thing the casebook's program default must never do.
+  const recent = canLog
     ? await listUseCases({ mine: await identityForUser(user) })
-    : user.role === "viewer"
-      ? await listUseCases()
-      : [];
+    : await listUseCases();
 
   return (
     <div>
@@ -28,7 +32,7 @@ export default async function Home() {
             December 31.
           </p>
         </div>
-        {isContributor && (
+        {canLog && (
           <Link
             href="/use-cases/new"
             className="rounded-md bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-deep"
@@ -45,11 +49,11 @@ export default async function Home() {
       {user.role !== "admin" && (
         <section className="mt-14 border-t border-hairline pt-10">
           <h2 className="font-serif text-2xl">
-            {isContributor
+            {canLog
               ? `Your use cases, ${user.name.split(" ")[0]}`
               : "Recently updated"}
           </h2>
-          {isContributor && recent.length === 0 ? (
+          {canLog && recent.length === 0 ? (
             <p className="mt-4 max-w-md text-ink-muted">
               Nothing credits you yet. Built something with AI, however small?{" "}
               <Link
@@ -68,7 +72,10 @@ export default async function Home() {
                     className="flex items-baseline justify-between gap-6 py-3 hover:bg-surface"
                   >
                     <span className="truncate font-serif">{uc.title}</span>
-                    <StatusBadge status={uc.status} />
+                    <span className="flex items-center gap-2">
+                      {!uc.inProgram && <CommunityBadge />}
+                      <StatusBadge status={uc.status} />
+                    </span>
                   </Link>
                 </li>
               ))}

@@ -114,6 +114,8 @@ const handler = createMcpHandler(
             id: r.id,
             title: r.title,
             status: r.status,
+            /** Whether it counts toward the 45 and the 15. Your own records, both slices. */
+            inProgram: r.inProgram,
             department: r.department,
             owner: r.ownerName,
             updatedAt: r.updatedAt,

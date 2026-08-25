@@ -1,7 +1,7 @@
 /**
  * "View as" lets an admin preview the app with reduced permissions, to see
- * what an AI Lead or a viewer actually sees. Pure logic only — cookie I/O
- * lives in current-user.ts (read) and actions-view-as.ts (write).
+ * what an AI Lead, an employee, or a guest actually sees. Pure logic only —
+ * cookie I/O lives in current-user.ts (read) and actions-view-as.ts (write).
  *
  * The security property, unit-tested: this can only ever step an admin DOWN.
  * A forged cookie on a non-admin account changes nothing, and "admin" is not
@@ -12,18 +12,20 @@ import type { Role } from "./domain";
 export const VIEW_AS_COOKIE = "casespace_view_as";
 
 /** Roles an admin may preview. Deliberately excludes "admin". */
-export const VIEW_AS_ROLES = ["contributor", "viewer"] as const;
+export const VIEW_AS_ROLES = ["contributor", "employee", "viewer"] as const;
 
 export type ViewAsRole = (typeof VIEW_AS_ROLES)[number];
 
 export const VIEW_AS_LABELS: Record<ViewAsRole, string> = {
   contributor: "AI Lead",
+  employee: "Employee",
   viewer: "Viewer",
 };
 
 /** Same labels with their article, for use mid-sentence. */
 export const VIEW_AS_PROSE: Record<ViewAsRole, string> = {
   contributor: "an AI Lead",
+  employee: "an Employee",
   viewer: "a Viewer",
 };
 

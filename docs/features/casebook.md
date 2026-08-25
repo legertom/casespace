@@ -2,10 +2,11 @@
 title: The casebook
 surface: /use-cases
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-25
 code:
   - src/app/(app)/use-cases/page.tsx
   - src/server/use-case-queries.ts
+  - src/lib/program-scope.ts
 ---
 
 # The casebook
@@ -24,8 +25,25 @@ All filters are URL parameters, so a filtered view is a shareable link.
 | Mine | `mine=1` | Records that credit you — created, owned, or authored |
 | Person | `person` | Set by clicking a name anywhere in the app |
 | ELT org | `elt` | Set by clicking an owner on the dashboard |
+| Program scope | `program` | `program` (the default), `community`, or `all` |
 
 ## Rules that surprise people
+
+**The casebook defaults to the program, not to everything.** This is the one
+deliberate exception to "the casebook shows everything", and it is there
+because this is the page the program is run from. Anyone at Clever can log a
+use case; records logged outside the AI Leads roster carry a **Community**
+badge and sit behind `?program=community` or `?program=all`. When the program
+view is empty but community records exist, the empty state says so and links
+straight to them. See
+[counting rules](../concepts/counting-rules.md#program-and-community).
+
+Two places deliberately ignore this default: your own records on the home
+page, and `GET /api/v1/use-cases`. You always see your own work, and an API
+collection that silently shrank would break every script already reading it.
+
+**Only community records are badged.** In-program is the norm, and a chip on
+every other row would be noise. No badge means it counts.
 
 **An empty result never reads as an empty casebook.** When filters are
 active and match nothing, the page says so and offers to clear them — a

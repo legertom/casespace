@@ -6,7 +6,7 @@ surface:
   - /use-cases/new/review
   - /use-cases/from-notes
 audience: everyone
-updated: 2026-08-20
+updated: 2026-08-25
 code:
   - src/app/(app)/use-cases/new/page.tsx
   - src/app/(app)/use-cases/new/form/page.tsx
@@ -97,6 +97,20 @@ structural property, not a policy — see [the Coach](coach.md).
 ## Who can do what
 
 AI Leads and admins. Viewers cannot create records (`canCreateUseCase`).
+
+## Who can log one
+
+**Anyone with a `clever.com` address.** You do not need to be an AI Lead.
+
+If you are not on the [AI Leads roster](roster.md), what you log is a
+**community** record. It is a full record — same worksheet, same ROI section,
+same casebook — and it is yours to edit and to move through the first five
+statuses. It just does not count toward the program's 45 and 15, and it
+carries a "Community" badge saying so.
+
+If you think it should count, ask your team's AI Lead or an admin. An admin
+can add it to the program on the record itself. **Do not log it again** — a
+second copy does not make it count, it just makes two records.
 
 ## Related
 

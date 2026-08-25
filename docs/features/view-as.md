@@ -1,7 +1,7 @@
 ---
 title: View as
 audience: admin
-updated: 2026-08-14
+updated: 2026-08-25
 code:
   - src/lib/view-as.ts
   - src/server/actions-view-as.ts
@@ -37,6 +37,23 @@ the banner is a consequence of that resolution, not a separate flag.
 ## Who can do what
 
 Admins only. Nobody else has anything to step down from.
+
+## Rules that surprise people
+
+**Previewing does not change whether a record counts.** Only an AI Lead's
+record is stamped in-program, so a record you log while previewing is a
+community record — which is what it would have been anyway, since admins log
+community records too. Tick **Counts toward the program** on the record if
+you meant it to count. See
+[counting rules](../concepts/counting-rules.md#program-and-community).
+
+**Previewing as an AI Lead does not make your records count either.** The
+stamp follows the previewed role, so a record logged while previewing as an
+AI Lead *is* stamped in-program. If you were only looking around, untick it.
+
+Note the new-record notification deliberately works the other way: it reads
+the role from the table, so an admin previewing as an employee is still an
+admin for the purpose of who hears about a new record.
 
 ## Related
 

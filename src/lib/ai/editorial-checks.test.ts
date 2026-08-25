@@ -21,6 +21,7 @@ function weekData(overrides: Partial<WeekData> = {}): WeekData {
     weekStart: "2026-08-03",
     weekEnd: "2026-08-09",
     casespaceChanges: [],
+    communityRecords: [],
     newRecords: [],
     promotions: [],
     regressions: [],

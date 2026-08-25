@@ -27,6 +27,12 @@ export interface UseCaseFilters {
   mine?: Identity;
   /** Restrict to records the given person owns or authored. */
   credits?: Identity;
+  /**
+   * true = the program only, false = community submissions only, undefined =
+   * both. Lists default to both and label each record; only metrics are
+   * program-only. Callers must test `!== undefined` — see below.
+   */
+  inProgram?: boolean;
 }
 
 export interface UseCaseUrlEntry {
@@ -54,6 +60,11 @@ export async function listUseCases(
   if (filters.eltOrgId) conds.push(eq(useCases.eltOrgId, filters.eltOrgId));
   if (filters.eltUnallocated) conds.push(isNull(useCases.eltOrgId));
   if (filters.createdById) conds.push(eq(useCases.createdById, filters.createdById));
+  // `!== undefined`, not truthiness: `false` means "community only" and is
+  // exactly the value the surrounding truthy idiom would drop, which would
+  // make the Community filter silently return everything.
+  if (filters.inProgram !== undefined)
+    conds.push(eq(useCases.inProgram, filters.inProgram));
   if (filters.q) {
     const pattern = `%${filters.q}%`;
     conds.push(

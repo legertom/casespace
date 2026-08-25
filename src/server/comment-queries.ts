@@ -46,14 +46,25 @@ export interface MentionableUser {
 }
 
 /**
+ * How many names the composer will carry. Everyone at Clever can sign in now,
+ * so this list is no longer the ~22 rows it was when it shipped — it grows
+ * with headcount, on a page every employee visits. Capped rather than
+ * paginated because the composer filters client-side and a typeahead over a
+ * few hundred names is the honest scope of the feature; if the cap ever bites,
+ * the fix is a server-side search, not a bigger number.
+ */
+const MENTIONABLE_LIMIT = 400;
+
+/**
  * Everyone who can be @-mentioned: sign-in users, not the wider people
  * directory — a mention has to reach an account for the bell to mean anything.
- * ~22 rows; ship the list to the composer directly.
+ * Ordered by name and capped; shipped to the composer directly.
  */
 export async function listMentionableUsers(): Promise<MentionableUser[]> {
   const db = getDb();
   return db
     .select({ id: users.id, name: users.name, personId: users.personId })
     .from(users)
-    .orderBy(asc(users.name));
+    .orderBy(asc(users.name))
+    .limit(MENTIONABLE_LIMIT);
 }
