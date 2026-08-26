@@ -43,7 +43,7 @@ export interface ParseNotesResult extends ActionResult {
 export async function parseNotesAction(notes: string): Promise<ParseNotesResult> {
   const user = await requireUser();
   if (!canCreateUseCase(user.role)) {
-    return { error: "Viewers can't log use cases — ask your team's AI Lead." };
+    return { error: "Only signed-in Clever employees can log use cases." };
   }
   if (!aiConfigured()) return { error: AI_NOT_CONFIGURED_MESSAGE };
   const trimmed = notes.trim();

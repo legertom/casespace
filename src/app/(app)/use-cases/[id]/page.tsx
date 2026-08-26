@@ -9,6 +9,7 @@ import {
 import {
   canEditUseCase,
   canLinkUseCases,
+  canManageProgram,
   visibleHistoryNote,
 } from "@/lib/permissions";
 import { listComments, listMentionableUsers } from "@/server/comment-queries";
@@ -25,6 +26,7 @@ import { RecordAbout } from "@/components/record/record-about";
 import { RecordActivity } from "@/components/record/record-activity";
 import { RecordCredit } from "@/components/record/record-credit";
 import { RecordGates } from "@/components/record/record-gates";
+import { ProgramToggle } from "@/components/record/program-toggle";
 import { RecordHeader } from "@/components/record/record-header";
 import { RecordRoi } from "@/components/record/record-roi";
 import { RecordUrls } from "@/components/record/record-urls";
@@ -80,7 +82,10 @@ export default async function UseCaseDetailPage({
     label: t.name,
     department: t.department,
   }));
-  const orgChoices: Choice[] = orgs.map((o) => ({ value: o.id, label: o.name }));
+  const orgChoices: Choice[] = orgs.map((o) => ({
+    value: o.id,
+    label: o.name,
+  }));
   const approachChoices: Choice[] = APPROACHES.map((a) => ({
     value: a,
     label: APPROACH_LABELS[a],
@@ -106,11 +111,7 @@ export default async function UseCaseDetailPage({
               editable={editable}
               approachChoices={approachChoices}
             />
-            <RecordUrls
-              useCaseId={uc.id}
-              urls={uc.urls}
-              editable={editable}
-            />
+            <RecordUrls useCaseId={uc.id} urls={uc.urls} editable={editable} />
             <RecordWorksheet uc={uc} record={record} editable={editable} />
             <RecordRoi uc={uc} record={record} editable={editable} />
 
@@ -156,6 +157,14 @@ export default async function UseCaseDetailPage({
               teamChoices={teamChoices}
             />
             <RecordGates uc={uc} record={record} editable={editable} />
+            {canManageProgram(user.role) && (
+              <div className="rounded-md border border-hairline bg-surface p-4">
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-faint">
+                  Program
+                </h2>
+                <ProgramToggle id={uc.id} inProgram={uc.inProgram} />
+              </div>
+            )}
             <StatusControls
               id={uc.id}
               current={uc.status}

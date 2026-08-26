@@ -56,6 +56,9 @@ async function seedSettings() {
       ["tom.leger@clever.com", "tomleger@gmail.com", "kate.schaff@clever.com"],
     ],
     ["stale_days", 21],
+    // Seeded so the documented `update … where key='open_to_employees'`
+    // matches a row — an UPDATE against a missing key no-ops silently.
+    ["open_to_employees", true],
   ];
   for (const [key, value] of settings) {
     await db
@@ -84,7 +87,11 @@ async function upsertUser(name: string, primaryEmail: string, role: "admin") {
 
 async function seedAdmins() {
   const tom = await upsertUser("Tom Leger", "tom.leger@clever.com", "admin");
-  const kate = await upsertUser("Kate Schaff", "kate.schaff@clever.com", "admin");
+  const kate = await upsertUser(
+    "Kate Schaff",
+    "kate.schaff@clever.com",
+    "admin",
+  );
   const aliases: [string, string][] = [
     ["tom.leger@clever.com", tom.id],
     ["tomleger@gmail.com", tom.id],
@@ -188,30 +195,150 @@ const ROSTER: {
   email?: string;
   emailUnverified?: boolean;
 }[] = [
-  { name: "Alex Armstead", department: "business_operations", teams: ["Business Operations"], email: "alex.armstead@clever.com" },
-  { name: "Lotte Petersen-Buckley", department: "business_operations", teams: ["Business Analytics"], email: "lotte.petersen-buckley@clever.com" },
-  { name: "Yowan Ramchoreeter", department: "product_design", teams: ["Product & Design"], email: "yowan.ramchoreeter@clever.com" },
-  { name: "Justine Edrozo", department: "product_design", teams: ["Product & Design"], email: "justine.edrozo@clever.com" },
-  { name: "Vamsi Chunduru", department: "engineering", teams: ["Engineering"], email: "vamsi.chunduru@clever.com" },
-  { name: "Jen Kampf", department: "people", teams: ["POps", "Talent Acquisition"], email: "jennifer.kampf@clever.com" },
-  { name: "David McGeary", department: "css", teams: ["Technical Pre-sales"], email: "david.mcgeary@clever.com" },
-  { name: "Meghana Gangadharswami Balihallimath", department: "css", teams: ["Integration Engineering"], email: "meghana.balihallimath@clever.com" },
-  { name: "Dotun Oni", department: "css", teams: ["Partner Engineering"], email: "dotun.oni@clever.com" },
-  { name: "Sinclair Blackmon", department: "css", teams: ["Clever Core Onboarding"], email: "sinclair.blackmon@clever.com" },
-  { name: "Jonathan Boutin", department: "css", teams: ["Clever+ Onboarding"], email: "jonathan.boutin@clever.com" },
-  { name: "Marley Koschel", department: "css", teams: ["Customer Education"], email: "marley.koschel@clever.com" },
-  { name: "Arraine Siefert", department: "css", teams: ["Customer Support"], email: "arraine.siefert@clever.com" },
-  { name: "Katie Clarkson", department: "css", teams: ["Customer Support"], email: "katie.clarkson@clever.com" },
-  { name: "Shaun Hudgins", department: "css", teams: ["Technical Account Managers"], email: "shaun.hudgins@clever.com" },
-  { name: "Melissa Pevitz", department: "mss", teams: ["School Partnerships – Domestic"], email: "melissa.pevitz@clever.com" },
-  { name: "Aerin Bowers", department: "mss", teams: ["School Partnerships – International"], email: "aerin.bowers@clever.com" },
-  { name: "Lauren Raulerson", department: "mss", teams: ["School Success – Global"], email: "lauren.raulerson@clever.com" },
-  { name: "Patricia Henriquez", department: "mss", teams: ["School Success – Global"], email: "patricia.henriquez@clever.com" },
-  { name: "Zachary Gladnick", department: "mss", teams: ["App Partnerships"], email: "zach.gladnick@clever.com" },
-  { name: "Jennifer Pluma", department: "mss", teams: ["App Success"], email: "jennifer.pluma@clever.com" },
-  { name: "Evelyn Wong", department: "mss", teams: ["Marketing"], email: "evelyn.wong@clever.com" },
-  { name: "Kenton Lu", department: "finance_legal", teams: ["Finance"], email: "kenton.lu@clever.com" },
-  { name: "Wendy Yu", department: "finance_legal", teams: ["Legal"], email: "wendy.yu@clever.com" },
+  {
+    name: "Alex Armstead",
+    department: "business_operations",
+    teams: ["Business Operations"],
+    email: "alex.armstead@clever.com",
+  },
+  {
+    name: "Lotte Petersen-Buckley",
+    department: "business_operations",
+    teams: ["Business Analytics"],
+    email: "lotte.petersen-buckley@clever.com",
+  },
+  {
+    name: "Yowan Ramchoreeter",
+    department: "product_design",
+    teams: ["Product & Design"],
+    email: "yowan.ramchoreeter@clever.com",
+  },
+  {
+    name: "Justine Edrozo",
+    department: "product_design",
+    teams: ["Product & Design"],
+    email: "justine.edrozo@clever.com",
+  },
+  {
+    name: "Vamsi Chunduru",
+    department: "engineering",
+    teams: ["Engineering"],
+    email: "vamsi.chunduru@clever.com",
+  },
+  {
+    name: "Jen Kampf",
+    department: "people",
+    teams: ["POps", "Talent Acquisition"],
+    email: "jennifer.kampf@clever.com",
+  },
+  {
+    name: "David McGeary",
+    department: "css",
+    teams: ["Technical Pre-sales"],
+    email: "david.mcgeary@clever.com",
+  },
+  {
+    name: "Meghana Gangadharswami Balihallimath",
+    department: "css",
+    teams: ["Integration Engineering"],
+    email: "meghana.balihallimath@clever.com",
+  },
+  {
+    name: "Dotun Oni",
+    department: "css",
+    teams: ["Partner Engineering"],
+    email: "dotun.oni@clever.com",
+  },
+  {
+    name: "Sinclair Blackmon",
+    department: "css",
+    teams: ["Clever Core Onboarding"],
+    email: "sinclair.blackmon@clever.com",
+  },
+  {
+    name: "Jonathan Boutin",
+    department: "css",
+    teams: ["Clever+ Onboarding"],
+    email: "jonathan.boutin@clever.com",
+  },
+  {
+    name: "Marley Koschel",
+    department: "css",
+    teams: ["Customer Education"],
+    email: "marley.koschel@clever.com",
+  },
+  {
+    name: "Arraine Siefert",
+    department: "css",
+    teams: ["Customer Support"],
+    email: "arraine.siefert@clever.com",
+  },
+  {
+    name: "Katie Clarkson",
+    department: "css",
+    teams: ["Customer Support"],
+    email: "katie.clarkson@clever.com",
+  },
+  {
+    name: "Shaun Hudgins",
+    department: "css",
+    teams: ["Technical Account Managers"],
+    email: "shaun.hudgins@clever.com",
+  },
+  {
+    name: "Melissa Pevitz",
+    department: "mss",
+    teams: ["School Partnerships – Domestic"],
+    email: "melissa.pevitz@clever.com",
+  },
+  {
+    name: "Aerin Bowers",
+    department: "mss",
+    teams: ["School Partnerships – International"],
+    email: "aerin.bowers@clever.com",
+  },
+  {
+    name: "Lauren Raulerson",
+    department: "mss",
+    teams: ["School Success – Global"],
+    email: "lauren.raulerson@clever.com",
+  },
+  {
+    name: "Patricia Henriquez",
+    department: "mss",
+    teams: ["School Success – Global"],
+    email: "patricia.henriquez@clever.com",
+  },
+  {
+    name: "Zachary Gladnick",
+    department: "mss",
+    teams: ["App Partnerships"],
+    email: "zach.gladnick@clever.com",
+  },
+  {
+    name: "Jennifer Pluma",
+    department: "mss",
+    teams: ["App Success"],
+    email: "jennifer.pluma@clever.com",
+  },
+  {
+    name: "Evelyn Wong",
+    department: "mss",
+    teams: ["Marketing"],
+    email: "evelyn.wong@clever.com",
+  },
+  {
+    name: "Kenton Lu",
+    department: "finance_legal",
+    teams: ["Finance"],
+    email: "kenton.lu@clever.com",
+  },
+  {
+    name: "Wendy Yu",
+    department: "finance_legal",
+    teams: ["Legal"],
+    email: "wendy.yu@clever.com",
+  },
 ];
 
 async function seedTeamsAndRoster() {
@@ -256,15 +383,14 @@ async function seedTeamsAndRoster() {
       .where(eq(aiLeads.name, lead.name));
     let row;
     if (existing) {
-      const emailChanging = existing.emailUnverified && existing.email !== email;
+      const emailChanging =
+        existing.emailUnverified && existing.email !== email;
       [row] = await db
         .update(aiLeads)
         .set({
           department: lead.department,
           personId: person?.id ?? null,
-          ...(existing.emailUnverified
-            ? { email, emailUnverified }
-            : {}),
+          ...(existing.emailUnverified ? { email, emailUnverified } : {}),
           // A changed address invalidates any login link made under the old one.
           ...(emailChanging && existing.userId ? { userId: null } : {}),
         })
@@ -306,10 +432,38 @@ const ELT_ORGS: {
   note: string | null;
   sort: number;
 }[] = [
-  { name: "Amy Lee (CFO)", person: "Amy Lee", target: 2, departments: ["finance_legal"], note: null, sort: 1 },
-  { name: "Eric Krugler (CTO)", person: "Eric Krugler", target: 3, departments: ["engineering"], note: null, sort: 2 },
-  { name: "Jamie Reffell (CPO)", person: "Jamie Reffell", target: 2, departments: ["product_design"], note: null, sort: 3 },
-  { name: "Phillip Mikula (CRO)", person: "Phillip Mikula", target: 3, departments: ["mss"], note: null, sort: 4 },
+  {
+    name: "Amy Lee (CFO)",
+    person: "Amy Lee",
+    target: 2,
+    departments: ["finance_legal"],
+    note: null,
+    sort: 1,
+  },
+  {
+    name: "Eric Krugler (CTO)",
+    person: "Eric Krugler",
+    target: 3,
+    departments: ["engineering"],
+    note: null,
+    sort: 2,
+  },
+  {
+    name: "Jamie Reffell (CPO)",
+    person: "Jamie Reffell",
+    target: 2,
+    departments: ["product_design"],
+    note: null,
+    sort: 3,
+  },
+  {
+    name: "Phillip Mikula (CRO)",
+    person: "Phillip Mikula",
+    target: 3,
+    departments: ["mss"],
+    note: null,
+    sort: 4,
+  },
   // Kate owns CSS — Trent Matthews (Director of Customer Support & Services)
   // reports to her. Confirmed, so no caveat note.
   {
@@ -356,13 +510,33 @@ async function seedEltOrgs() {
         },
       });
   }
-  console.log(`· ELT orgs: ${ELT_ORGS.length} (targets sum ${ELT_ORGS.reduce((a, o) => a + o.target, 0)})`);
+  console.log(
+    `· ELT orgs: ${ELT_ORGS.length} (targets sum ${ELT_ORGS.reduce((a, o) => a + o.target, 0)})`,
+  );
 }
 
 const PULSE = [
-  { key: "ee_daily", label: "Employees using AI daily", baselineValue: 56, targetValue: 85, sort: 1 },
-  { key: "mgr_daily", label: "Managers, SLT & ELT using AI daily", baselineValue: 74, targetValue: 100, sort: 2 },
-  { key: "readiness", label: "Employees reporting AI readiness for their role", baselineValue: 83, targetValue: 90, sort: 3 },
+  {
+    key: "ee_daily",
+    label: "Employees using AI daily",
+    baselineValue: 56,
+    targetValue: 85,
+    sort: 1,
+  },
+  {
+    key: "mgr_daily",
+    label: "Managers, SLT & ELT using AI daily",
+    baselineValue: 74,
+    targetValue: 100,
+    sort: 2,
+  },
+  {
+    key: "readiness",
+    label: "Employees reporting AI readiness for their role",
+    baselineValue: 83,
+    targetValue: 90,
+    sort: 3,
+  },
 ];
 
 async function seedPulse() {
@@ -377,7 +551,11 @@ async function seedPulse() {
       });
     await db
       .insert(pulseSnapshots)
-      .values({ metricKey: m.key, value: m.baselineValue, takenOn: baselineDate })
+      .values({
+        metricKey: m.key,
+        value: m.baselineValue,
+        takenOn: baselineDate,
+      })
       .onConflictDoNothing();
   }
   console.log("· pulse goals: 3 metrics with June baselines");

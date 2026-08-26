@@ -19,6 +19,7 @@ describe("sparse API create", () => {
     });
     const row = applyCreateDefaults(parsed, {
       source: "mcp",
+      actorRole: "contributor",
       createdById: "user-1",
     });
     expect(row.status).toBe("in_discovery");
@@ -146,7 +147,7 @@ describe("a saved record, back into the edit form", () => {
   const saved: SavedUseCase = {
     ...applyCreateDefaults(
       useCaseCreateSchema.parse({ title: "T", description: "D" }),
-      { source: "form", createdById: "user-1" },
+      { source: "form", createdById: "user-1", actorRole: "contributor" },
     ),
     buildHours: 12,
     authors: [{ personId: null, userId: "u2", displayName: "Ada" }],
@@ -179,5 +180,46 @@ describe("a saved record, back into the edit form", () => {
       useCaseToFormInput({ ...saved, ownerName: "Kate", ownerUserId: "u9" })
         .owner,
     ).toEqual({ personId: null, userId: "u9", displayName: "Kate" });
+  });
+});
+
+describe("program membership is stamped, not submitted", () => {
+  const minimal = { title: "A workflow", description: "What it does." };
+
+  it("stamps in-program for an AI Lead", () => {
+    const row = applyCreateDefaults(useCaseCreateSchema.parse(minimal), {
+      source: "form",
+      createdById: "u1",
+      actorRole: "contributor",
+    });
+    expect(row.inProgram).toBe(true);
+  });
+
+  it("stamps community for an employee and for an admin", () => {
+    for (const actorRole of ["employee", "admin"] as const) {
+      const row = applyCreateDefaults(useCaseCreateSchema.parse(minimal), {
+        source: "form",
+        createdById: "u1",
+        actorRole,
+      });
+      expect(row.inProgram).toBe(false);
+    }
+  });
+
+  it("always sets the key rather than leaning on the column default", () => {
+    const row = applyCreateDefaults(useCaseCreateSchema.parse(minimal), {
+      source: "form",
+      createdById: "u1",
+      actorRole: "employee",
+    });
+    expect("inProgram" in row).toBe(true);
+  });
+
+  it("is not a field anyone can submit or patch", () => {
+    // UPDATE_PATCHABLE_KEYS is derived from the update schema, so a field on
+    // the create schema would hand every record's editor the program switch.
+    // Membership changes go through the admin-only setProgramMembership.
+    expect(Object.keys(useCaseCreateSchema.shape)).not.toContain("inProgram");
+    expect(UPDATE_PATCHABLE_KEYS as string[]).not.toContain("inProgram");
   });
 });

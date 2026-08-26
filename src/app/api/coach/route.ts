@@ -70,18 +70,28 @@ export async function POST(req: Request) {
         q: z.string().nullish().describe("Text search in title/description/owner"),
         status: z.enum(STATUSES).nullish(),
         department: z.enum(DEPARTMENTS).nullish(),
+        inProgram: z
+          .boolean()
+          .nullish()
+          .describe(
+            "true = program records only, false = community submissions only. Omit for both — the default, because 'has anyone tried X?' is answered wrong by hiding half the casebook.",
+          ),
       }),
-      execute: async ({ q, status, department }) => {
+      execute: async ({ q, status, department, inProgram }) => {
         const rows = await listUseCases({
           q: q ?? undefined,
           status: status ?? undefined,
           department: department ?? undefined,
+          inProgram: inProgram ?? undefined,
         });
         return rows.slice(0, 30).map((r) => ({
           id: r.id,
           title: r.title,
           status: r.status,
           confirmedPositiveRoi: countsTowardRoi(r.status),
+          // Whether it counts toward the 45/15. In the projection so the Coach
+          // can never describe a community record as part of the program.
+          inProgram: r.inProgram,
           department: r.department,
           team: r.teamName,
           owner: r.ownerName,
@@ -104,6 +114,7 @@ export async function POST(req: Request) {
           description: uc.description,
           status: uc.status,
           confirmedPositiveRoi: countsTowardRoi(uc.status),
+          inProgram: uc.inProgram,
           department: uc.department,
           team: uc.teamName,
           eltOrg: uc.eltOrgName,

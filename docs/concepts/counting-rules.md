@@ -1,10 +1,12 @@
 ---
 title: Counting rules
 audience: everyone
-updated: 2026-08-14
+updated: 2026-08-25
 code:
   - src/lib/domain.ts
   - src/server/progress-report.ts
+  - src/db/scopes.ts
+  - src/lib/program-scope.ts
 ---
 
 # Counting rules
@@ -47,6 +49,73 @@ The program does not track linear pace, so nothing in Casespace computes
 number would invent pressure that the program does not intend. Progress is
 shown as counts against targets, plus what is in flight behind them.
 
+## Program and community
+
+Anyone with a `@clever.com` address can log a use case. Not every record
+counts toward the two numbers.
+
+`use_cases.in_program` decides it. It is **stamped once, at creation**, from
+the role of whoever logged the record (`inProgramAtCreation`): only an **AI
+Lead** logs a program record. Everyone else — employees and admins alike —
+logs a **community** record.
+
+Community records are real records: full worksheet, full ROI section,
+editable by whoever logged them, listed and searchable in the casebook. They
+are simply not what the 45 and the 15 count.
+
+**The rule the whole design turns on: metrics are program-only; lists are
+everything, labeled.**
+
+| Surface | Shows |
+|---|---|
+| The dashboard, `/goals`, `/graphs`, `GET /api/v1/progress`, the Coach's `get_progress`, the weekly post's numbers | Program only |
+| The casebook, `GET /api/v1/use-cases`, the Coach's `search_use_cases`, MCP `list_my_use_cases` | Both, each record carrying `inProgram` |
+| The casebook's default view | Program, with a filter to see community or both |
+| Your own records on the home page | Both, always — you always see your own |
+
+An admin can add a community record to the program or take one out, on the
+record page. `GET /api/v1/progress` carries a `community.logged` count so the
+exclusion is visible rather than silent.
+
+### Rules that surprise people
+
+**Admins do not count as AI Leads.** A workflow Tom or Kate logs starts as a
+community record, exactly like anyone else's. The 45 is what the *AI Leads*
+built, and an admin logging their own work is not discharging a lead's
+commitment. It costs them nothing: both gestures that admit a record to the
+program — the toggle and promotion past the Qualified gate — are admin-only
+anyway, so an admin who means their record to count says so in one click.
+
+**Membership is never re-derived.** It records who logged the record *at the
+time*, which is the point: an AI Lead who leaves the roster does not
+retroactively empty the casebook, and a community record does not become
+program work because its author was added to the roster later. Only an admin
+moves it, by hand.
+
+**Promotion past the Qualified gate silently admits a record to the
+program.** Moving anything to Qualified or Confirmed Positive ROI sets
+`in_program` to true, because that transition *is* an admin saying the record
+counts. Without it, an admin who qualifies a community record and forgets the
+toggle would leave the Wins report and the dashboard's 15 disagreeing.
+Demotion does **not** clear it — only the explicit toggle does.
+
+**Movement and the weekly post filter on the record's current flag, not the
+flag it had at the time.** Taking a record out of the program erases its
+history from "Movement this week", and re-drafting an old What's New week
+after a flip will produce different prose than the post people already read.
+This is the right default — the flag answers "does this count?" — but it does
+mean the flag is retroactive for those two surfaces.
+
+**Coverage by team counts program records at every status.** It is the one
+table that asks "did they start", not "did they finish", so it has no status
+filter. It does have the program filter, and it needs it: without it, a team
+whose lead logged nothing but whose colleagues logged three things would
+render as having met its target.
+
+**There is no audit trail for membership changes.** `status_changes` is for
+statuses, and a `from === to` row there would poison Movement and the What's
+New promotion/regression split, which both compare `statusRank`.
+
 ## ELT allocation
 
 The 15 is allocated across ELT owners in `elt_orgs` — data, editable by
@@ -60,5 +129,6 @@ it never blocks. See [people, roster, and ELT](people-and-elt.md).
 ## Related
 
 - [Statuses](statuses.md)
+- [Roles and permissions](roles-and-permissions.md)
 - [The dashboard](../features/dashboard.md)
 - [`GET /api/v1/progress`](../integrations/rest-api.md)

@@ -2,6 +2,7 @@ import "server-only";
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { useCaseComments, users } from "@/db/schema";
+import { MENTIONABLE_LIMIT } from "@/lib/domain";
 
 export interface CommentRow {
   id: string;
@@ -48,12 +49,22 @@ export interface MentionableUser {
 /**
  * Everyone who can be @-mentioned: sign-in users, not the wider people
  * directory — a mention has to reach an account for the bell to mean anything.
- * ~22 rows; ship the list to the composer directly.
+ * Ordered by name and capped at MENTIONABLE_LIMIT (see lib/domain.ts); the
+ * composer detects a capped list by its length and says so. The server also
+ * logs when the cap bites, so ops hears about it before the first "I can't
+ * mention Zoe" report.
  */
 export async function listMentionableUsers(): Promise<MentionableUser[]> {
   const db = getDb();
-  return db
+  const rows = await db
     .select({ id: users.id, name: users.name, personId: users.personId })
     .from(users)
-    .orderBy(asc(users.name));
+    .orderBy(asc(users.name))
+    .limit(MENTIONABLE_LIMIT);
+  if (rows.length === MENTIONABLE_LIMIT) {
+    console.warn(
+      `listMentionableUsers hit its ${MENTIONABLE_LIMIT}-row cap — names past the cutoff cannot be mentioned. Time for server-side search.`,
+    );
+  }
+  return rows;
 }

@@ -10,6 +10,8 @@ import { z } from "zod";
 import {
   APPROACHES,
   DEPARTMENTS,
+  inProgramAtCreation,
+  type Role,
   SETTABLE_STATUSES,
   URL_KINDS,
 } from "./domain";
@@ -252,7 +254,7 @@ export function useCaseToFormInput(
  */
 export function applyCreateDefaults(
   input: UseCaseCreateInput,
-  ctx: { source: UcSource; createdById: string },
+  ctx: { source: UcSource; createdById: string; actorRole: Role },
 ) {
   return {
     title: input.title,
@@ -296,5 +298,11 @@ export function applyCreateDefaults(
     // the admin-gated statuses can't arrive here; no cast to hide behind.
     status: input.status ?? "in_discovery",
     createdById: ctx.createdById,
+    // Program membership is settled here, once, from the role of whoever is
+    // logging it — never from `input`, which is why it takes the role rather
+    // than a boolean. It is deliberately absent from useCaseCreateSchema:
+    // UPDATE_PATCHABLE_KEYS is derived from that schema, so a field there
+    // would let every record's editor flip its own membership.
+    inProgram: inProgramAtCreation(ctx.actorRole),
   };
 }

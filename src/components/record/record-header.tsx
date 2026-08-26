@@ -2,7 +2,7 @@ import Link from "next/link";
 import { DEPARTMENT_LABELS } from "@/lib/domain";
 import type { UseCaseDetail } from "@/server/use-case-queries";
 import { InlineField } from "@/components/record/inline-field";
-import { ConfirmedRoiBadge, StatusBadge } from "@/components/status-badge";
+import { CommunityBadge, ConfirmedRoiBadge, StatusBadge } from "@/components/status-badge";
 
 /**
  * Breadcrumb, title, badges, and the record-level actions — plus the
@@ -46,6 +46,7 @@ export function RecordHeader({
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <StatusBadge status={uc.status} />
             {confirmed && <ConfirmedRoiBadge />}
+            {!uc.inProgram && <CommunityBadge />}
             {uc.rejectionReason && editable && (
               <span className="text-sm text-flag">
                 Rejected at the gate — see note below

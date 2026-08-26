@@ -37,3 +37,21 @@ export function ConfirmedRoiBadge() {
     </span>
   );
 }
+
+/**
+ * Marks a record logged outside the AI Leads roster.
+ *
+ * Only the exception is badged: in-program is the norm, and a chip on every
+ * other row would be noise. Neutral styling on purpose — this is a statement
+ * about which count a record belongs to, not a demotion or a prize.
+ */
+export function CommunityBadge() {
+  return (
+    <span
+      title="Logged by someone outside the AI Leads roster. It lives in the casebook like any other record — it just doesn't count toward the 45 or the 15 unless an admin adds it to the program."
+      className="inline-flex items-center rounded-sm border border-hairline-strong px-1.5 py-0.5 text-xs text-ink-muted"
+    >
+      Community
+    </span>
+  );
+}

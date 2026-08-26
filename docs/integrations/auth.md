@@ -4,8 +4,10 @@ surface:
   - /signin
   - /api/auth/[...nextauth]
 audience: engineering
-updated: 2026-08-15
+updated: 2026-08-25
 code:
+  - src/lib/login-role.ts
+  - src/lib/auth-provision.ts
   - src/app/signin/page.tsx
   - src/app/layout.tsx
   - src/app/opengraph-image.tsx
@@ -46,13 +48,47 @@ either address land on the same person.
 
 ## Roles on provision
 
+The ladder is `deriveLoginRole` in `src/lib/login-role.ts` — pure and
+unit-tested. It is checked against **every alias on the account**, not just
+the address used to sign in, so Tom signing in with gmail is still an admin
+and a lead whose roster address differs from the one they used is still a
+contributor.
+
 | You are | Role |
 |---|---|
 | A seeded admin (Tom, either alias; Kate) | `admin` |
 | On the AI Leads roster | `contributor` |
-| Any other `clever.com` address | `viewer` |
+| Any `clever.com` address | `employee` |
+| Anything else that may sign in at all | `viewer` |
 
-`allowed_login_emails` carries any explicitly permitted exceptions.
+`allowed_login_emails` carries the non-`clever.com` addresses permitted to
+sign in — contractors, a personal alias — and those are the accounts that
+land on `viewer`. **Viewer now means "signed in but not a Clever employee."**
+
+Because the role is recomputed on every sign-in, roster and `admin_emails`
+changes need no migration; they take effect the next time that person signs
+in. There is no manual role override.
+
+### The kill switch
+
+`app_settings.open_to_employees` gates the `employee` rung. Absent or `true`
+means on, which is the default — the setting exists so the app can be closed
+back up in one row without a deploy, not so it has to be opened in one. Set
+it to `false` and every non-roster `clever.com` address drops to `viewer` on
+their **next request** — the switch is re-checked in `getCurrentUser`, so it
+does not wait out anyone's session — which restores exactly the behaviour
+before 2026-08-25. Admins and AI Leads are unaffected either way: the switch
+must never lock the program out of its own tool.
+
+The row is seeded on fresh databases; on one seeded before the setting
+existed, an `UPDATE` matches nothing and silently does nothing, so use the
+upsert form. Off-ish hand-written values (`"false"`, `"off"`, `0`) also
+count as off — `employeesOpen` in `lib/login-role.ts` parses defensively.
+
+```sql
+insert into app_settings (key, value) values ('open_to_employees', 'false'::jsonb)
+on conflict (key) do update set value = 'false'::jsonb;
+```
 
 ## Dev login
 
@@ -61,7 +97,8 @@ try any role locally:
 
 - `tom.leger@clever.com` → admin
 - any roster email (e.g. `vamsi.chunduru@clever.com`) → contributor
-- any other `clever.com` address → viewer
+- any other `clever.com` address → employee
+- an address in `allowed_login_emails` → viewer
 
 **Development only.** It is hard-disabled outside development builds, in
 addition to being off by default — do not set it in production.
@@ -70,6 +107,10 @@ addition to being off by default — do not set it in production.
 
 [Personal access tokens](../features/profile.md) are the non-browser path.
 They carry the owner's role and are checked on every API and MCP request.
+That role is the owner's **real** database role — tokens are deliberately not
+subject to `view as` — so the same `POST /api/v1/use-cases` body creates a
+program record from an AI Lead's token and a community record from an
+employee's. See [counting rules](../concepts/counting-rules.md#program-and-community).
 
 ## Related
 

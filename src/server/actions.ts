@@ -11,10 +11,11 @@ import {
   type UseCaseUpdateInput,
 } from "@/lib/use-case-input";
 import { recordProposalEdit } from "./coach-events";
-import { failure } from "./guards";
+import { failure, requireAdminActor } from "./guards";
 import {
   createUseCase,
   rejectAtQualifiedGate,
+  setProgramMembership,
   setStatus,
   softDeleteUseCase,
   updateUseCase,
@@ -50,7 +51,11 @@ export async function createUseCaseAction(
   let input: UseCaseCreateInput;
   try {
     input = useCaseCreateSchema.parse(raw);
-    id = await createUseCase({ id: user.id, role: user.role }, input, source);
+    id = await createUseCase(
+      { id: user.id, role: user.role, realRole: user.realRole },
+      input,
+      source,
+    );
   } catch (err) {
     return failure(err);
   }
@@ -135,7 +140,11 @@ export async function rejectGateAction(
   const user = await requireUser();
   if (!reason.trim()) return { error: "A reason is required to reject." };
   try {
-    await rejectAtQualifiedGate({ id: user.id, role: user.role }, id, reason.trim());
+    await rejectAtQualifiedGate(
+      { id: user.id, role: user.role },
+      id,
+      reason.trim(),
+    );
   } catch (err) {
     return failure(err);
   }
@@ -153,4 +162,32 @@ export async function deleteUseCaseAction(id: string): Promise<ActionResult> {
   }
   revalidatePath("/use-cases");
   redirect("/use-cases");
+}
+
+/**
+ * Add a record to the program or take it out. Admin-only, and deliberately not
+ * routed through patchUseCaseAction — that path is gated by canEditUseCase,
+ * which would give every record's owner the switch.
+ *
+ * Revalidates the dashboard too: flipping this moves the counts on "/".
+ */
+export async function setProgramMembershipAction(
+  id: string,
+  inProgram: boolean,
+): Promise<ActionResult> {
+  const gate = await requireAdminActor();
+  if (gate.denied) return gate.denied;
+  try {
+    await setProgramMembership(
+      { id: gate.user.id, role: gate.user.role },
+      id,
+      inProgram,
+    );
+  } catch (err) {
+    return failure(err);
+  }
+  revalidatePath("/use-cases");
+  revalidatePath(`/use-cases/${id}`);
+  revalidatePath("/");
+  return {};
 }

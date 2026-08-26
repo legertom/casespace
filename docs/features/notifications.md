@@ -1,7 +1,7 @@
 ---
 title: Notifications
 audience: everyone
-updated: 2026-08-20
+updated: 2026-08-25
 code:
   - src/components/notifications/notification-bell.tsx
   - src/lib/comment-notifications.ts
@@ -23,7 +23,7 @@ A bell in the header. **In-app only** — Casespace sends no email.
 | `reply` | Someone replied to your comment |
 | `comment` | A new comment on a record you're part of |
 | `link` | Someone linked a record you're credited on to another |
-| `new_use_case` | Someone logged a use case — **admins only** |
+| `new_use_case` | Someone logged a **program** use case — **admins only** |
 
 ## Who hears about a comment
 
@@ -72,6 +72,20 @@ is open to all. An admin who logs a record is not told about their own.
 
 Opening a notification marks it read and takes you to the record. **Mark all
 read** clears the bell.
+
+## Rules that surprise people
+
+**Community submissions do not ring the bell at all.** Anyone at Clever can
+log a use case, but only records that count toward the program notify admins.
+The bell shows 15 rows, caps its badge at "9+", and has no digest, no
+batching, and no per-kind filter — so a burst of community records would push
+every comment, reply, mention, and link off the visible list. The things that
+need an answer would be evicted by the things that need a look.
+
+Community records reach admins instead as a **Community submissions** card on
+the dashboard, with a count and the most recent titles, which an admin opens
+on their own schedule. The rule lives in `newUseCaseNotifications`, so it is
+unit-tested rather than inferred from the server action.
 
 ## Related
 

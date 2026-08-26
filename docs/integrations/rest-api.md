@@ -6,7 +6,7 @@ surface:
   - /api/v1/progress
   - /api/v1/roster
 audience: engineering
-updated: 2026-08-20
+updated: 2026-08-25
 code:
   - src/app/api/v1/use-cases/route.ts
   - src/app/api/v1/use-cases/[id]/route.ts
@@ -32,12 +32,12 @@ around them.
 
 | Endpoint | Verb | Notes |
 |---|---|---|
-| `/api/v1/use-cases` | GET | Filters: `status`, `department`, `q`, `mine=1` |
+| `/api/v1/use-cases` | GET | Filters: `status`, `department`, `q`, `mine=1`, `inProgram=1\|0` (`true`/`false` accepted too) |
 | `/api/v1/use-cases` | POST | Sparse create — only `title` + `description` required |
 | `/api/v1/use-cases/:id` | GET | Includes full status history |
 | `/api/v1/use-cases/:id` | PATCH | Patch semantics — only provided fields change |
 | `/api/v1/roster` | GET | AI Leads, with teams and unverified-email flags |
-| `/api/v1/progress` | GET | The scoreboard: counts, targets, in flight, pipeline, per-org and per-team splits, attention flags |
+| `/api/v1/progress` | GET | The scoreboard: counts, targets, in flight, pipeline, per-org and per-team splits, attention flags, `community.logged` |
 
 Unknown values for `status` and `department` are **ignored**, not rejected —
 a typo returns unfiltered results rather than an error.
@@ -89,6 +89,28 @@ create naming either is rejected with `422`. On existing records, status
 changes go through the app so the history stays complete and the admin gates
 stay meaningful — `status` in a PATCH body never applies. See
 [statuses](../concepts/statuses.md).
+
+## Program and community
+
+Anyone at Clever can log a use case; only records logged by an AI Lead or an
+admin count toward the program. Every record carries **`inProgram`**.
+
+The two endpoints deliberately disagree, and this is the thing to know before
+you file a bug about it:
+
+- **`/api/v1/use-cases` returns everything.** Silently shrinking a documented
+  collection would break scripts already reading it. Narrow it yourself with
+  `?inProgram=1` (program) or `?inProgram=0` (community); omit it for both.
+- **`/api/v1/progress` counts program records only** — every field in it.
+  `community.logged` carries the number excluded, so the gap between the two
+  endpoints is always explainable.
+
+**A token stamps according to its owner's real role.** Tokens are not subject
+to `view as`, so the same `POST /api/v1/use-cases` body creates a program
+record from an AI Lead's token and a community record from an employee's.
+Membership is not settable through the API at all — it is stamped at creation
+and changed only by an admin in the app, for the same reason
+[status is not settable here](#status-is-not-settable-here).
 
 ## Status codes
 

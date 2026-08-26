@@ -49,3 +49,33 @@ describe("view as", () => {
     });
   });
 });
+
+describe("previewing as an employee", () => {
+  it("steps an admin down to employee", () => {
+    expect(resolveEffectiveRole("admin", "employee")).toEqual({
+      role: "employee",
+      viewingAs: "employee",
+    });
+  });
+
+  it("never steps anyone up to employee", () => {
+    expect(resolveEffectiveRole("viewer", "employee")).toEqual({
+      role: "viewer",
+      viewingAs: null,
+    });
+  });
+
+  it("never steps an employee up to AI Lead", () => {
+    expect(resolveEffectiveRole("employee", "contributor")).toEqual({
+      role: "employee",
+      viewingAs: null,
+    });
+  });
+
+  it("leaves an AI Lead alone when they forge an employee cookie", () => {
+    expect(resolveEffectiveRole("contributor", "employee")).toEqual({
+      role: "contributor",
+      viewingAs: null,
+    });
+  });
+});

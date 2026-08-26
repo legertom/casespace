@@ -78,6 +78,31 @@ describe.skipIf(!aiConfigured())("What's New — a full week", () => {
     ]);
     expect(describeFailures(findings)).toBe("");
   });
+
+  // The community section is the one list in the post that sits outside every
+  // count. The risk is not that the model omits it — it is that the model
+  // folds it into the numbers, which is exactly the thing opening the tool up
+  // was designed not to do.
+  it("names the community submissions without letting them touch the numbers", async () => {
+    const findings = await judgePost(post, richWeek, [
+      {
+        id: "community-section-present",
+        question:
+          "Does the post have a section covering the records in communityRecords, naming the person who logged each one?",
+      },
+      {
+        id: "community-not-counted",
+        question:
+          "Does the post state that the community records are not counted toward the two program numbers (the 45 documented and the 15 confirmed ROI)?",
+      },
+      {
+        id: "community-excluded-from-counts",
+        question:
+          "Do the post's counts exclude the communityRecords entries? Fail if any community record is presented as new in the casebook, folded into the opening paragraph's figures, or added to the scoreboard totals.",
+      },
+    ]);
+    expect(describeFailures(findings)).toBe("");
+  });
 });
 
 describe.skipIf(!aiConfigured())("What's New — dollars in the source data", () => {

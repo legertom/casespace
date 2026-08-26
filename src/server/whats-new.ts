@@ -60,12 +60,20 @@ async function gatherWeekData(weekStart: string): Promise<WeekData> {
     owner: uc.ownerName,
   });
 
+  // The post's numbers are program-only, so program movement is what the
+  // program's sections describe. Community submissions get their own list and
+  // their own section; the query stays single because it already selects the
+  // whole record, so in_program arrives with it.
   const newRecords = changes
-    .filter((c) => c.change.fromStatus === null)
+    .filter((c) => c.change.fromStatus === null && c.uc.inProgram)
+    .map((c) => ({ ...describe(c.uc), by: c.byName }));
+  const communityRecords = changes
+    .filter((c) => c.change.fromStatus === null && !c.uc.inProgram)
     .map((c) => ({ ...describe(c.uc), by: c.byName }));
   const promotions = changes
     .filter(
       (c) =>
+        c.uc.inProgram &&
         c.change.fromStatus !== null &&
         statusRank(c.change.toStatus as UcStatus) >
           statusRank(c.change.fromStatus as UcStatus),
@@ -78,6 +86,7 @@ async function gatherWeekData(weekStart: string): Promise<WeekData> {
   const regressions = changes
     .filter(
       (c) =>
+        c.uc.inProgram &&
         c.change.fromStatus !== null &&
         statusRank(c.change.toStatus as UcStatus) <
           statusRank(c.change.fromStatus as UcStatus),
@@ -89,13 +98,15 @@ async function gatherWeekData(weekStart: string): Promise<WeekData> {
       note: c.change.note,
     }));
   const newQualified = changes
-    .filter((c) => c.change.toStatus === "qualified")
+    .filter((c) => c.uc.inProgram && c.change.toStatus === "qualified")
     .map((c) => ({
       ...describe(c.uc),
       authorsCredit: true,
     }));
   const newConfirmedRoi = changes
-    .filter((c) => c.change.toStatus === "confirmed_positive_roi")
+    .filter(
+      (c) => c.uc.inProgram && c.change.toStatus === "confirmed_positive_roi",
+    )
     .map((c) => ({
       ...describe(c.uc),
       authorsCredit: true,
@@ -125,6 +136,7 @@ async function gatherWeekData(weekStart: string): Promise<WeekData> {
     })),
     weekEnd: new Date(end.getTime() - 86_400_000).toISOString().slice(0, 10),
     newRecords,
+    communityRecords,
     promotions,
     regressions,
     newQualified,

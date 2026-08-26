@@ -20,7 +20,11 @@ import {
   type Role,
   type UcStatus,
 } from "@/lib/domain";
-import { canEditUseCase, canCreateUseCase } from "@/lib/permissions";
+import {
+  canCreateUseCase,
+  canEditUseCase,
+  canManageProgram,
+} from "@/lib/permissions";
 import { foldName } from "@/lib/people-match";
 import {
   applyCreateDefaults,
@@ -59,6 +63,11 @@ export async function resolveTeamId(
 interface Actor {
   id: string;
   role: Role;
+  /**
+   * The stored role when `role` is a view-as preview. Membership stamping
+   * reads this one: a costume must not decide what counts toward the 45.
+   */
+  realRole?: Role;
 }
 
 /**
@@ -93,7 +102,8 @@ async function resolveUserLinks(refs: PersonRef[]): Promise<PersonRef[]> {
   const byPerson = new Map(linked.map((u) => [u.personId!, u.id]));
   return resolved.map((r) => ({
     ...r,
-    userId: r.userId ?? (r.personId ? byPerson.get(r.personId) ?? null : null),
+    userId:
+      r.userId ?? (r.personId ? (byPerson.get(r.personId) ?? null) : null),
   }));
 }
 
@@ -130,15 +140,26 @@ export async function createUseCase(
   source: UcSource,
 ): Promise<string> {
   if (!canCreateUseCase(actor.role)) {
-    throw new ForbiddenError("Viewers cannot create use cases.");
+    throw new ForbiddenError(
+      "Only signed-in Clever employees can log use cases.",
+    );
   }
   const db = getDb();
-  const row = applyCreateDefaults(input, { source, createdById: actor.id });
+  // The permission check above uses the effective role so previews behave
+  // like the real thing — but membership is stamped from the REAL role. An
+  // admin previewing as an AI Lead who logs a test record must not silently
+  // put it in the program; admission is an explicit gesture (the toggle, or
+  // the Qualified gate), never a side effect of a costume. Note the admin
+  // fan-out below reads the table for the same reason: it is about who is
+  // notified, not about what counts.
+  const row = applyCreateDefaults(input, {
+    source,
+    createdById: actor.id,
+    actorRole: actor.realRole ?? actor.role,
+  });
   row.eltOrgId = await suggestedEltOrgId(input.department, input.eltOrgId);
 
-  const owner = input.owner
-    ? (await resolveUserLinks([input.owner]))[0]
-    : null;
+  const owner = input.owner ? (await resolveUserLinks([input.owner]))[0] : null;
   if (owner) {
     row.ownerPersonId = owner.personId ?? null;
     row.ownerUserId = owner.userId ?? null;
@@ -190,6 +211,10 @@ export async function createUseCase(
     const recipients = newUseCaseNotifications({
       actorId: actor.id,
       adminUserIds: admins.map((a) => a.id),
+      // From the saved row, not from `row` or the input: the stamp is the
+      // database's to make. Community submissions ring nobody — they reach
+      // admins as a dashboard count.
+      inProgram: created.inProgram,
     });
     if (recipients.length > 0) {
       await tx.insert(notifications).values(
@@ -214,7 +239,9 @@ export async function updateUseCase(
   const ownership = await getOwnership(id);
   if (!ownership) throw new NotFoundError("Use case not found.");
   if (!canEditUseCase(actor, ownership)) {
-    throw new ForbiddenError("You can only edit use cases you created, own, or authored.");
+    throw new ForbiddenError(
+      "You can only edit use cases you created, own, or authored.",
+    );
   }
   const db = getDb();
 
@@ -305,7 +332,9 @@ export async function setStatus(
 
   // Admins may move any record; editors only their own.
   if (actor.role !== "admin" && !canEditUseCase(actor, ownership)) {
-    throw new ForbiddenError("You can only move use cases you created, own, or authored.");
+    throw new ForbiddenError(
+      "You can only move use cases you created, own, or authored.",
+    );
   }
   if (!canSetStatus(actor.role, from, to)) {
     throw new ForbiddenError(
@@ -329,6 +358,15 @@ export async function setStatus(
     patch.qualifiedAt = new Date();
     patch.approvedById = actor.id;
     patch.rejectionReason = null;
+  }
+  // Promotion past the Qualified gate *is* admission to the program: it is an
+  // admin-only transition recording Kate's decision, and it is the natural
+  // gesture for taking a community record on. Without this, an admin who
+  // qualifies a community record and forgets the toggle leaves /wins and the
+  // dashboard's 15 disagreeing. Demotion does not clear it — membership is
+  // durable, and only the explicit toggle turns it off.
+  if (to === "qualified" || to === "confirmed_positive_roi") {
+    patch.inProgram = true;
   }
   if (to === "confirmed_positive_roi") {
     patch.roiConfirmedAt = new Date();
@@ -397,6 +435,34 @@ export async function rejectAtQualifiedGate(
   });
 }
 
+/**
+ * Add a record to the program, or take it out — admins only.
+ *
+ * The switch exists so a community submission worth counting can be taken on,
+ * and so a stray record can be excluded. Deliberately not routed through
+ * patchUseCaseAction: that path is gated by canEditUseCase, which would hand
+ * the switch to every record's owner.
+ *
+ * No history row. status_changes is for statuses, and a from === to entry
+ * would poison getMovement and the What's New promotion/regression split,
+ * which both compare statusRank. The gap is noted in docs/features/record.md.
+ */
+export async function setProgramMembership(
+  actor: Actor,
+  id: string,
+  inProgram: boolean,
+): Promise<void> {
+  if (!canManageProgram(actor.role)) {
+    throw new ForbiddenError(
+      "Only an admin can change whether a record counts toward the program.",
+    );
+  }
+  const ownership = await getOwnership(id);
+  if (!ownership) throw new NotFoundError("Use case not found.");
+  const db = getDb();
+  await db.update(useCases).set({ inProgram }).where(eq(useCases.id, id));
+}
+
 export async function softDeleteUseCase(
   actor: Actor,
   id: string,
@@ -404,7 +470,9 @@ export async function softDeleteUseCase(
   const ownership = await getOwnership(id);
   if (!ownership) throw new NotFoundError("Use case not found.");
   if (!canEditUseCase(actor, ownership)) {
-    throw new ForbiddenError("You can only delete use cases you created, own, or authored.");
+    throw new ForbiddenError(
+      "You can only delete use cases you created, own, or authored.",
+    );
   }
   const db = getDb();
   await db

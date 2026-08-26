@@ -2,7 +2,7 @@
 title: Wins
 surface: /wins
 audience: admin
-updated: 2026-08-14
+updated: 2026-08-25
 code:
   - src/app/(app)/wins/page.tsx
   - src/server/wins-queries.ts
@@ -43,6 +43,15 @@ in `status_changes`. A record that was demoted and re-confirmed carries its
 
 This is why the note is mandatory at confirmation time: this page is the
 reason it exists.
+
+## Program records only
+
+The report lists confirmed **program** records, matching the dashboard's 15.
+In practice every confirmed record is a program record — confirming is
+admin-only, and it sets program membership on its own — but the filter is
+there so the two can never disagree. A page that contradicted the
+[counting rules](../concepts/counting-rules.md) would be a bug, and this page
+carries annual-ROI notes, so it is the wrong place to find out.
 
 ## Related
 

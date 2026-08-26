@@ -4,7 +4,12 @@ import {
   canReplyAtDepth,
   canSetStatus,
   countsTowardDocumented,
+  countsTowardProgramDocumented,
+  countsTowardProgramRoi,
   countsTowardRoi,
+  inProgramAtCreation,
+  ROLES,
+  STATUSES,
   documentedGatesComplete,
   etDateString,
   isStale,
@@ -215,5 +220,101 @@ describe("comment threading", () => {
     expect(canReplyAtDepth(5)).toBe(false);
     // Defensive: a forged deeper parent is refused too.
     expect(canReplyAtDepth(6)).toBe(false);
+  });
+});
+
+describe("program membership at creation", () => {
+  it("counts AI Leads", () => {
+    expect(inProgramAtCreation("contributor")).toBe(true);
+  });
+
+  it("does not count admins — the 45 is what the AI Leads built", () => {
+    // An admin logging a workflow is logging their own work, not discharging a
+    // lead's commitment. They add it to the program explicitly if they mean to.
+    expect(inProgramAtCreation("admin")).toBe(false);
+  });
+
+  it("does not count employees or guests", () => {
+    expect(inProgramAtCreation("employee")).toBe(false);
+    expect(inProgramAtCreation("viewer")).toBe(false);
+  });
+
+  it("counts exactly one role", () => {
+    expect(ROLES.filter(inProgramAtCreation)).toEqual(["contributor"]);
+  });
+
+  it("has an answer for every role", () => {
+    // Guards against a future role silently defaulting into the program.
+    for (const role of ROLES) {
+      expect(typeof inProgramAtCreation(role)).toBe("boolean");
+    }
+  });
+});
+
+describe("the composite counting rules", () => {
+  it("needs both halves for the 45", () => {
+    expect(
+      countsTowardProgramDocumented({ inProgram: true, status: "qualified" }),
+    ).toBe(true);
+    expect(
+      countsTowardProgramDocumented({ inProgram: false, status: "qualified" }),
+    ).toBe(false);
+    expect(
+      countsTowardProgramDocumented({ inProgram: true, status: "launched" }),
+    ).toBe(false);
+  });
+
+  it("needs both halves for the 15", () => {
+    expect(
+      countsTowardProgramRoi({
+        inProgram: true,
+        status: "confirmed_positive_roi",
+      }),
+    ).toBe(true);
+    expect(
+      countsTowardProgramRoi({
+        inProgram: false,
+        status: "confirmed_positive_roi",
+      }),
+    ).toBe(false);
+    expect(
+      countsTowardProgramRoi({ inProgram: true, status: "qualified" }),
+    ).toBe(false);
+  });
+
+  it("keeps the 15 a subset of the 45, for every status and both flags", () => {
+    for (const status of STATUSES) {
+      for (const inProgram of [true, false]) {
+        const uc = { inProgram, status };
+        if (countsTowardProgramRoi(uc)) {
+          expect(countsTowardProgramDocumented(uc)).toBe(true);
+        }
+      }
+    }
+  });
+});
+
+describe("employees move records exactly as far as AI Leads", () => {
+  it("moves freely among the five pre-Qualified statuses", () => {
+    expect(canSetStatus("employee", "in_discovery", "approved_by_fl")).toBe(true);
+    expect(canSetStatus("employee", "launched", "in_testing")).toBe(true);
+  });
+
+  it("cannot reach or leave the admin-gated statuses", () => {
+    expect(canSetStatus("employee", "launched", "qualified")).toBe(false);
+    expect(canSetStatus("employee", "qualified", "launched")).toBe(false);
+    expect(
+      canSetStatus("employee", "launched", "confirmed_positive_roi"),
+    ).toBe(false);
+  });
+
+  it("matches contributor on every transition", () => {
+    for (const from of STATUSES) {
+      for (const to of STATUSES) {
+        expect(canSetStatus("employee", from, to)).toBe(
+          canSetStatus("contributor", from, to),
+        );
+      }
+    }
   });
 });

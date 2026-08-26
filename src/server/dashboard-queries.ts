@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq, gte, isNull } from "drizzle-orm";
+import { and, count, desc, eq, gte } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import {
   aiLeadTeams,
@@ -16,9 +16,11 @@ import {
   countsTowardRoi,
   documentedGatesComplete,
   isStale,
+  WORKFLOWS_PER_LEAD,
   type Department,
   type UcStatus,
 } from "@/lib/domain";
+import { COMMUNITY_ALIVE, IN_PROGRAM_ALIVE } from "@/db/scopes";
 import { getStaleDays } from "./reference";
 
 export interface ProgramCounts {
@@ -34,13 +36,24 @@ export interface ProgramCounts {
   readyForGate: number;
 }
 
-async function activeUseCases() {
+/**
+ * The scoreboard's universe: alive AND counted by the program.
+ *
+ * Community submissions are real work on an open casebook — they are just not
+ * what the 45 and the 15 count. Every aggregator in this file reads through
+ * here, which is why it is a hard filter rather than a parameter: all of them
+ * return program-shaped numbers measured against program targets, so a
+ * "community mode" would produce counts with no target to mean anything
+ * against. The honest answer to "show me community numbers" is the casebook
+ * filter (/use-cases?program=community) plus getCommunitySubmissions below.
+ */
+async function programUseCases() {
   const db = getDb();
-  return db.select().from(useCases).where(isNull(useCases.deletedAt));
+  return db.select().from(useCases).where(IN_PROGRAM_ALIVE);
 }
 
 export async function getProgramCounts(): Promise<ProgramCounts> {
-  const rows = await activeUseCases();
+  const rows = await programUseCases();
   const byStatus = Object.fromEntries(STATUSES.map((s) => [s, 0])) as Record<
     UcStatus,
     number
@@ -52,7 +65,9 @@ export async function getProgramCounts(): Promise<ProgramCounts> {
       readyForGate++;
     }
   }
-  const documented = rows.filter((r) => countsTowardDocumented(r.status)).length;
+  const documented = rows.filter((r) =>
+    countsTowardDocumented(r.status),
+  ).length;
   return {
     documented,
     confirmedRoi: byStatus.confirmed_positive_roi,
@@ -81,7 +96,7 @@ export interface EltProgressRow {
 export async function getEltProgress(): Promise<EltProgressRow[]> {
   const db = getDb();
   const orgs = await db.select().from(eltOrgs).orderBy(eltOrgs.sort);
-  const rows = await activeUseCases();
+  const rows = await programUseCases();
 
   const result: EltProgressRow[] = orgs.map((o) => ({
     id: o.id,
@@ -145,7 +160,7 @@ export async function getTeamCoverage(): Promise<TeamCoverageRow[]> {
     })
     .from(aiLeadTeams)
     .innerJoin(aiLeads, eq(aiLeadTeams.leadId, aiLeads.id));
-  const cases = await activeUseCases();
+  const cases = await programUseCases();
 
   return allTeams
     .map((t) => {
@@ -157,8 +172,12 @@ export async function getTeamCoverage(): Promise<TeamCoverageRow[]> {
         teamName: t.name,
         department: t.department as Department,
         leads,
+        // Program records only (programUseCases), but every status — this is
+        // the one table that asks "did they start", not "did they finish".
+        // Without the program filter a team where three employees logged
+        // something and the lead logged nothing would render as satisfied.
         useCaseCount: cases.filter((c) => c.teamId === t.id).length,
-        target: leads.length * 2,
+        target: leads.length * WORKFLOWS_PER_LEAD,
       };
     })
     .sort(
@@ -195,7 +214,7 @@ export async function getMovement(days = 7): Promise<MovementItem[]> {
     .from(statusChanges)
     .innerJoin(useCases, eq(statusChanges.useCaseId, useCases.id))
     .leftJoin(users, eq(statusChanges.changedById, users.id))
-    .where(and(gte(statusChanges.createdAt, since), isNull(useCases.deletedAt)))
+    .where(and(gte(statusChanges.createdAt, since), IN_PROGRAM_ALIVE))
     .orderBy(desc(statusChanges.createdAt));
 
   return rows.map((r) => ({
@@ -224,7 +243,7 @@ export interface AttentionFlags {
 export async function getAttentionFlags(): Promise<AttentionFlags> {
   const db = getDb();
   const staleDays = await getStaleDays();
-  const cases = await activeUseCases();
+  const cases = await programUseCases();
   const lastChange = new Map<string, Date>();
   const changes = await db
     .select({
@@ -246,9 +265,7 @@ export async function getAttentionFlags(): Promise<AttentionFlags> {
         id: c.id,
         title: c.title,
         status: c.status,
-        daysInStatus: Math.floor(
-          (now.getTime() - last.getTime()) / 86_400_000,
-        ),
+        daysInStatus: Math.floor((now.getTime() - last.getTime()) / 86_400_000),
         isStale: isStale(last, now, staleDays),
       };
     })
@@ -261,4 +278,47 @@ export async function getAttentionFlags(): Promise<AttentionFlags> {
     .map((c) => ({ id: c.id, title: c.title, roiStatus: c.roiStatus }));
 
   return { staleDays, stale, launchedUnscored };
+}
+
+export interface CommunitySubmissions {
+  /** Every community record, not just the ones listed — this is the number to act on. */
+  total: number;
+  recent: {
+    id: string;
+    title: string;
+    ownerName: string | null;
+    createdAt: Date;
+  }[];
+}
+
+/**
+ * The community queue: records logged by people outside the AI Leads roster.
+ *
+ * Deliberately not routed through programUseCases, which is program-only by
+ * definition. Two queries because a capped select cannot also produce the
+ * total, and the total is the number an admin acts on.
+ */
+export async function getCommunitySubmissions(
+  limit = 5,
+): Promise<CommunitySubmissions> {
+  const db = getDb();
+  const [[tally], recent] = await Promise.all([
+    db.select({ n: count() }).from(useCases).where(COMMUNITY_ALIVE),
+    // limit 0 means "total only" (the progress report) — skip the select
+    // that could only ever return nothing.
+    limit > 0
+      ? db
+          .select({
+            id: useCases.id,
+            title: useCases.title,
+            ownerName: useCases.ownerName,
+            createdAt: useCases.createdAt,
+          })
+          .from(useCases)
+          .where(COMMUNITY_ALIVE)
+          .orderBy(desc(useCases.createdAt))
+          .limit(limit)
+      : Promise.resolve([]),
+  ]);
+  return { total: Number(tally?.n ?? 0), recent };
 }

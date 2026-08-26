@@ -9,12 +9,19 @@ import {
   type Department,
   type UcStatus,
 } from "@/lib/domain";
+import {
+  DEFAULT_PROGRAM_SCOPE,
+  PROGRAM_SCOPE_LABELS,
+  PROGRAM_SCOPES,
+  parseProgramScope,
+  scopeToFilter,
+} from "@/lib/program-scope";
 import { listNames } from "@/lib/format";
 import { canCreateUseCase } from "@/lib/permissions";
 import { identityForPerson, identityForUser } from "@/server/identity";
 import { listEltOrgs } from "@/server/reference";
 import { listUseCases } from "@/server/use-case-queries";
-import { StatusBadge } from "@/components/status-badge";
+import { CommunityBadge, StatusBadge } from "@/components/status-badge";
 
 export const metadata = { title: "Use cases" };
 
@@ -25,6 +32,7 @@ interface Search {
   mine?: string;
   person?: string;
   elt?: string;
+  program?: string;
 }
 
 export default async function UseCasesPage({
@@ -62,6 +70,12 @@ export default async function UseCasesPage({
   const eltUnallocated = eltParam === "none";
   const eltLabel = eltUnallocated ? "Unallocated" : (eltOrg?.name ?? null);
 
+  // The casebook defaults to the program — the one page Kate lives on shows
+  // her world first. Community work is one select away, and the empty state
+  // below points at it. Note the home page's "Your use cases" ignores this
+  // entirely: you always see your own, whichever slice it falls in.
+  const programScope = parseProgramScope(sp.program);
+
   // One filter set, shared by both queries below so they cannot drift apart.
   const scope = {
     department,
@@ -70,6 +84,7 @@ export default async function UseCasesPage({
     credits: person?.identity,
     eltOrgId: eltOrg?.id,
     eltUnallocated,
+    inProgram: scopeToFilter(programScope),
   };
 
   const rows = await listUseCases({ status, ...scope });
@@ -79,12 +94,28 @@ export default async function UseCasesPage({
     : rows;
 
   const hasFilters = Boolean(
-    q || status || department || mine || documentedOnly || personId || eltLabel,
+    q ||
+    status ||
+    department ||
+    mine ||
+    documentedOnly ||
+    personId ||
+    eltLabel ||
+    programScope !== DEFAULT_PROGRAM_SCOPE,
   );
   // A filter that matches nothing shouldn't read as "the casebook is empty" —
-  // tell them what does exist and give them one click to it.
-  const totalUnfiltered =
-    visible.length === 0 && hasFilters ? (await listUseCases({})).length : 0;
+  // tell them what does exist and give them one click to it. One unfiltered
+  // fetch feeds both counts below, so the links can never disagree about
+  // what the casebook holds.
+  const everything =
+    visible.length === 0 && hasFilters ? await listUseCases({}) : [];
+  const totalEverything = everything.length;
+  // Nothing in the program view, but community records exist — the likeliest
+  // confusing empty state now that the default is a filter.
+  const communityWaiting =
+    programScope === "program"
+      ? everything.filter((r) => !r.inProgram).length
+      : 0;
 
   return (
     <div>
@@ -104,7 +135,11 @@ export default async function UseCasesPage({
                 ? "Logged in departments with no confirmed ELT owner."
                 : eltLabel
                   ? `Everything counting toward ${eltLabel}'s share of the 15, at every stage.`
-                  : "Every AI workflow in the casebook — everyone sees everything."}
+                  : programScope === "community"
+                    ? "Logged by people outside the AI Leads roster. Real work — it just isn't counted toward the 45 or the 15."
+                    : programScope === "all"
+                      ? "Every AI workflow in the casebook, program and community — everyone sees everything."
+                      : "Workflows counting toward the program. Switch the filter to see community submissions too."}
           </p>
         </div>
       </div>
@@ -124,7 +159,7 @@ export default async function UseCasesPage({
         />
         <select
           name="status"
-          defaultValue={documentedOnly ? "documented" : status ?? ""}
+          defaultValue={documentedOnly ? "documented" : (status ?? "")}
           className="rounded-md border border-hairline-strong bg-surface px-3 py-1.5 text-sm"
           aria-label="Filter by status"
         >
@@ -149,6 +184,18 @@ export default async function UseCasesPage({
             </option>
           ))}
         </select>
+        <select
+          name="program"
+          defaultValue={programScope}
+          className="rounded-md border border-hairline-strong bg-surface px-3 py-1.5 text-sm"
+          aria-label="Filter by program scope"
+        >
+          {PROGRAM_SCOPES.map((sc) => (
+            <option key={sc} value={sc}>
+              {PROGRAM_SCOPE_LABELS[sc]}
+            </option>
+          ))}
+        </select>
         <label className="inline-flex items-center gap-1.5 text-sm text-ink-muted">
           <input type="checkbox" name="mine" value="1" defaultChecked={mine} />
           Mine
@@ -160,7 +207,10 @@ export default async function UseCasesPage({
           Filter
         </button>
         {hasFilters && (
-          <Link href="/use-cases" className="text-sm text-ink-faint hover:text-accent">
+          <Link
+            href="/use-cases"
+            className="text-sm text-ink-faint hover:text-accent"
+          >
             Clear
           </Link>
         )}
@@ -179,14 +229,27 @@ export default async function UseCasesPage({
                 : hasFilters
                   ? "The casebook has records, just none in this slice."
                   : "Know of one that should exist?"}{" "}
-            {totalUnfiltered > 0 && (
+            {totalEverything > 0 && (
               <Link
-                href="/use-cases"
+                href="/use-cases?program=all"
                 className="text-accent underline underline-offset-2"
               >
-                See all {totalUnfiltered} use{" "}
-                {totalUnfiltered === 1 ? "case" : "cases"}.
+                See all {totalEverything} use{" "}
+                {totalEverything === 1 ? "case" : "cases"}.
               </Link>
+            )}
+            {communityWaiting > 0 && (
+              <>
+                {" "}
+                <Link
+                  href="/use-cases?program=community"
+                  className="text-accent underline underline-offset-2"
+                >
+                  {communityWaiting === 1
+                    ? "1 is a community submission."
+                    : `${communityWaiting} are community submissions.`}
+                </Link>
+              </>
             )}
           </p>
           {canCreateUseCase(user.role) && (
@@ -211,9 +274,14 @@ export default async function UseCasesPage({
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
                   <div className="flex min-w-0 items-baseline gap-2.5">
-                    <span className="truncate font-serif text-lg">{uc.title}</span>
+                    <span className="truncate font-serif text-lg">
+                      {uc.title}
+                    </span>
                   </div>
-                  <StatusBadge status={uc.status} />
+                  <div className="flex items-center gap-2">
+                    {!uc.inProgram && <CommunityBadge />}
+                    <StatusBadge status={uc.status} />
+                  </div>
                 </div>
                 <p className="mt-1 line-clamp-1 text-sm text-ink-muted">
                   {uc.description}

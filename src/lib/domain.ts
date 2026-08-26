@@ -14,6 +14,15 @@ export const TARGET_ROI = 15; // Confirmed Positive ROI
 export const DEFAULT_STALE_DAYS = 21;
 export const WORKFLOWS_PER_LEAD = 2;
 /**
+ * How many names the mention composer carries. Everyone at Clever can sign
+ * in now, so the list grows with headcount. Capped rather than paginated
+ * because the composer filters client-side; if the cap ever bites, the fix
+ * is a server-side search, not a bigger number. Lives here (not in the
+ * server query module) so the composer can tell a full list from a capped
+ * one and say so instead of failing silently.
+ */
+export const MENTIONABLE_LIMIT = 400;
+/**
  * How deep comment threads nest, counting the top level. Jira's comments are
  * flat; ours thread — deliberately, and only this far. depth is 0-based, so
  * the deepest comment is depth 5 and the Reply control stops rendering there.
@@ -129,7 +138,11 @@ export const LINK_HEADINGS: readonly {
   { kind: "builds_on", outgoing: true, label: LINK_LABELS.builds_on },
   { kind: "builds_on", outgoing: false, label: LINK_INVERSE_LABELS.builds_on },
   { kind: "duplicates", outgoing: true, label: LINK_LABELS.duplicates },
-  { kind: "duplicates", outgoing: false, label: LINK_INVERSE_LABELS.duplicates },
+  {
+    kind: "duplicates",
+    outgoing: false,
+    label: LINK_INVERSE_LABELS.duplicates,
+  },
   { kind: "relates_to", outgoing: true, label: LINK_LABELS.relates_to },
 ];
 
@@ -176,11 +189,23 @@ export const URL_KIND_HINTS: Record<UrlKind, string> = {
 export const RATING_FIELDS = [
   ["ratingFrequency", "Frequency", "How often the workflow runs"],
   ["ratingPain", "Pain", "How painful it is today"],
-  ["ratingDataAvailability", "Data availability", "Is the needed data accessible?"],
+  [
+    "ratingDataAvailability",
+    "Data availability",
+    "Is the needed data accessible?",
+  ],
   ["ratingRisk", "Risk", "Cost of getting it wrong"],
   ["ratingOwnershipClarity", "Ownership clarity", "Is it clear who owns it?"],
-  ["ratingEvaluationClarity", "Evaluation clarity", "Is it clear how to judge output?"],
-  ["ratingMaintenanceBurden", "Maintenance burden", "Effort to keep it working"],
+  [
+    "ratingEvaluationClarity",
+    "Evaluation clarity",
+    "Is it clear how to judge output?",
+  ],
+  [
+    "ratingMaintenanceBurden",
+    "Maintenance burden",
+    "Effort to keep it working",
+  ],
 ] as const;
 
 export type RatingKey = (typeof RATING_FIELDS)[number][0];
@@ -260,7 +285,21 @@ export const SETTABLE_STATUSES = STATUSES.filter(
 
 export type SettableStatus = (typeof SETTABLE_STATUSES)[number];
 
-export const ROLES = ["viewer", "contributor", "admin"] as const;
+/**
+ * The role ladder, conceptually viewer < employee < contributor < admin.
+ *
+ * Array order is the Postgres enum order and deliberately NOT the ladder:
+ * "employee" is appended last because `ALTER TYPE ... ADD VALUE` is
+ * irreversible and inserting mid-list invites drizzle-kit into a type
+ * recreation. Nothing reads ROLES ordinally — only STATUSES has a rank.
+ *
+ * - viewer      — signed in but not a Clever employee (an allow-listed guest).
+ * - employee    — anyone at Clever. Logs and edits their own records.
+ * - contributor — an AI Lead, i.e. on the ai_leads roster. Their records count
+ *                 toward the program (see inProgramAtCreation).
+ * - admin       — runs the program.
+ */
+export const ROLES = ["viewer", "contributor", "admin", "employee"] as const;
 
 export type Role = (typeof ROLES)[number];
 
@@ -270,12 +309,17 @@ export type Role = (typeof ROLES)[number];
  *   Kate — not the record's contents, and not the shape of the graph.
  *   (Kate's call, relayed by Tom, 2026-08-16; the 15 stays a subset of the
  *   45 through the counting rules, not through a required path.)
- * - Editors move records freely among the five pre-Qualified statuses
- *   (forward or back — people fix mistakes).
+ * - Editors — AI Leads and employees — move records they can edit freely
+ *   among the five pre-Qualified statuses (forward or back; people fix
+ *   mistakes). Ownership is enforced separately, in use-case-service.
  * - Anything entering or leaving Qualified or Confirmed Positive ROI is
  *   admin-only: both record Kate's decisions.
  */
-export function canSetStatus(role: Role, from: UcStatus, to: UcStatus): boolean {
+export function canSetStatus(
+  role: Role,
+  from: UcStatus,
+  to: UcStatus,
+): boolean {
   if (role === "viewer") return false;
   if (from === to) return false;
   if (role === "admin") return true;
@@ -320,14 +364,14 @@ export interface RoiFields {
 export function roiComplete(uc: RoiFields): boolean {
   return Boolean(
     uc.successCriterion?.trim() &&
-      uc.successCriterionMet === "yes" &&
-      uc.baselineMetric?.trim() &&
-      uc.baselineValue !== null &&
-      uc.postValue !== null &&
-      uc.measurementMethod?.trim() &&
-      uc.netImpactStatement?.trim() &&
-      uc.isPositive === true &&
-      uc.roiStatus === "complete",
+    uc.successCriterionMet === "yes" &&
+    uc.baselineMetric?.trim() &&
+    uc.baselineValue !== null &&
+    uc.postValue !== null &&
+    uc.measurementMethod?.trim() &&
+    uc.netImpactStatement?.trim() &&
+    uc.isPositive === true &&
+    uc.roiStatus === "complete",
   );
 }
 
@@ -337,7 +381,8 @@ export function roiGaps(uc: RoiFields): string[] {
   if (!uc.successCriterion?.trim()) gaps.push("No success criterion defined");
   else if (uc.successCriterionMet === "not_yet")
     gaps.push("Success criterion not yet evaluated");
-  else if (uc.successCriterionMet === "no") gaps.push("Success criterion not met");
+  else if (uc.successCriterionMet === "no")
+    gaps.push("Success criterion not met");
   if (!uc.baselineMetric?.trim() || uc.baselineValue === null)
     gaps.push("No baseline measurement");
   if (uc.postValue === null) gaps.push("No post-measurement");
@@ -362,6 +407,48 @@ export function countsTowardDocumented(status: UcStatus): boolean {
  */
 export function countsTowardRoi(status: UcStatus): boolean {
   return status === "confirmed_positive_roi";
+}
+
+/**
+ * Program membership at creation: true only when the person logging the record
+ * is an AI Lead.
+ *
+ * Admins are deliberately NOT counted. An admin logging a workflow is logging
+ * their own work, not discharging a lead's commitment — the 45 is what the AI
+ * Leads built, and an admin who wants their own record in it says so
+ * explicitly rather than having it assumed. (Tom's call, 2026-08-25.) In
+ * practice this costs nothing: the two gestures that admit a record to the
+ * program, setProgramMembership and promotion past the Qualified gate, are
+ * both admin-only anyway.
+ *
+ * Stamped once into use_cases.in_program and never re-derived. That is the
+ * whole point: a lead who leaves the roster does not retroactively empty the
+ * casebook, and a community record does not become program work because its
+ * author was later added to the roster.
+ */
+export function inProgramAtCreation(actorRole: Role): boolean {
+  return actorRole === "contributor";
+}
+
+/**
+ * Both halves of "counts toward the 45": in the program, and Qualified or
+ * better. The two rules above answer only "does this *status* count" — they
+ * are used on their own where membership was already filtered in SQL. Use
+ * these where you hold a record and want the whole truth.
+ */
+export function countsTowardProgramDocumented(uc: {
+  inProgram: boolean;
+  status: UcStatus;
+}): boolean {
+  return uc.inProgram && countsTowardDocumented(uc.status);
+}
+
+/** Both halves of "counts toward the 15". Every one of these is also in the 45. */
+export function countsTowardProgramRoi(uc: {
+  inProgram: boolean;
+  status: UcStatus;
+}): boolean {
+  return uc.inProgram && countsTowardRoi(uc.status);
 }
 
 // ---------------------------------------------------------------------------
@@ -421,7 +508,5 @@ export function isStale(
 }
 
 export function daysInStatus(lastStatusChangeAt: Date, now: Date): number {
-  return Math.floor(
-    (now.getTime() - lastStatusChangeAt.getTime()) / DAY_MS,
-  );
+  return Math.floor((now.getTime() - lastStatusChangeAt.getTime()) / DAY_MS);
 }

@@ -2,9 +2,11 @@
 title: The dashboard
 surface: /dashboard
 audience: everyone
-updated: 2026-08-17
+updated: 2026-08-25
 code:
   - src/app/(app)/dashboard/page.tsx
+  - src/server/dashboard-queries.ts
+  - src/db/scopes.ts
   - src/components/dashboard/program-dashboard.tsx
   - src/components/dashboard/pipeline-conversion.tsx
   - src/components/dashboard/pipeline-switcher.tsx
@@ -18,6 +20,12 @@ code:
 
 The program scoreboard. Open to everyone — every number here is visible to
 every authenticated user.
+
+**Every number on this page counts program records only.** Anyone at Clever
+can log a use case; records logged outside the AI Leads roster are community
+submissions and are excluded from all of it — see
+[counting rules](../concepts/counting-rules.md#program-and-community). One
+predicate, `IN_PROGRAM_ALIVE` in `src/db/scopes.ts`, backs every query here.
 
 ## The sections, in order
 
@@ -61,7 +69,8 @@ summing to 15 a warning appears; it never blocks.
 ### Coverage by team
 
 Which teams have records and which have none. This is the "who hasn't
-started" view.
+started" view. It counts program records at **every** status — the one place
+the program asks "did they start", not "did they finish".
 
 ### Movement this week
 
@@ -78,7 +87,31 @@ Two flags:
 - **Ready but not qualified** — all four gates met, still waiting on an
   admin.
 
+### Community submissions
+
+**Admins only.** A count of records logged outside the program, the most
+recent few by title, and a link to `/use-cases?program=community`. It sits
+here rather than beside the two numbers on purpose: it must never read as a
+third program number.
+
+This is the surface community records reach admins through, in place of the
+notification bell — see [notifications](notifications.md). Hiding the card
+from non-admins is **chrome gating, not a read exception**: it is a queue of
+decisions only an admin can make, and every record on it is public in the
+casebook.
+
 ## Rules that surprise people
+
+**Coverage by team got harsher when the tool opened up.** Community records
+do not fill a team's dots. A team whose lead logged nothing but whose
+colleagues logged three things reads as zero, in flag red — which is the
+point: the target is two workflows per *assigned AI Lead*, and work nobody
+committed to should not discharge a commitment.
+
+**Movement and the weekly post filter on the record's current flag, not the
+flag it had at the time.** Taking a record out of the program erases its
+history from Movement, and re-drafting an old What's New week after a flip
+produces different prose than the post people already read.
 
 **A figure is always the same size.** A busier station stands deeper, never
 denser — the count of ranks is the encoding, and one record looks like one
@@ -116,8 +149,9 @@ queue length, which is why the count sits under every platform in numerals.
 
 ## Who can do what
 
-Read-only for everyone, all roles. Nothing on this page is gated and nothing
-on it is editable — the numbers change by records changing.
+Read-only for everyone, all roles. Nothing on this page is editable — the
+numbers change by records changing. One section, **Community submissions**, is
+shown to admins only, for the reason given above.
 
 ## Related
 

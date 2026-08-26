@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { DEPARTMENTS, STATUSES, type Department, type UcStatus } from "@/lib/domain";
+import {
+  DEPARTMENTS,
+  STATUSES,
+  type Department,
+  type UcStatus,
+} from "@/lib/domain";
 import { useCaseCreateApiSchema } from "@/lib/use-case-input";
 import { toApiUseCase } from "@/server/api-serializers";
 import { identityForUser } from "@/server/identity";
@@ -14,6 +19,10 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const status = url.searchParams.get("status");
   const department = url.searchParams.get("department");
+  // Opt-in narrowing. The default stays both: silently shrinking a documented
+  // collection would break every script already reading it. Each record
+  // carries `inProgram` so a caller can split them itself.
+  const program = url.searchParams.get("inProgram");
   const rows = await listUseCases({
     q: url.searchParams.get("q") ?? undefined,
     status: STATUSES.includes(status as UcStatus)
@@ -26,6 +35,15 @@ export async function GET(req: Request) {
       url.searchParams.get("mine") === "1"
         ? await identityForUser(user)
         : undefined,
+    // Accept the boolean spellings too — a param named inProgram invites
+    // `true`/`false`, and silently returning the unfiltered collection for
+    // them is a trap.
+    inProgram:
+      program === "1" || program === "true"
+        ? true
+        : program === "0" || program === "false"
+          ? false
+          : undefined,
   });
   return Response.json({ useCases: rows.map(toApiUseCase) });
 }

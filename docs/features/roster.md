@@ -2,7 +2,7 @@
 title: The AI Leads roster
 surface: /roster
 audience: everyone
-updated: 2026-08-22
+updated: 2026-08-25
 code:
   - src/app/(app)/roster/page.tsx
   - src/components/roster/roster-admin.tsx
@@ -18,7 +18,7 @@ Who is contributing, by department and team. Open to everyone.
 
 ## What's on it
 
-25 AI Leads grouped by department, each with their teams, their state, and
+Every AI Lead grouped by department, each with their teams, their state, and
 their records. Names link through to [the casebook](casebook.md) filtered to
 that person.
 
@@ -52,6 +52,21 @@ is not fetched or shown for AI Leads and viewers.
 | Track Aug–Dec monthly 1:1s | — | — | ✅ |
 | Set a lead's state | — | — | ✅ |
 | Assign teams, add a team | — | — | ✅ |
+
+## The roster is what "AI Lead" means
+
+Being on this list is what makes someone a `contributor`, and it is checked
+by email on every sign-in. It also decides whether the records they log count
+toward the 45 and the 15.
+
+Everyone else at Clever can still log use cases — they do not need to be on
+the roster and should not be added to it just to let them write. Their
+records are **community** records: real, editable, in the casebook, counted
+nowhere until an admin says otherwise. See
+[counting rules](../concepts/counting-rules.md#program-and-community).
+
+Membership is stamped when a record is created, so removing someone from the
+roster does not retroactively remove their past records from the program.
 
 ## Related
 

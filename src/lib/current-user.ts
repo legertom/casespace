@@ -5,8 +5,9 @@ import { notFound, redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { getDb } from "@/db/client";
-import { users } from "@/db/schema";
+import { appSettings, users } from "@/db/schema";
 import type { Role } from "@/lib/domain";
+import { employeesOpen } from "@/lib/login-role";
 import {
   VIEW_AS_COOKIE,
   resolveEffectiveRole,
@@ -37,12 +38,25 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const [user] = await db.select().from(users).where(eq(users.id, id));
   if (!user) return null;
 
+  // The open_to_employees kill switch is enforced here, not only at sign-in:
+  // provisionLogin stamps the role, but a session can outlive the switch by
+  // weeks. One extra single-row read, paid only by employees, makes flipping
+  // the row off take effect on the next request instead of the next sign-in.
+  let storedRole = user.role;
+  if (storedRole === "employee") {
+    const [open] = await db
+      .select()
+      .from(appSettings)
+      .where(eq(appSettings.key, "open_to_employees"));
+    if (!employeesOpen(open?.value)) storedRole = "viewer";
+  }
+
   const jar = await cookies();
   const { role, viewingAs } = resolveEffectiveRole(
-    user.role,
+    storedRole,
     jar.get(VIEW_AS_COOKIE)?.value,
   );
-  return { ...user, role, realRole: user.role, viewingAs };
+  return { ...user, role, realRole: storedRole, viewingAs };
 });
 
 export async function requireUser(): Promise<CurrentUser> {

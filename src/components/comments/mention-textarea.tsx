@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { MentionableUser } from "@/server/comment-queries";
+import { MENTIONABLE_LIMIT } from "@/lib/domain";
 
 interface Props {
   /** For screen readers — "Comment", "Reply", "Edit comment". */
@@ -69,6 +70,10 @@ export function MentionTextarea({
   const matches = query
     ? people.filter((p) => p.name.toLowerCase().includes(q)).slice(0, 6)
     : [];
+  // A capped list arrives at exactly the limit. When a search then finds
+  // nobody, the person may exist past the cutoff — say so rather than
+  // presenting "no account" as fact.
+  const maybeTruncated = people.length >= MENTIONABLE_LIMIT;
 
   function insert(person: MentionableUser) {
     if (!query) return;
@@ -110,6 +115,12 @@ export function MentionTextarea({
         onBlur={() => setTimeout(() => setQuery(null), 150)}
         className="w-full rounded-md border border-hairline-strong bg-surface px-3 py-2 text-sm"
       />
+      {query && matches.length === 0 && maybeTruncated && q.length > 0 && (
+        <div className="absolute z-10 mt-1 w-64 rounded-md border border-hairline bg-surface px-3 py-2 text-sm text-ink-muted shadow-sm">
+          Nobody listed matches — but not everyone is listed. If someone seems
+          missing, they may still have an account.
+        </div>
+      )}
       {query && matches.length > 0 && (
         <ul
           role="listbox"
