@@ -382,13 +382,6 @@ export async function ProgramDashboard() {
             }}
           />
         </div>
-        <p className="mt-4 text-sm text-ink-muted">
-          <Link href="/graphs" className="hover:text-accent">
-            Why it looks like this
-          </Link>{" "}
-          — the drawings this one was chosen from, five funnel versions under
-          review, and five more worth building.
-        </p>
       </section>
 
       {/* ------------------------------------------------ the 15 by ELT org */}
