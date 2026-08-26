@@ -92,8 +92,9 @@ stay meaningful — `status` in a PATCH body never applies. See
 
 ## Program and community
 
-Anyone at Clever can log a use case; only records logged by an AI Lead or an
-admin count toward the program. Every record carries **`inProgram`**.
+Anyone at Clever can log a use case; only records owned by an AI Lead (or,
+when unowned, logged by one) count toward the program. Every record carries
+**`inProgram`**.
 
 The two endpoints deliberately disagree, and this is the thing to know before
 you file a bug about it:

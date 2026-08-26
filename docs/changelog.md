@@ -44,6 +44,15 @@ in-app report it came from.
 
 ## 2026-08-25
 
+### Counting follows the owner, not the typist
+Requested by: Tom Leger
+
+Whether a new record counts toward the program now follows its **owner**: a
+record owned by someone on the AI Leads roster counts, whoever enters it. So
+a record logged on a lead's behalf lands in the program straight away, and
+naming the owner is how you say whose work it is. A record with no owner
+follows whoever logged it, as before.
+
 ### Casespace is open to everyone at Clever
 Requested by: Tom Leger
 

@@ -292,7 +292,7 @@ export interface CommunitySubmissions {
 }
 
 /**
- * The community queue: records logged by people outside the AI Leads roster.
+ * The community queue: records owned outside the AI Leads roster.
  *
  * Deliberately not routed through programUseCases, which is program-only by
  * definition. Two queries because a capped select cannot also produce the

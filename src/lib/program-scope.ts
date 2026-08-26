@@ -2,7 +2,7 @@
  * Which slice of the casebook a list is showing.
  *
  * The program is what the 45 and the 15 count; community submissions are real
- * work logged by people outside the AI Leads roster. Both live in the same
+ * work owned outside the AI Leads roster. Both live in the same
  * casebook — this is the vocabulary for saying which you want to see. Metrics
  * never take a scope: they are program-only by construction (see
  * `src/db/scopes.ts`).

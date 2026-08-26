@@ -22,7 +22,7 @@ The program scoreboard. Open to everyone — every number here is visible to
 every authenticated user.
 
 **Every number on this page counts program records only.** Anyone at Clever
-can log a use case; records logged outside the AI Leads roster are community
+can log a use case; records owned outside the AI Leads roster are community
 submissions and are excluded from all of it — see
 [counting rules](../concepts/counting-rules.md#program-and-community). One
 predicate, `IN_PROGRAM_ALIVE` in `src/db/scopes.ts`, backs every query here.
@@ -89,7 +89,7 @@ Two flags:
 
 ### Community submissions
 
-**Admins only.** A count of records logged outside the program, the most
+**Admins only.** A count of records outside the program, the most
 recent few by title, and a link to `/use-cases?program=community`. It sits
 here rather than beside the two numbers on purpose: it must never read as a
 third program number.

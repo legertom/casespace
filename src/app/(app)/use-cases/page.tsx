@@ -136,7 +136,7 @@ export default async function UseCasesPage({
                 : eltLabel
                   ? `Everything counting toward ${eltLabel}'s share of the 15, at every stage.`
                   : programScope === "community"
-                    ? "Logged by people outside the AI Leads roster. Real work — it just isn't counted toward the 45 or the 15."
+                    ? "Owned by people outside the AI Leads roster. Real work — it just isn't counted toward the 45 or the 15."
                     : programScope === "all"
                       ? "Every AI workflow in the casebook, program and community — everyone sees everything."
                       : "Workflows counting toward the program. Switch the filter to see community submissions too."}

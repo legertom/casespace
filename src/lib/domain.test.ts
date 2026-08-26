@@ -109,9 +109,9 @@ describe("status transitions", () => {
     expect(canSetStatus("contributor", "in_discovery", "approved_by_fl")).toBe(
       true,
     );
-    expect(canSetStatus("contributor", "in_testing", "under_construction")).toBe(
-      true,
-    );
+    expect(
+      canSetStatus("contributor", "in_testing", "under_construction"),
+    ).toBe(true);
   });
 
   it("contributors may not touch Qualified in either direction", () => {
@@ -134,9 +134,9 @@ describe("status transitions", () => {
     expect(
       canSetStatus("admin", "in_discovery", "confirmed_positive_roi"),
     ).toBe(true);
-    expect(canSetStatus("admin", "confirmed_positive_roi", "in_discovery")).toBe(
-      true,
-    );
+    expect(
+      canSetStatus("admin", "confirmed_positive_roi", "in_discovery"),
+    ).toBe(true);
   });
 
   it("Confirmed Positive ROI stays admin-only, from anywhere", () => {
@@ -171,18 +171,31 @@ describe("dates", () => {
 
 describe("ELT allocation", () => {
   const orgs: import("./domain").EltOrgLike[] = [
-    { id: "1", name: "Amy Lee (CFO)", target: 2, departments: ["finance_legal"] },
-    { id: "2", name: "Eric Krugler (CTO)", target: 3, departments: ["engineering"] },
-    { id: "3", name: "Jamie Reffell (CPO)", target: 2, departments: ["product_design"] },
+    {
+      id: "1",
+      name: "Amy Lee (CFO)",
+      target: 2,
+      departments: ["finance_legal"],
+    },
+    {
+      id: "2",
+      name: "Eric Krugler (CTO)",
+      target: 3,
+      departments: ["engineering"],
+    },
+    {
+      id: "3",
+      name: "Jamie Reffell (CPO)",
+      target: 2,
+      departments: ["product_design"],
+    },
     { id: "4", name: "Phillip Mikula (CRO)", target: 3, departments: ["mss"] },
     { id: "5", name: "Kate Schaff", target: 3, departments: [] },
     { id: "6", name: "Trish Sparks (CEO)", target: 2, departments: ["people"] },
   ];
 
   it("suggests the mapped org from a department", () => {
-    expect(suggestEltOrg("engineering", orgs)?.name).toBe(
-      "Eric Krugler (CTO)",
-    );
+    expect(suggestEltOrg("engineering", orgs)?.name).toBe("Eric Krugler (CTO)");
   });
 
   it("leaves unmapped departments unallocated — never force a mapping", () => {
@@ -224,29 +237,43 @@ describe("comment threading", () => {
 });
 
 describe("program membership at creation", () => {
-  it("counts AI Leads", () => {
-    expect(inProgramAtCreation("contributor")).toBe(true);
+  it("follows the owner's roster standing, whoever logs it", () => {
+    // Ownership decides, not data entry: an admin entering a lead's record
+    // on their behalf still counts it, and a lead entering a non-lead's
+    // record does not.
+    for (const role of ROLES) {
+      expect(inProgramAtCreation(true, role)).toBe(true);
+      expect(inProgramAtCreation(false, role)).toBe(false);
+    }
   });
 
-  it("does not count admins — the 45 is what the AI Leads built", () => {
-    // An admin logging a workflow is logging their own work, not discharging a
-    // lead's commitment. They add it to the program explicitly if they mean to.
-    expect(inProgramAtCreation("admin")).toBe(false);
+  it("falls back to the logger only when there is no linked owner", () => {
+    expect(inProgramAtCreation(null, "contributor")).toBe(true);
   });
 
-  it("does not count employees or guests", () => {
-    expect(inProgramAtCreation("employee")).toBe(false);
-    expect(inProgramAtCreation("viewer")).toBe(false);
+  it("does not count an admin's own unowned record", () => {
+    // Logging their own work is not discharging a lead's commitment. They
+    // add it to the program explicitly if they mean to.
+    expect(inProgramAtCreation(null, "admin")).toBe(false);
   });
 
-  it("counts exactly one role", () => {
-    expect(ROLES.filter(inProgramAtCreation)).toEqual(["contributor"]);
+  it("does not count unowned records from employees or guests", () => {
+    expect(inProgramAtCreation(null, "employee")).toBe(false);
+    expect(inProgramAtCreation(null, "viewer")).toBe(false);
   });
 
-  it("has an answer for every role", () => {
+  it("falls back for exactly one role", () => {
+    expect(ROLES.filter((r) => inProgramAtCreation(null, r))).toEqual([
+      "contributor",
+    ]);
+  });
+
+  it("has an answer for every role, owned or not", () => {
     // Guards against a future role silently defaulting into the program.
     for (const role of ROLES) {
-      expect(typeof inProgramAtCreation(role)).toBe("boolean");
+      for (const ownerIsLead of [true, false, null]) {
+        expect(typeof inProgramAtCreation(ownerIsLead, role)).toBe("boolean");
+      }
     }
   });
 });
@@ -296,16 +323,18 @@ describe("the composite counting rules", () => {
 
 describe("employees move records exactly as far as AI Leads", () => {
   it("moves freely among the five pre-Qualified statuses", () => {
-    expect(canSetStatus("employee", "in_discovery", "approved_by_fl")).toBe(true);
+    expect(canSetStatus("employee", "in_discovery", "approved_by_fl")).toBe(
+      true,
+    );
     expect(canSetStatus("employee", "launched", "in_testing")).toBe(true);
   });
 
   it("cannot reach or leave the admin-gated statuses", () => {
     expect(canSetStatus("employee", "launched", "qualified")).toBe(false);
     expect(canSetStatus("employee", "qualified", "launched")).toBe(false);
-    expect(
-      canSetStatus("employee", "launched", "confirmed_positive_roi"),
-    ).toBe(false);
+    expect(canSetStatus("employee", "launched", "confirmed_positive_roi")).toBe(
+      false,
+    );
   });
 
   it("matches contributor on every transition", () => {

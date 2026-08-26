@@ -32,7 +32,7 @@ All filters are URL parameters, so a filtered view is a shareable link.
 **The casebook defaults to the program, not to everything.** This is the one
 deliberate exception to "the casebook shows everything", and it is there
 because this is the page the program is run from. Anyone at Clever can log a
-use case; records logged outside the AI Leads roster carry a **Community**
+use case; records owned outside the AI Leads roster carry a **Community**
 badge and sit behind `?program=community` or `?program=all`. When the program
 view is empty but community records exist, the empty state says so and links
 straight to them. See

@@ -296,7 +296,8 @@ export const useCases = pgTable("use_cases", {
   /**
    * Program membership: does this record count toward the 45 and the 15?
    *
-   * Stamped once at creation from the logger's role (inProgramAtCreation) and
+   * Stamped once at creation from the owner's roster standing, falling back
+   * to the logger's role (inProgramAtCreation), and
    * never re-derived — see docs/concepts/counting-rules.md. Admins move it by
    * hand, and promotion past the Qualified gate sets it. The default is true
    * so the backfill is correct: every record that predates this column was
@@ -345,7 +346,9 @@ export const useCases = pgTable("use_cases", {
   measurementMethod: text("measurement_method"),
   netImpactStatement: text("net_impact_statement"),
   isPositive: boolean("is_positive"),
-  roiStatus: roiStatusEnum("roi_status").notNull().default("not_yet_measurable"),
+  roiStatus: roiStatusEnum("roi_status")
+    .notNull()
+    .default("not_yet_measurable"),
   revisitOn: date("revisit_on"),
 
   // Lifecycle
@@ -664,9 +667,12 @@ export const useCaseComments = pgTable(
       .notNull()
       .references(() => users.id),
     /** Null for a top-level comment. */
-    parentId: uuid("parent_id").references((): AnyPgColumn => useCaseComments.id, {
-      onDelete: "cascade",
-    }),
+    parentId: uuid("parent_id").references(
+      (): AnyPgColumn => useCaseComments.id,
+      {
+        onDelete: "cascade",
+      },
+    ),
     /** 0-based, set server-side to parent.depth + 1; capped at MAX_COMMENT_DEPTH - 1. */
     depth: integer("depth").notNull().default(0),
     /** Markdown, rendered with the same react-markdown + remark-gfm stack as posts. */
@@ -736,7 +742,9 @@ export const feedback = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     /** Null only if the reporter's account is later removed. */
-    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    userId: uuid("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     /** What they typed. */
     message: text("message").notNull(),
     /** The page they were on. */

@@ -55,9 +55,11 @@ Anyone with a `@clever.com` address can log a use case. Not every record
 counts toward the two numbers.
 
 `use_cases.in_program` decides it. It is **stamped once, at creation**, from
-the role of whoever logged the record (`inProgramAtCreation`): only an **AI
-Lead** logs a program record. Everyone else — employees and admins alike —
-logs a **community** record.
+the record's **owner** (`inProgramAtCreation`): a record whose owner is on
+the AI Leads roster is a program record, whoever typed it in. A record with
+no linked owner falls back to whoever logged it — a lead's own unowned
+record counts; anyone else's, employees and admins alike, is a **community**
+record.
 
 Community records are real records: full worksheet, full ROI section,
 editable by whoever logged them, listed and searchable in the casebook. They
@@ -79,18 +81,21 @@ exclusion is visible rather than silent.
 
 ### Rules that surprise people
 
-**Admins do not count as AI Leads.** A workflow Tom or Kate logs starts as a
-community record, exactly like anyone else's. The 45 is what the *AI Leads*
-built, and an admin logging their own work is not discharging a lead's
-commitment. It costs them nothing: both gestures that admit a record to the
-program — the toggle and promotion past the Qualified gate — are admin-only
-anyway, so an admin who means their record to count says so in one click.
+**The owner decides, not the keyboard.** Most of the casebook is typed in by
+whoever has the record in front of them — often an admin on a lead's behalf —
+and that must not decide what counts (Tom's call, 2026-08-25, revising the
+same-day logged-by rule). A record Tom enters for a lead counts; a workflow
+Tom or Kate logs as their own starts as a community record, exactly like
+anyone else's. The 45 is what the *AI Leads* own, and both gestures that
+admit anything else — the toggle and promotion past the Qualified gate — are
+admin-only, so an admin who means a record to count says so in one click.
 
-**Membership is never re-derived.** It records who logged the record *at the
+**Membership is never re-derived.** It records whose the record was *at the
 time*, which is the point: an AI Lead who leaves the roster does not
-retroactively empty the casebook, and a community record does not become
-program work because its author was added to the roster later. Only an admin
-moves it, by hand.
+retroactively empty the casebook, a community record does not become program
+work because its owner was added to the roster later, and changing a
+record's owner afterward moves credit, not membership. Only an admin moves
+membership, by hand.
 
 **Promotion past the Qualified gate silently admits a record to the
 program.** Moving anything to Qualified or Confirmed Positive ROI sets

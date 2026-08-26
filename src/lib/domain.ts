@@ -410,24 +410,33 @@ export function countsTowardRoi(status: UcStatus): boolean {
 }
 
 /**
- * Program membership at creation: true only when the person logging the record
- * is an AI Lead.
+ * Program membership at creation: true when the record is an AI Lead's — its
+ * OWNER holds a roster row, or, when no owner was named, the person logging
+ * it is a lead.
  *
- * Admins are deliberately NOT counted. An admin logging a workflow is logging
- * their own work, not discharging a lead's commitment — the 45 is what the AI
- * Leads built, and an admin who wants their own record in it says so
- * explicitly rather than having it assumed. (Tom's call, 2026-08-25.) In
- * practice this costs nothing: the two gestures that admit a record to the
- * program, setProgramMembership and promotion past the Qualified gate, are
- * both admin-only anyway.
+ * Ownership decides, not data entry. Most of the casebook was typed in by
+ * whoever had the record in front of them — often an admin on a lead's
+ * behalf — and who held the keyboard must not decide what counts. (Tom's
+ * call, 2026-08-25, revising the same-day logged-by rule after the launch
+ * backfill showed 16 of 17 records were admin-entered lead work.) An admin's
+ * own unowned record is still community until an explicit gesture — the
+ * toggle, or promotion past the Qualified gate, both admin-only — takes it
+ * on.
  *
- * Stamped once into use_cases.in_program and never re-derived. That is the
- * whole point: a lead who leaves the roster does not retroactively empty the
- * casebook, and a community record does not become program work because its
- * author was later added to the roster.
+ * `ownerIsLead` is null when the record has no owner, or when the owner
+ * never resolved to a directory person or account: an unlinked name cannot
+ * be roster-checked without guessing, and credit must not guess.
+ *
+ * Stamped once into use_cases.in_program and never re-derived — not by a
+ * later owner change, not by roster changes. A lead who leaves the roster
+ * does not retroactively empty the casebook, and a community record does not
+ * become program work because its owner was later added to the roster.
  */
-export function inProgramAtCreation(actorRole: Role): boolean {
-  return actorRole === "contributor";
+export function inProgramAtCreation(
+  ownerIsLead: boolean | null,
+  actorRole: Role,
+): boolean {
+  return ownerIsLead ?? actorRole === "contributor";
 }
 
 /**

@@ -1,7 +1,8 @@
 import "server-only";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import {
+  aiLeads,
   eltOrgs,
   notifications,
   people,
@@ -107,6 +108,26 @@ async function resolveUserLinks(refs: PersonRef[]): Promise<PersonRef[]> {
   }));
 }
 
+/**
+ * Whether a resolved owner holds a roster row — the owner half of
+ * inProgramAtCreation. Row existence is the test, matching how sign-in
+ * decides `contributor`; null when the ref never linked to a person or
+ * account, because an unlinked name cannot be checked without guessing.
+ */
+async function ownerOnRoster(ref: PersonRef): Promise<boolean | null> {
+  const conds = [];
+  if (ref.personId) conds.push(eq(aiLeads.personId, ref.personId));
+  if (ref.userId) conds.push(eq(aiLeads.userId, ref.userId));
+  if (conds.length === 0) return null;
+  const db = getDb();
+  const [row] = await db
+    .select({ id: aiLeads.id })
+    .from(aiLeads)
+    .where(or(...conds))
+    .limit(1);
+  return Boolean(row);
+}
+
 async function suggestedEltOrgId(
   department: Department | null | undefined,
   explicit: string | null | undefined,
@@ -145,21 +166,23 @@ export async function createUseCase(
     );
   }
   const db = getDb();
-  // The permission check above uses the effective role so previews behave
-  // like the real thing — but membership is stamped from the REAL role. An
-  // admin previewing as an AI Lead who logs a test record must not silently
-  // put it in the program; admission is an explicit gesture (the toggle, or
-  // the Qualified gate), never a side effect of a costume. Note the admin
+  // Owner resolves before the stamp: membership tracks whose workflow this
+  // is, not who typed it in. Only when no owner is named does the stamp fall
+  // back to the logger — and then to their REAL role: the effective role
+  // authorized the write above so previews behave like the real thing, but a
+  // costume must not decide what counts toward the 45. Note the admin
   // fan-out below reads the table for the same reason: it is about who is
   // notified, not about what counts.
+  const owner = input.owner ? (await resolveUserLinks([input.owner]))[0] : null;
+  const ownerIsLead = owner ? await ownerOnRoster(owner) : null;
   const row = applyCreateDefaults(input, {
     source,
     createdById: actor.id,
     actorRole: actor.realRole ?? actor.role,
+    ownerIsLead,
   });
   row.eltOrgId = await suggestedEltOrgId(input.department, input.eltOrgId);
 
-  const owner = input.owner ? (await resolveUserLinks([input.owner]))[0] : null;
   if (owner) {
     row.ownerPersonId = owner.personId ?? null;
     row.ownerUserId = owner.userId ?? null;

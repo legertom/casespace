@@ -21,6 +21,7 @@ describe("sparse API create", () => {
       source: "mcp",
       actorRole: "contributor",
       createdById: "user-1",
+      ownerIsLead: null,
     });
     expect(row.status).toBe("in_discovery");
     expect(row.source).toBe("mcp");
@@ -49,8 +50,11 @@ describe("sparse API create", () => {
       ).toThrow();
     }
     expect(
-      useCaseCreateSchema.parse({ title: "t", description: "d", status: "launched" })
-        .status,
+      useCaseCreateSchema.parse({
+        title: "t",
+        description: "d",
+        status: "launched",
+      }).status,
     ).toBe("launched");
   });
 
@@ -95,7 +99,9 @@ describe("the patchable-field list", () => {
 
 describe("record URLs", () => {
   it("keeps a good link, trimmed, and defaults the kind", () => {
-    const parsed = useCaseUrlSchema.parse({ url: "  https://a.example.com/x  " });
+    const parsed = useCaseUrlSchema.parse({
+      url: "  https://a.example.com/x  ",
+    });
     expect(parsed.url).toBe("https://a.example.com/x");
     expect(parsed.kind).toBe("other");
   });
@@ -147,7 +153,12 @@ describe("a saved record, back into the edit form", () => {
   const saved: SavedUseCase = {
     ...applyCreateDefaults(
       useCaseCreateSchema.parse({ title: "T", description: "D" }),
-      { source: "form", createdById: "user-1", actorRole: "contributor" },
+      {
+        source: "form",
+        createdById: "user-1",
+        actorRole: "contributor",
+        ownerIsLead: null,
+      },
     ),
     buildHours: 12,
     authors: [{ personId: null, userId: "u2", displayName: "Ada" }],
@@ -186,23 +197,47 @@ describe("a saved record, back into the edit form", () => {
 describe("program membership is stamped, not submitted", () => {
   const minimal = { title: "A workflow", description: "What it does." };
 
-  it("stamps in-program for an AI Lead", () => {
-    const row = applyCreateDefaults(useCaseCreateSchema.parse(minimal), {
-      source: "form",
-      createdById: "u1",
-      actorRole: "contributor",
-    });
-    expect(row.inProgram).toBe(true);
-  });
-
-  it("stamps community for an employee and for an admin", () => {
-    for (const actorRole of ["employee", "admin"] as const) {
+  it("stamps in-program when the owner is on the roster, whoever logs it", () => {
+    for (const actorRole of ["contributor", "employee", "admin"] as const) {
       const row = applyCreateDefaults(useCaseCreateSchema.parse(minimal), {
         source: "form",
         createdById: "u1",
         actorRole,
+        ownerIsLead: true,
       });
-      expect(row.inProgram).toBe(false);
+      expect(row.inProgram).toBe(true);
+    }
+  });
+
+  it("stamps community when the owner is off the roster, even for a lead", () => {
+    const row = applyCreateDefaults(useCaseCreateSchema.parse(minimal), {
+      source: "form",
+      createdById: "u1",
+      actorRole: "contributor",
+      ownerIsLead: false,
+    });
+    expect(row.inProgram).toBe(false);
+  });
+
+  it("falls back to the logger when there is no linked owner", () => {
+    const row = applyCreateDefaults(useCaseCreateSchema.parse(minimal), {
+      source: "form",
+      createdById: "u1",
+      actorRole: "contributor",
+      ownerIsLead: null,
+    });
+    expect(row.inProgram).toBe(true);
+    for (const actorRole of ["employee", "admin"] as const) {
+      const community = applyCreateDefaults(
+        useCaseCreateSchema.parse(minimal),
+        {
+          source: "form",
+          createdById: "u1",
+          actorRole,
+          ownerIsLead: null,
+        },
+      );
+      expect(community.inProgram).toBe(false);
     }
   });
 
@@ -211,6 +246,7 @@ describe("program membership is stamped, not submitted", () => {
       source: "form",
       createdById: "u1",
       actorRole: "employee",
+      ownerIsLead: null,
     });
     expect("inProgram" in row).toBe(true);
   });

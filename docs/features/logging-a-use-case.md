@@ -102,9 +102,10 @@ AI Leads and admins. Viewers cannot create records (`canCreateUseCase`).
 
 **Anyone with a `clever.com` address.** You do not need to be an AI Lead.
 
-If you are not on the [AI Leads roster](roster.md), what you log is a
-**community** record. It is a full record — same worksheet, same ROI section,
-same casebook — and it is yours to edit and to move through the first five
+If the record's **owner** is not on the [AI Leads roster](roster.md) — and,
+when you name no owner, you aren't either — what you log is a **community**
+record. It is a full record — same worksheet, same ROI section, same
+casebook — and it is yours to edit and to move through the first five
 statuses. It just does not count toward the program's 45 and 15, and it
 carries a "Community" badge saying so.
 

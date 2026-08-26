@@ -55,7 +55,7 @@ server-side in the actions, not just by hiding nav links.
 | Create a use case | — | ✅ | ✅ | ✅ |
 | Edit a record | — | own¹ | own¹ | any |
 | Move status among the first five | — | own¹ | own¹ | any |
-| Their new records count toward the 45 / 15 | — | —³ | ✅ | —³ |
+| New records they own count toward the 45 / 15 | — | —³ | ✅ | —³ |
 | Link workflows | — | —² | ✅ | ✅ |
 | Unlink from a record they can edit | — | ✅ | ✅ | ✅ |
 | Qualify, reject, confirm ROI | — | — | — | ✅ |
@@ -66,8 +66,10 @@ server-side in the actions, not just by hiding nav links.
 
 ¹ "Own" means creator, named owner, or credited author (`canEditUseCase`).
 ² Employees are narrower than AI Leads here, and only here — see below.
-³ Their records are **community** records — admins included, deliberately.
-An admin adds one to the program with the toggle, which only they have. See
+³ Membership follows the record's **owner**, not who typed it in: a record
+owned by an AI Lead counts whoever logs it, and anyone else's — admins
+included, deliberately — is a **community** record. An admin adds one to the
+program with the toggle, which only they have. See
 [counting rules](counting-rules.md#program-and-community).
 
 ## Four deliberate exceptions

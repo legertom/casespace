@@ -98,7 +98,9 @@ export const useCaseCreateSchema = z.object({
   measurementMethod: z.string().trim().nullish(),
   netImpactStatement: z.string().trim().nullish(),
   isPositive: z.boolean().nullish(),
-  roiStatus: z.enum(["not_yet_measurable", "in_progress", "complete"]).optional(),
+  roiStatus: z
+    .enum(["not_yet_measurable", "in_progress", "complete"])
+    .optional(),
   revisitOn: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD")
@@ -152,15 +154,19 @@ export type PatchableKey = Exclude<
  * to useCaseCreateSchema and it becomes patchable without a second list to
  * remember.
  */
-export const UPDATE_PATCHABLE_KEYS = Object.keys(useCaseUpdateSchema.shape).filter(
+export const UPDATE_PATCHABLE_KEYS = Object.keys(
+  useCaseUpdateSchema.shape,
+).filter(
   (k) => !(UNPATCHABLE as readonly string[]).includes(k),
 ) as PatchableKey[];
 
 export type UcSource = "form" | "wizard" | "notes" | "api" | "mcp";
 
 /** What `useCaseToFormInput` reads: a saved record plus its two child lists. */
-export interface SavedUseCase
-  extends Omit<UseCaseCreateInput, "authors" | "owner" | "urls" | "status"> {
+export interface SavedUseCase extends Omit<
+  UseCaseCreateInput,
+  "authors" | "owner" | "urls" | "status"
+> {
   ownerPersonId?: string | null;
   ownerUserId?: string | null;
   ownerName?: string | null;
@@ -254,7 +260,13 @@ export function useCaseToFormInput(
  */
 export function applyCreateDefaults(
   input: UseCaseCreateInput,
-  ctx: { source: UcSource; createdById: string; actorRole: Role },
+  ctx: {
+    source: UcSource;
+    createdById: string;
+    actorRole: Role;
+    /** Roster check of the resolved owner; null when there is no linked owner. */
+    ownerIsLead: boolean | null;
+  },
 ) {
   return {
     title: input.title,
@@ -298,11 +310,11 @@ export function applyCreateDefaults(
     // the admin-gated statuses can't arrive here; no cast to hide behind.
     status: input.status ?? "in_discovery",
     createdById: ctx.createdById,
-    // Program membership is settled here, once, from the role of whoever is
-    // logging it — never from `input`, which is why it takes the role rather
-    // than a boolean. It is deliberately absent from useCaseCreateSchema:
+    // Program membership is settled here, once, from whose record it is —
+    // the owner's roster standing, falling back to the logger's role — and
+    // never from `input`. It is deliberately absent from useCaseCreateSchema:
     // UPDATE_PATCHABLE_KEYS is derived from that schema, so a field there
     // would let every record's editor flip its own membership.
-    inProgram: inProgramAtCreation(ctx.actorRole),
+    inProgram: inProgramAtCreation(ctx.ownerIsLead, ctx.actorRole),
   };
 }

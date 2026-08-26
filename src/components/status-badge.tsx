@@ -1,7 +1,4 @@
-import {
-  STATUS_LABELS,
-  type UcStatus,
-} from "@/lib/domain";
+import { STATUS_LABELS, type UcStatus } from "@/lib/domain";
 
 const DOT_CLASSES: Record<UcStatus, string> = {
   in_discovery: "bg-st-discovery",
@@ -48,7 +45,7 @@ export function ConfirmedRoiBadge() {
 export function CommunityBadge() {
   return (
     <span
-      title="Logged by someone outside the AI Leads roster. It lives in the casebook like any other record — it just doesn't count toward the 45 or the 15 unless an admin adds it to the program."
+      title="Owned by someone outside the AI Leads roster. It lives in the casebook like any other record — it just doesn't count toward the 45 or the 15 unless an admin adds it to the program."
       className="inline-flex items-center rounded-sm border border-hairline-strong px-1.5 py-0.5 text-xs text-ink-muted"
     >
       Community
