@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { DEPARTMENTS, STATUSES, type Department, type UcStatus } from "@/lib/domain";
+import {
+  DEPARTMENTS,
+  STATUSES,
+  type Department,
+  type UcStatus,
+} from "@/lib/domain";
 import { useCaseCreateApiSchema } from "@/lib/use-case-input";
 import { toApiUseCase } from "@/server/api-serializers";
 import { identityForUser } from "@/server/identity";
@@ -30,7 +35,15 @@ export async function GET(req: Request) {
       url.searchParams.get("mine") === "1"
         ? await identityForUser(user)
         : undefined,
-    inProgram: program === "1" ? true : program === "0" ? false : undefined,
+    // Accept the boolean spellings too — a param named inProgram invites
+    // `true`/`false`, and silently returning the unfiltered collection for
+    // them is a trap.
+    inProgram:
+      program === "1" || program === "true"
+        ? true
+        : program === "0" || program === "false"
+          ? false
+          : undefined,
   });
   return Response.json({ useCases: rows.map(toApiUseCase) });
 }

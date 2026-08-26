@@ -65,7 +65,9 @@ export async function getProgramCounts(): Promise<ProgramCounts> {
       readyForGate++;
     }
   }
-  const documented = rows.filter((r) => countsTowardDocumented(r.status)).length;
+  const documented = rows.filter((r) =>
+    countsTowardDocumented(r.status),
+  ).length;
   return {
     documented,
     confirmedRoi: byStatus.confirmed_positive_roi,
@@ -263,9 +265,7 @@ export async function getAttentionFlags(): Promise<AttentionFlags> {
         id: c.id,
         title: c.title,
         status: c.status,
-        daysInStatus: Math.floor(
-          (now.getTime() - last.getTime()) / 86_400_000,
-        ),
+        daysInStatus: Math.floor((now.getTime() - last.getTime()) / 86_400_000),
         isStale: isStale(last, now, staleDays),
       };
     })
@@ -304,17 +304,21 @@ export async function getCommunitySubmissions(
   const db = getDb();
   const [[tally], recent] = await Promise.all([
     db.select({ n: count() }).from(useCases).where(COMMUNITY_ALIVE),
-    db
-      .select({
-        id: useCases.id,
-        title: useCases.title,
-        ownerName: useCases.ownerName,
-        createdAt: useCases.createdAt,
-      })
-      .from(useCases)
-      .where(COMMUNITY_ALIVE)
-      .orderBy(desc(useCases.createdAt))
-      .limit(limit),
+    // limit 0 means "total only" (the progress report) — skip the select
+    // that could only ever return nothing.
+    limit > 0
+      ? db
+          .select({
+            id: useCases.id,
+            title: useCases.title,
+            ownerName: useCases.ownerName,
+            createdAt: useCases.createdAt,
+          })
+          .from(useCases)
+          .where(COMMUNITY_ALIVE)
+          .orderBy(desc(useCases.createdAt))
+          .limit(limit)
+      : Promise.resolve([]),
   ]);
   return { total: Number(tally?.n ?? 0), recent };
 }

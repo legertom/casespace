@@ -32,7 +32,7 @@ around them.
 
 | Endpoint | Verb | Notes |
 |---|---|---|
-| `/api/v1/use-cases` | GET | Filters: `status`, `department`, `q`, `mine=1`, `inProgram=1\|0` |
+| `/api/v1/use-cases` | GET | Filters: `status`, `department`, `q`, `mine=1`, `inProgram=1\|0` (`true`/`false` accepted too) |
 | `/api/v1/use-cases` | POST | Sparse create — only `title` + `description` required |
 | `/api/v1/use-cases/:id` | GET | Includes full status history |
 | `/api/v1/use-cases/:id` | PATCH | Patch semantics — only provided fields change |

@@ -235,7 +235,10 @@ function HeroNumber({
         }
         className="mt-4 flex h-1.5 overflow-hidden rounded-full bg-hairline"
       >
-        <div className="h-full shrink-0 bg-accent" style={{ width: `${pct}%` }} />
+        <div
+          className="h-full shrink-0 bg-accent"
+          style={{ width: `${pct}%` }}
+        />
         {inFlightPct > 0 && (
           <div
             className="h-full shrink-0 bg-accent/25"
@@ -244,7 +247,9 @@ function HeroNumber({
         )}
       </div>
       {footnote && (
-        <p className="mt-3 text-sm leading-relaxed text-ink-muted">{footnote}</p>
+        <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+          {footnote}
+        </p>
       )}
     </Link>
   );
@@ -282,7 +287,10 @@ function eltDetail(o: EltProgressRow): string | null {
 }
 
 /** e.g. "1 in flight — 1 has all four gates met, waiting on the Qualified gate." */
-function inFlightNote(inFlight: number, readyForGate: number): string | undefined {
+function inFlightNote(
+  inFlight: number,
+  readyForGate: number,
+): string | undefined {
   if (inFlight === 0) return undefined;
   const lead = `${inFlight} in flight`;
   if (readyForGate === 0) return `${lead}, none through the four gates yet.`;
@@ -293,21 +301,22 @@ function inFlightNote(inFlight: number, readyForGate: number): string | undefine
 export async function ProgramDashboard() {
   const user = await getCurrentUser();
   const chart = parsePipelineChart(user?.pipelineChart);
-  const [counts, elt, coverage, movement, attention] = await Promise.all([
-    getProgramCounts(),
-    getEltProgress(),
-    getTeamCoverage(),
-    getMovement(7),
-    getAttentionFlags(),
-  ]);
-
-  // The community queue is a list of decisions only an admin can make, so it
-  // is chrome they alone see — not a fourth read exception: every record on it
-  // is public in the casebook. Gate the fetch, not just the markup. This reads
-  // the effective role, so an admin previewing as an employee loses the card.
-  const community = canManageProgram(user?.role ?? "viewer")
-    ? await getCommunitySubmissions(5)
-    : null;
+  const [counts, elt, coverage, movement, attention, community] =
+    await Promise.all([
+      getProgramCounts(),
+      getEltProgress(),
+      getTeamCoverage(),
+      getMovement(7),
+      getAttentionFlags(),
+      // The community queue is a list of decisions only an admin can make, so
+      // it is chrome they alone see — not a fourth read exception: every record
+      // on it is public in the casebook. Gate the fetch, not just the markup.
+      // This reads the effective role, so an admin previewing as an employee
+      // loses the card.
+      canManageProgram(user?.role ?? "viewer")
+        ? getCommunitySubmissions(5)
+        : Promise.resolve(null),
+    ]);
 
   const awaitingRoi = counts.byStatus.qualified;
   const targetWarning = targetSumWarning(
@@ -386,12 +395,10 @@ export async function ProgramDashboard() {
       <section aria-label="The 15 by ELT org">
         <h2 className="font-serif text-2xl">The 15, by ELT owner</h2>
         <p className="mt-1 max-w-prose text-sm text-ink-muted">
-          Confirmed Positive ROI counts against each owner&rsquo;s share of
-          the 15. Shades show how far along the rest is. Click an owner to see
-          their records.
-          {targetWarning && (
-            <span className="text-flag"> {targetWarning}</span>
-          )}
+          Confirmed Positive ROI counts against each owner&rsquo;s share of the
+          15. Shades show how far along the rest is. Click an owner to see their
+          records.
+          {targetWarning && <span className="text-flag"> {targetWarning}</span>}
         </p>
         <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-ink-faint">
           {[
@@ -531,10 +538,9 @@ export async function ProgramDashboard() {
         <section aria-label="Community submissions">
           <h2 className="font-serif text-2xl">Community submissions</h2>
           <p className="mt-2 max-w-prose text-sm text-ink-muted">
-            {community.total}{" "}
-            {community.total === 1 ? "record" : "records"} logged outside the
-            program. Nothing here counts toward the 45 or the 15 until an admin
-            says it does.
+            {community.total} {community.total === 1 ? "record" : "records"}{" "}
+            logged outside the program. Nothing here counts toward the 45 or the
+            15 until an admin says it does.
           </p>
           <ul className="mt-4 space-y-2.5">
             {community.recent.map((c) => (
@@ -549,9 +555,7 @@ export async function ProgramDashboard() {
                   {c.title}
                 </Link>
                 {c.ownerName && (
-                  <span className="shrink-0 text-ink-faint">
-                    {c.ownerName}
-                  </span>
+                  <span className="shrink-0 text-ink-faint">{c.ownerName}</span>
                 )}
               </li>
             ))}

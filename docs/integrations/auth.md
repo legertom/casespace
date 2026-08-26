@@ -75,12 +75,19 @@ in. There is no manual role override.
 means on, which is the default — the setting exists so the app can be closed
 back up in one row without a deploy, not so it has to be opened in one. Set
 it to `false` and every non-roster `clever.com` address drops to `viewer` on
-next sign-in, which is exactly the behaviour before 2026-08-25. Admins and
-AI Leads are unaffected either way: the switch must never lock the program
-out of its own tool.
+their **next request** — the switch is re-checked in `getCurrentUser`, so it
+does not wait out anyone's session — which restores exactly the behaviour
+before 2026-08-25. Admins and AI Leads are unaffected either way: the switch
+must never lock the program out of its own tool.
+
+The row is seeded on fresh databases; on one seeded before the setting
+existed, an `UPDATE` matches nothing and silently does nothing, so use the
+upsert form. Off-ish hand-written values (`"false"`, `"off"`, `0`) also
+count as off — `employeesOpen` in `lib/login-role.ts` parses defensively.
 
 ```sql
-update app_settings set value = 'false'::jsonb where key = 'open_to_employees';
+insert into app_settings (key, value) values ('open_to_employees', 'false'::jsonb)
+on conflict (key) do update set value = 'false'::jsonb;
 ```
 
 ## Dev login

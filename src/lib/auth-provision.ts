@@ -1,5 +1,5 @@
 import "server-only";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import {
   aiLeads,
@@ -9,7 +9,13 @@ import {
   users,
 } from "@/db/schema";
 import type { Role } from "@/lib/domain";
-import { deriveLoginRole, loginAllowed } from "@/lib/login-role";
+import {
+  deriveLoginRole,
+  employeesOpen,
+  isCleverEmail,
+  loginAllowed,
+  normalizeEmail,
+} from "@/lib/login-role";
 
 export interface ProvisionedLogin {
   userId: string;
@@ -30,22 +36,32 @@ export interface ProvisionedLogin {
  *   I/O around it.
  *
  * Because the role is recomputed every time, roster and admin_emails changes
- * take effect on next sign-in with no migration, and the open_to_employees
- * switch below is a genuine kill switch rather than a one-way door.
+ * take effect on next sign-in with no migration. The open_to_employees switch
+ * is also re-checked on every request in getCurrentUser — a session can
+ * outlive a sign-in by weeks, so enforcing it only here would leave the door
+ * open long after it was closed.
  */
 export async function provisionLogin(
   rawEmail: string,
   profile: { name?: string | null; image?: string | null },
 ): Promise<ProvisionedLogin | null> {
-  const email = rawEmail.trim().toLowerCase();
+  const email = normalizeEmail(rawEmail);
   if (!email.includes("@")) return null;
   const db = getDb();
 
-  const [allowlisted] = await db
-    .select()
-    .from(allowedLoginEmails)
-    .where(eq(allowedLoginEmails.email, email));
-  if (!loginAllowed(email, Boolean(allowlisted))) return null;
+  // Employees are admitted by domain alone, so the allowlist lookup only
+  // matters for everyone else — the majority path skips the query.
+  const allowlisted = isCleverEmail(email)
+    ? false
+    : Boolean(
+        (
+          await db
+            .select()
+            .from(allowedLoginEmails)
+            .where(eq(allowedLoginEmails.email, email))
+        )[0],
+      );
+  if (!loginAllowed(email, allowlisted)) return null;
 
   // Resolve or create the user via the alias table.
   const [alias] = await db
@@ -70,33 +86,26 @@ export async function provisionLogin(
       })
       .returning();
     userId = created.id;
-    await db
-      .insert(userEmails)
-      .values({ email, userId })
-      .onConflictDoNothing();
+    await db.insert(userEmails).values({ email, userId }).onConflictDoNothing();
   }
 
   const myAliases = (
     await db.select().from(userEmails).where(eq(userEmails.userId, userId))
   ).map((a) => a.email);
 
-  // Admin from the configurable allowlist.
-  const [adminSetting] = await db
+  // Both settings in one read: admin from the configurable allowlist, and
+  // the kill switch for opening the app to everyone at Clever. The switch
+  // can be turned off in one row without a deploy; employeesOpen parses it
+  // defensively because the row is written by hand.
+  const settingRows = await db
     .select()
     .from(appSettings)
-    .where(eq(appSettings.key, "admin_emails"));
-  const adminEmails = Array.isArray(adminSetting?.value)
-    ? (adminSetting.value as string[])
-    : [];
-
-  // The kill switch for opening the app to everyone at Clever. Absent means
-  // on: the setting exists so it can be turned off in one row without a
-  // deploy, not so the feature has to be turned on in one.
-  const [openSetting] = await db
-    .select()
-    .from(appSettings)
-    .where(eq(appSettings.key, "open_to_employees"));
-  const openToEmployees = openSetting?.value !== false;
+    .where(inArray(appSettings.key, ["admin_emails", "open_to_employees"]));
+  const adminValue = settingRows.find((r) => r.key === "admin_emails")?.value;
+  const adminEmails = Array.isArray(adminValue) ? (adminValue as string[]) : [];
+  const openToEmployees = employeesOpen(
+    settingRows.find((r) => r.key === "open_to_employees")?.value,
+  );
 
   // Contributor when a roster row carries one of this user's emails.
   let leadPersonId: string | null = null;
@@ -107,10 +116,7 @@ export async function provisionLogin(
       isLead = true;
       leadPersonId = lead.personId;
       if (lead.userId !== userId) {
-        await db
-          .update(aiLeads)
-          .set({ userId })
-          .where(eq(aiLeads.id, lead.id));
+        await db.update(aiLeads).set({ userId }).where(eq(aiLeads.id, lead.id));
       }
     }
   }

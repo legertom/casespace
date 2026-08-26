@@ -11,16 +11,19 @@ export default async function Home() {
   // Anyone who can log gets their own records; guests get a recency list.
   const canLog = canCreateUseCase(user.role);
 
-  // Everyone opens onto the program. Admins stop there; everyone else gets
-  // their own records underneath — first thing on the page, not the only
-  // thing on it.
+  // Everyone opens onto the program. Admins stop there — their section never
+  // renders, so they skip the fetch too; everyone else gets their own records
+  // underneath — first thing on the page, not the only thing on it.
   //
   // Deliberately unscoped by program: your own community submission shows up
   // here exactly like anything else. Hiding someone's first record from them
   // is the one thing the casebook's program default must never do.
-  const recent = canLog
-    ? await listUseCases({ mine: await identityForUser(user) })
-    : await listUseCases();
+  const recent =
+    user.role === "admin"
+      ? []
+      : canLog
+        ? await listUseCases({ mine: await identityForUser(user) })
+        : await listUseCases();
 
   return (
     <div>

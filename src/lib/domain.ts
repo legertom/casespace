@@ -14,6 +14,15 @@ export const TARGET_ROI = 15; // Confirmed Positive ROI
 export const DEFAULT_STALE_DAYS = 21;
 export const WORKFLOWS_PER_LEAD = 2;
 /**
+ * How many names the mention composer carries. Everyone at Clever can sign
+ * in now, so the list grows with headcount. Capped rather than paginated
+ * because the composer filters client-side; if the cap ever bites, the fix
+ * is a server-side search, not a bigger number. Lives here (not in the
+ * server query module) so the composer can tell a full list from a capped
+ * one and say so instead of failing silently.
+ */
+export const MENTIONABLE_LIMIT = 400;
+/**
  * How deep comment threads nest, counting the top level. Jira's comments are
  * flat; ours thread — deliberately, and only this far. depth is 0-based, so
  * the deepest comment is depth 5 and the Reply control stops rendering there.
@@ -129,7 +138,11 @@ export const LINK_HEADINGS: readonly {
   { kind: "builds_on", outgoing: true, label: LINK_LABELS.builds_on },
   { kind: "builds_on", outgoing: false, label: LINK_INVERSE_LABELS.builds_on },
   { kind: "duplicates", outgoing: true, label: LINK_LABELS.duplicates },
-  { kind: "duplicates", outgoing: false, label: LINK_INVERSE_LABELS.duplicates },
+  {
+    kind: "duplicates",
+    outgoing: false,
+    label: LINK_INVERSE_LABELS.duplicates,
+  },
   { kind: "relates_to", outgoing: true, label: LINK_LABELS.relates_to },
 ];
 
@@ -176,11 +189,23 @@ export const URL_KIND_HINTS: Record<UrlKind, string> = {
 export const RATING_FIELDS = [
   ["ratingFrequency", "Frequency", "How often the workflow runs"],
   ["ratingPain", "Pain", "How painful it is today"],
-  ["ratingDataAvailability", "Data availability", "Is the needed data accessible?"],
+  [
+    "ratingDataAvailability",
+    "Data availability",
+    "Is the needed data accessible?",
+  ],
   ["ratingRisk", "Risk", "Cost of getting it wrong"],
   ["ratingOwnershipClarity", "Ownership clarity", "Is it clear who owns it?"],
-  ["ratingEvaluationClarity", "Evaluation clarity", "Is it clear how to judge output?"],
-  ["ratingMaintenanceBurden", "Maintenance burden", "Effort to keep it working"],
+  [
+    "ratingEvaluationClarity",
+    "Evaluation clarity",
+    "Is it clear how to judge output?",
+  ],
+  [
+    "ratingMaintenanceBurden",
+    "Maintenance burden",
+    "Effort to keep it working",
+  ],
 ] as const;
 
 export type RatingKey = (typeof RATING_FIELDS)[number][0];
@@ -290,7 +315,11 @@ export type Role = (typeof ROLES)[number];
  * - Anything entering or leaving Qualified or Confirmed Positive ROI is
  *   admin-only: both record Kate's decisions.
  */
-export function canSetStatus(role: Role, from: UcStatus, to: UcStatus): boolean {
+export function canSetStatus(
+  role: Role,
+  from: UcStatus,
+  to: UcStatus,
+): boolean {
   if (role === "viewer") return false;
   if (from === to) return false;
   if (role === "admin") return true;
@@ -335,14 +364,14 @@ export interface RoiFields {
 export function roiComplete(uc: RoiFields): boolean {
   return Boolean(
     uc.successCriterion?.trim() &&
-      uc.successCriterionMet === "yes" &&
-      uc.baselineMetric?.trim() &&
-      uc.baselineValue !== null &&
-      uc.postValue !== null &&
-      uc.measurementMethod?.trim() &&
-      uc.netImpactStatement?.trim() &&
-      uc.isPositive === true &&
-      uc.roiStatus === "complete",
+    uc.successCriterionMet === "yes" &&
+    uc.baselineMetric?.trim() &&
+    uc.baselineValue !== null &&
+    uc.postValue !== null &&
+    uc.measurementMethod?.trim() &&
+    uc.netImpactStatement?.trim() &&
+    uc.isPositive === true &&
+    uc.roiStatus === "complete",
   );
 }
 
@@ -352,7 +381,8 @@ export function roiGaps(uc: RoiFields): string[] {
   if (!uc.successCriterion?.trim()) gaps.push("No success criterion defined");
   else if (uc.successCriterionMet === "not_yet")
     gaps.push("Success criterion not yet evaluated");
-  else if (uc.successCriterionMet === "no") gaps.push("Success criterion not met");
+  else if (uc.successCriterionMet === "no")
+    gaps.push("Success criterion not met");
   if (!uc.baselineMetric?.trim() || uc.baselineValue === null)
     gaps.push("No baseline measurement");
   if (uc.postValue === null) gaps.push("No post-measurement");
@@ -478,7 +508,5 @@ export function isStale(
 }
 
 export function daysInStatus(lastStatusChangeAt: Date, now: Date): number {
-  return Math.floor(
-    (now.getTime() - lastStatusChangeAt.getTime()) / DAY_MS,
-  );
+  return Math.floor((now.getTime() - lastStatusChangeAt.getTime()) / DAY_MS);
 }

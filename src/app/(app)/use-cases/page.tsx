@@ -95,29 +95,26 @@ export default async function UseCasesPage({
 
   const hasFilters = Boolean(
     q ||
-      status ||
-      department ||
-      mine ||
-      documentedOnly ||
-      personId ||
-      eltLabel ||
-      programScope !== DEFAULT_PROGRAM_SCOPE,
+    status ||
+    department ||
+    mine ||
+    documentedOnly ||
+    personId ||
+    eltLabel ||
+    programScope !== DEFAULT_PROGRAM_SCOPE,
   );
   // A filter that matches nothing shouldn't read as "the casebook is empty" —
-  // tell them what does exist and give them one click to it.
-  const totalUnfiltered =
-    visible.length === 0 && hasFilters
-      ? (
-          await listUseCases({
-            inProgram: scopeToFilter(DEFAULT_PROGRAM_SCOPE),
-          })
-        ).length
-      : 0;
+  // tell them what does exist and give them one click to it. One unfiltered
+  // fetch feeds both counts below, so the links can never disagree about
+  // what the casebook holds.
+  const everything =
+    visible.length === 0 && hasFilters ? await listUseCases({}) : [];
+  const totalEverything = everything.length;
   // Nothing in the program view, but community records exist — the likeliest
   // confusing empty state now that the default is a filter.
   const communityWaiting =
-    visible.length === 0 && programScope === "program"
-      ? (await listUseCases({ inProgram: false })).length
+    programScope === "program"
+      ? everything.filter((r) => !r.inProgram).length
       : 0;
 
   return (
@@ -162,7 +159,7 @@ export default async function UseCasesPage({
         />
         <select
           name="status"
-          defaultValue={documentedOnly ? "documented" : status ?? ""}
+          defaultValue={documentedOnly ? "documented" : (status ?? "")}
           className="rounded-md border border-hairline-strong bg-surface px-3 py-1.5 text-sm"
           aria-label="Filter by status"
         >
@@ -210,7 +207,10 @@ export default async function UseCasesPage({
           Filter
         </button>
         {hasFilters && (
-          <Link href="/use-cases" className="text-sm text-ink-faint hover:text-accent">
+          <Link
+            href="/use-cases"
+            className="text-sm text-ink-faint hover:text-accent"
+          >
             Clear
           </Link>
         )}
@@ -229,24 +229,27 @@ export default async function UseCasesPage({
                 : hasFilters
                   ? "The casebook has records, just none in this slice."
                   : "Know of one that should exist?"}{" "}
-            {communityWaiting > 0 ? (
+            {totalEverything > 0 && (
               <Link
                 href="/use-cases?program=all"
                 className="text-accent underline underline-offset-2"
               >
-                See {communityWaiting} community{" "}
-                {communityWaiting === 1 ? "submission" : "submissions"} too.
+                See all {totalEverything} use{" "}
+                {totalEverything === 1 ? "case" : "cases"}.
               </Link>
-            ) : (
-              totalUnfiltered > 0 && (
+            )}
+            {communityWaiting > 0 && (
+              <>
+                {" "}
                 <Link
-                  href="/use-cases"
+                  href="/use-cases?program=community"
                   className="text-accent underline underline-offset-2"
                 >
-                  See all {totalUnfiltered} use{" "}
-                  {totalUnfiltered === 1 ? "case" : "cases"}.
+                  {communityWaiting === 1
+                    ? "1 is a community submission."
+                    : `${communityWaiting} are community submissions.`}
                 </Link>
-              )
+              </>
             )}
           </p>
           {canCreateUseCase(user.role) && (
@@ -271,7 +274,9 @@ export default async function UseCasesPage({
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
                   <div className="flex min-w-0 items-baseline gap-2.5">
-                    <span className="truncate font-serif text-lg">{uc.title}</span>
+                    <span className="truncate font-serif text-lg">
+                      {uc.title}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {!uc.inProgram && <CommunityBadge />}

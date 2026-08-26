@@ -63,6 +63,11 @@ export async function resolveTeamId(
 interface Actor {
   id: string;
   role: Role;
+  /**
+   * The stored role when `role` is a view-as preview. Membership stamping
+   * reads this one: a costume must not decide what counts toward the 45.
+   */
+  realRole?: Role;
 }
 
 /**
@@ -97,7 +102,8 @@ async function resolveUserLinks(refs: PersonRef[]): Promise<PersonRef[]> {
   const byPerson = new Map(linked.map((u) => [u.personId!, u.id]));
   return resolved.map((r) => ({
     ...r,
-    userId: r.userId ?? (r.personId ? byPerson.get(r.personId) ?? null : null),
+    userId:
+      r.userId ?? (r.personId ? (byPerson.get(r.personId) ?? null) : null),
   }));
 }
 
@@ -139,23 +145,21 @@ export async function createUseCase(
     );
   }
   const db = getDb();
-  // actor.role is the effective role, the same one that authorized the write a
-  // line above — stamping membership from a different role than the one that
-  // allowed the create would be incoherent. Only a contributor stamps
-  // in-program, so an admin previewing as an employee gets the same community
-  // record they would have got anyway. Note the admin fan-out below
-  // deliberately does the opposite and reads the table, because that is about
-  // who is notified, not about what counts.
+  // The permission check above uses the effective role so previews behave
+  // like the real thing — but membership is stamped from the REAL role. An
+  // admin previewing as an AI Lead who logs a test record must not silently
+  // put it in the program; admission is an explicit gesture (the toggle, or
+  // the Qualified gate), never a side effect of a costume. Note the admin
+  // fan-out below reads the table for the same reason: it is about who is
+  // notified, not about what counts.
   const row = applyCreateDefaults(input, {
     source,
     createdById: actor.id,
-    actorRole: actor.role,
+    actorRole: actor.realRole ?? actor.role,
   });
   row.eltOrgId = await suggestedEltOrgId(input.department, input.eltOrgId);
 
-  const owner = input.owner
-    ? (await resolveUserLinks([input.owner]))[0]
-    : null;
+  const owner = input.owner ? (await resolveUserLinks([input.owner]))[0] : null;
   if (owner) {
     row.ownerPersonId = owner.personId ?? null;
     row.ownerUserId = owner.userId ?? null;
@@ -235,7 +239,9 @@ export async function updateUseCase(
   const ownership = await getOwnership(id);
   if (!ownership) throw new NotFoundError("Use case not found.");
   if (!canEditUseCase(actor, ownership)) {
-    throw new ForbiddenError("You can only edit use cases you created, own, or authored.");
+    throw new ForbiddenError(
+      "You can only edit use cases you created, own, or authored.",
+    );
   }
   const db = getDb();
 
@@ -326,7 +332,9 @@ export async function setStatus(
 
   // Admins may move any record; editors only their own.
   if (actor.role !== "admin" && !canEditUseCase(actor, ownership)) {
-    throw new ForbiddenError("You can only move use cases you created, own, or authored.");
+    throw new ForbiddenError(
+      "You can only move use cases you created, own, or authored.",
+    );
   }
   if (!canSetStatus(actor.role, from, to)) {
     throw new ForbiddenError(
@@ -462,7 +470,9 @@ export async function softDeleteUseCase(
   const ownership = await getOwnership(id);
   if (!ownership) throw new NotFoundError("Use case not found.");
   if (!canEditUseCase(actor, ownership)) {
-    throw new ForbiddenError("You can only delete use cases you created, own, or authored.");
+    throw new ForbiddenError(
+      "You can only delete use cases you created, own, or authored.",
+    );
   }
   const db = getDb();
   await db

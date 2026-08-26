@@ -51,7 +51,11 @@ export async function createUseCaseAction(
   let input: UseCaseCreateInput;
   try {
     input = useCaseCreateSchema.parse(raw);
-    id = await createUseCase({ id: user.id, role: user.role }, input, source);
+    id = await createUseCase(
+      { id: user.id, role: user.role, realRole: user.realRole },
+      input,
+      source,
+    );
   } catch (err) {
     return failure(err);
   }
@@ -136,7 +140,11 @@ export async function rejectGateAction(
   const user = await requireUser();
   if (!reason.trim()) return { error: "A reason is required to reject." };
   try {
-    await rejectAtQualifiedGate({ id: user.id, role: user.role }, id, reason.trim());
+    await rejectAtQualifiedGate(
+      { id: user.id, role: user.role },
+      id,
+      reason.trim(),
+    );
   } catch (err) {
     return failure(err);
   }

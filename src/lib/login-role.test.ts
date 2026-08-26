@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveLoginRole,
+  employeesOpen,
   isCleverEmail,
   loginAllowed,
   type LoginRoleInput,
@@ -42,6 +43,29 @@ describe("loginAllowed", () => {
 
   it("rejects anything that isn't an address", () => {
     expect(loginAllowed("not-an-email", true)).toBe(false);
+  });
+});
+
+describe("employeesOpen", () => {
+  it("is on when the row is absent or true — absent means on", () => {
+    expect(employeesOpen(undefined)).toBe(true);
+    expect(employeesOpen(true)).toBe(true);
+  });
+
+  it("treats every off-ish hand-written value as off", () => {
+    // The row is written in SQL by hand; a switch that only recognizes the
+    // exact JSON boolean would silently stay on for '"false"' or '0'.
+    expect(employeesOpen(false)).toBe(false);
+    expect(employeesOpen("false")).toBe(false);
+    expect(employeesOpen("off")).toBe(false);
+    expect(employeesOpen(0)).toBe(false);
+    expect(employeesOpen("0")).toBe(false);
+  });
+
+  it("does not read arbitrary other values as off", () => {
+    expect(employeesOpen("true")).toBe(true);
+    expect(employeesOpen(1)).toBe(true);
+    expect(employeesOpen({ enabled: false })).toBe(true);
   });
 });
 
@@ -93,9 +117,9 @@ describe("deriveLoginRole", () => {
   });
 
   it("leaves an allow-listed guest a viewer", () => {
-    expect(deriveLoginRole({ ...base, aliases: ["contractor@gmail.com"] })).toBe(
-      "viewer",
-    );
+    expect(
+      deriveLoginRole({ ...base, aliases: ["contractor@gmail.com"] }),
+    ).toBe("viewer");
   });
 
   it("holds employees at viewer while the kill switch is off", () => {

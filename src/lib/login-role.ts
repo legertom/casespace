@@ -34,6 +34,23 @@ export function loginAllowed(email: string, allowlisted: boolean): boolean {
   return isCleverEmail(normalized) || allowlisted;
 }
 
+/**
+ * Parse the `open_to_employees` app setting. Absent means on: the row exists
+ * so the door can be closed, not so it has to be opened. The row is written
+ * by hand in SQL, so every off-ish spelling an operator would plausibly
+ * write — `false`, `"false"`, `"off"`, `0` — counts as off rather than
+ * silently leaving the app open.
+ */
+export function employeesOpen(value: unknown): boolean {
+  return !(
+    value === false ||
+    value === "false" ||
+    value === "off" ||
+    value === 0 ||
+    value === "0"
+  );
+}
+
 export interface LoginRoleInput {
   /** Every address on this account, from user_emails — not just the one used to sign in. */
   aliases: readonly string[];
