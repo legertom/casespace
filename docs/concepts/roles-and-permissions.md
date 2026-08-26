@@ -1,9 +1,10 @@
 ---
 title: Roles and permissions
 audience: everyone
-updated: 2026-08-25
+updated: 2026-08-26
 code:
   - src/lib/permissions.ts
+  - src/lib/auth-provision.ts
   - src/lib/view-as.ts
   - src/lib/current-user.ts
   - src/lib/login-role.ts
@@ -20,6 +21,13 @@ row on the [AI Leads roster](../features/roster.md) makes you a contributor,
 any `@clever.com` alias makes you an employee, and anything else is a viewer.
 So a roster change takes effect the next time that person signs in, and there
 is no role to migrate.
+
+Employee is the one rung that does not wait for a sign-in. Because a session
+can outlive its stamp by weeks, `deriveRequestRole` re-reads it on **every
+request**, in both directions: a stored viewer holding a `clever.com` address
+is treated as an employee, and every employee drops back to viewer while the
+[kill switch](../integrations/auth.md#the-kill-switch) is off. Admin and AI
+Lead are never re-derived this way.
 
 **Viewer means "signed in but not a Clever employee"** — the allow-listed
 guests in `allowed_login_emails`. It is not the default any more; employees

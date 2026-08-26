@@ -3,6 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { and, eq, isNull } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { pats, users } from "@/db/schema";
+import { employeeStanding } from "@/lib/auth-provision";
 
 /**
  * Token-authenticated actor. Deliberately the raw database row rather than
@@ -24,6 +25,11 @@ export function generateToken(): { token: string; prefix: string } {
  * Resolve an Authorization: Bearer header to its owning user. Token
  * permissions follow the web role of the token's owner. Returns null on any
  * failure — callers answer 401.
+ *
+ * The role is re-derived per request exactly as the browser's is, so a token
+ * and a browser tab always agree about their owner: an employee whose stamp
+ * predates the app opening up can log over MCP, and closing the kill switch
+ * stops the tokens too rather than leaving a written-word back door open.
  */
 export async function authenticatePat(
   req: Request,
@@ -43,5 +49,6 @@ export async function authenticatePat(
     .set({ lastUsedAt: new Date() })
     .where(eq(pats.id, row.pat.id))
     .catch(() => {});
-  return row.user;
+  const role = await employeeStanding(row.user.id, row.user.role);
+  return { ...row.user, role };
 }

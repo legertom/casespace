@@ -5,9 +5,9 @@ import { notFound, redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { getDb } from "@/db/client";
-import { appSettings, users } from "@/db/schema";
+import { users } from "@/db/schema";
 import type { Role } from "@/lib/domain";
-import { employeesOpen } from "@/lib/login-role";
+import { employeeStanding } from "@/lib/auth-provision";
 import {
   VIEW_AS_COOKIE,
   resolveEffectiveRole,
@@ -38,18 +38,12 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const [user] = await db.select().from(users).where(eq(users.id, id));
   if (!user) return null;
 
-  // The open_to_employees kill switch is enforced here, not only at sign-in:
-  // provisionLogin stamps the role, but a session can outlive the switch by
-  // weeks. One extra single-row read, paid only by employees, makes flipping
-  // the row off take effect on the next request instead of the next sign-in.
-  let storedRole = user.role;
-  if (storedRole === "employee") {
-    const [open] = await db
-      .select()
-      .from(appSettings)
-      .where(eq(appSettings.key, "open_to_employees"));
-    if (!employeesOpen(open?.value)) storedRole = "viewer";
-  }
+  // The employee rung is re-derived here, not only at sign-in: provisionLogin
+  // stamps the role, but a session can outlive that stamp by weeks, in both
+  // directions — see deriveRequestRole. Admins and AI Leads skip the reads
+  // entirely; employees pay one single-row settings read; only viewers, the
+  // smallest group, also pay the alias lookup that can promote them.
+  const storedRole = await employeeStanding(user.id, user.role);
 
   const jar = await cookies();
   const { role, viewingAs } = resolveEffectiveRole(

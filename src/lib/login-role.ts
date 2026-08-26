@@ -82,3 +82,41 @@ export function deriveLoginRole(input: LoginRoleInput): Role {
   if (input.openToEmployees && aliases.some(isCleverEmail)) return "employee";
   return "viewer";
 }
+
+export interface RequestRoleInput {
+  /** The role stamped on the users row by the last sign-in. */
+  storedRole: Role;
+  /** Whether any alias on the account is a clever.com address. */
+  hasCleverAlias: boolean;
+  /** The open_to_employees app setting. */
+  openToEmployees: boolean;
+}
+
+/**
+ * The employee rung, re-derived on every request instead of trusted from the
+ * stamp — the bottom two rungs only.
+ *
+ * A stamp is a fact about the last sign-in, and sessions outlive sign-ins by
+ * weeks. That cuts both ways, and both ways have bitten:
+ *
+ * - Closing the kill switch has to take effect now, not at the next login.
+ * - Opening the app to employees on 2026-08-25 left everyone who had signed
+ *   in before it stamped `viewer` and therefore buttonless — no Log a use
+ *   case, no writes — until they happened to sign in again. The same hole
+ *   reopens every time the switch is turned back on.
+ *
+ * So `viewer` + a clever.com address is read as `employee` here, exactly as
+ * `deriveLoginRole` would read it. Only the sign-in ladder promotes above
+ * that: admin and contributor are stamped from `admin_emails` and the roster
+ * and pass through untouched, so this can add no power the ladder wouldn't.
+ */
+export function deriveRequestRole(input: RequestRoleInput): Role {
+  const { storedRole } = input;
+  if (storedRole === "admin" || storedRole === "contributor") return storedRole;
+  // An `employee` stamp is itself proof of a clever.com alias — it is the only
+  // way to get one — which is what lets the caller skip the alias lookup for
+  // the role most people hold.
+  const isEmployee = storedRole === "employee" || input.hasCleverAlias;
+  if (!isEmployee) return "viewer";
+  return input.openToEmployees ? "employee" : "viewer";
+}

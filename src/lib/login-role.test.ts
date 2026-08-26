@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveLoginRole,
+  deriveRequestRole,
   employeesOpen,
   isCleverEmail,
   loginAllowed,
   type LoginRoleInput,
+  type RequestRoleInput,
 } from "./login-role";
 
 const base: LoginRoleInput = {
@@ -156,5 +158,86 @@ describe("deriveLoginRole", () => {
     expect(
       deriveLoginRole({ ...base, aliases: ["lead@gmail.com"], isLead: true }),
     ).toBe("contributor");
+  });
+});
+
+describe("deriveRequestRole", () => {
+  const req: RequestRoleInput = {
+    storedRole: "viewer",
+    hasCleverAlias: false,
+    openToEmployees: true,
+  };
+
+  it("promotes a stamp made before the app opened up", () => {
+    // The bug this exists for: signed in on 2026-08-04, stamped viewer, still
+    // holding that session on 2026-08-26 — and therefore no way to log a use
+    // case, on a page that says everyone at Clever can.
+    expect(deriveRequestRole({ ...req, hasCleverAlias: true })).toBe("employee");
+  });
+
+  it("keeps a guest a viewer, however open the app is", () => {
+    expect(deriveRequestRole(req)).toBe("viewer");
+  });
+
+  it("takes an employee stamp as proof of a clever.com address", () => {
+    // Employees skip the alias lookup, so this is the shape they arrive in.
+    expect(deriveRequestRole({ ...req, storedRole: "employee" })).toBe(
+      "employee",
+    );
+  });
+
+  it("drops employees to viewer while the kill switch is off, promoting nobody", () => {
+    expect(
+      deriveRequestRole({
+        ...req,
+        storedRole: "employee",
+        openToEmployees: false,
+      }),
+    ).toBe("viewer");
+    expect(
+      deriveRequestRole({
+        ...req,
+        hasCleverAlias: true,
+        openToEmployees: false,
+      }),
+    ).toBe("viewer");
+  });
+
+  it("never touches admins and leads, switch either way", () => {
+    // The two rungs this must not decide: they come from admin_emails and the
+    // roster, which are sign-in questions. Nothing here can add power.
+    for (const openToEmployees of [true, false]) {
+      expect(
+        deriveRequestRole({ ...req, storedRole: "admin", openToEmployees }),
+      ).toBe("admin");
+      expect(
+        deriveRequestRole({
+          ...req,
+          storedRole: "contributor",
+          openToEmployees,
+        }),
+      ).toBe("contributor");
+    }
+  });
+
+  it("agrees with the sign-in ladder for the rungs it shares", () => {
+    // Two derivations of one rule; they must not drift.
+    const aliases = ["someone@clever.com"];
+    for (const openToEmployees of [true, false]) {
+      expect(
+        deriveRequestRole({
+          storedRole: "viewer",
+          hasCleverAlias: true,
+          openToEmployees,
+        }),
+      ).toBe(
+        deriveLoginRole({
+          aliases,
+          adminEmails: [],
+          isLead: false,
+          openToEmployees,
+        }),
+      );
+    }
   });
 });

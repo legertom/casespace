@@ -11,6 +11,7 @@ import {
 import type { Role } from "@/lib/domain";
 import {
   deriveLoginRole,
+  deriveRequestRole,
   employeesOpen,
   isCleverEmail,
   loginAllowed,
@@ -36,10 +37,10 @@ export interface ProvisionedLogin {
  *   I/O around it.
  *
  * Because the role is recomputed every time, roster and admin_emails changes
- * take effect on next sign-in with no migration. The open_to_employees switch
- * is also re-checked on every request in getCurrentUser — a session can
- * outlive a sign-in by weeks, so enforcing it only here would leave the door
- * open long after it was closed.
+ * take effect on next sign-in with no migration. The employee rung is also
+ * re-derived on every request, by `employeeStanding` below — a session can
+ * outlive a sign-in by weeks, so a stamp made here is the wrong thing to
+ * trust about who is an employee today.
  */
 export async function provisionLogin(
   rawEmail: string,
@@ -141,4 +142,50 @@ export async function provisionLogin(
   }
 
   return { userId, role };
+}
+
+/**
+ * The role to act as on *this* request, given the one stamped at sign-in.
+ *
+ * The rule is `deriveRequestRole`; this is the I/O around it, and it is
+ * written to buy as little of that I/O as possible. Admins and AI Leads
+ * return immediately — their rungs come from `admin_emails` and the roster,
+ * which are sign-in questions. Employees cost one keyed settings read.
+ * Viewers cost that plus an alias lookup, and viewers are the smallest group
+ * in the app now that everyone at Clever can sign in.
+ *
+ * Every session-bearing path goes through here: the browser (getCurrentUser)
+ * and API tokens (authenticatePat) alike, so a stale stamp cannot decide
+ * whether someone may write.
+ */
+export async function employeeStanding(
+  userId: string,
+  storedRole: Role,
+): Promise<Role> {
+  if (storedRole === "admin" || storedRole === "contributor") return storedRole;
+  const db = getDb();
+
+  const [open] = await db
+    .select()
+    .from(appSettings)
+    .where(eq(appSettings.key, "open_to_employees"));
+  const openToEmployees = employeesOpen(open?.value);
+
+  // Nothing an alias could say changes a closed switch or a standing stamp,
+  // so only ask for the aliases when the answer turns on them.
+  const needsAliases = storedRole === "viewer" && openToEmployees;
+  const aliases = needsAliases
+    ? (
+        await db
+          .select({ email: userEmails.email })
+          .from(userEmails)
+          .where(eq(userEmails.userId, userId))
+      ).map((a) => a.email)
+    : [];
+
+  return deriveRequestRole({
+    storedRole,
+    hasCleverAlias: aliases.some(isCleverEmail),
+    openToEmployees,
+  });
 }

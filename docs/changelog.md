@@ -1,7 +1,7 @@
 ---
 title: Changelog
 audience: everyone
-updated: 2026-08-25
+updated: 2026-08-26
 code:
   - src/lib/changelog.ts
   - src/server/changelog.ts
@@ -43,6 +43,16 @@ in-app report it came from.
 ---
 
 ## 2026-08-26
+
+### Everyone at Clever gets the Log a use case button back
+Requested by: Tom Leger
+
+The app opened to everyone on August 25, but your role was worked out the
+last time you signed in — so anyone still using a session from before that
+day was treated as a guest: no *Log a use case* button, and no way to write.
+Casespace now checks whether you work at Clever on every request instead of
+remembering an answer from weeks ago, and the button is there for every
+employee, no signing out and back in required.
 
 ### The casebook filters as fast as you can think
 Requested by: Tom Leger
