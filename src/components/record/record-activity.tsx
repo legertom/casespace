@@ -1,9 +1,13 @@
 import { buildActivity } from "@/lib/activity";
 import { buildCommentTree, countLiveComments } from "@/lib/comment-tree";
 import { STATUS_LABELS } from "@/lib/domain";
+import { describeFieldChange } from "@/lib/field-audit";
 import { fmtDate } from "@/lib/format";
 import type { CommentRow, MentionableUser } from "@/server/comment-queries";
-import type { StatusChangeEntry } from "@/server/use-case-queries";
+import type {
+  FieldChangeEntry,
+  StatusChangeEntry,
+} from "@/server/use-case-queries";
 import { Comment } from "@/components/comments/comment-thread";
 import { CommentComposer } from "@/components/comments/comment-composer";
 
@@ -11,6 +15,8 @@ interface Props {
   useCaseId: string;
   /** Already redacted — the page maps visibleHistoryNote before the merge. */
   history: StatusChangeEntry[];
+  /** The field-change audit trail: membership, owner, credit, ELT, gates. */
+  fieldHistory: FieldChangeEntry[];
   comments: CommentRow[];
   people: MentionableUser[];
   currentUserId: string;
@@ -26,13 +32,14 @@ interface Props {
 export function RecordActivity({
   useCaseId,
   history,
+  fieldHistory,
   comments,
   people,
   currentUserId,
   isAdmin,
 }: Props) {
   const tree = buildCommentTree(comments);
-  const items = buildActivity(history, tree);
+  const items = buildActivity(history, fieldHistory, tree);
   const live = countLiveComments(comments);
 
   return (
@@ -45,6 +52,8 @@ export function RecordActivity({
         {items.map((item) =>
           item.kind === "status" ? (
             <StatusEvent key={item.entry.id} h={item.entry} />
+          ) : item.kind === "field" ? (
+            <FieldEvent key={item.entry.id} h={item.entry} />
           ) : (
             <Comment
               key={item.node.comment.id}
@@ -68,6 +77,22 @@ export function RecordActivity({
         <CommentComposer useCaseId={useCaseId} people={people} />
       </div>
     </section>
+  );
+}
+
+function FieldEvent({ h }: { h: FieldChangeEntry }) {
+  return (
+    <li className="flex gap-4 text-sm">
+      <span className="w-24 shrink-0 text-ink-faint">
+        {fmtDate(h.createdAt)}
+      </span>
+      <span>
+        {describeFieldChange(h.field, h.fromValue, h.toValue)}
+        {h.changedByName && (
+          <span className="text-ink-faint"> · {h.changedByName}</span>
+        )}
+      </span>
+    </li>
   );
 }
 

@@ -7,27 +7,37 @@
  * top-level comments take a slot — replies stay nested under their root,
  * at the root's position.
  */
-import type { StatusChangeEntry } from "@/server/use-case-queries";
+import type {
+  FieldChangeEntry,
+  StatusChangeEntry,
+} from "@/server/use-case-queries";
 import type { CommentLike, CommentNode } from "./comment-tree";
 
 type DatedComment = CommentLike & { createdAt: Date };
 
 export type ActivityItem<C extends DatedComment> =
   | { kind: "status"; at: Date; entry: StatusChangeEntry }
+  | { kind: "field"; at: Date; entry: FieldChangeEntry }
   | { kind: "comment"; at: Date; node: CommentNode<C> };
 
 /**
- * Interleave status changes and top-level comments, ascending by time.
- * Input order doesn't matter — history arrives newest-first, comments
- * oldest-first, and neither query changes for this.
+ * Interleave status changes, field-change audit rows, and top-level
+ * comments, ascending by time. Input order doesn't matter — history arrives
+ * newest-first, comments oldest-first, and no query changes for this.
  */
 export function buildActivity<C extends DatedComment>(
   history: readonly StatusChangeEntry[],
+  fieldHistory: readonly FieldChangeEntry[],
   roots: readonly CommentNode<C>[],
 ): ActivityItem<C>[] {
   const items: ActivityItem<C>[] = [
     ...history.map((entry) => ({
       kind: "status" as const,
+      at: entry.createdAt,
+      entry,
+    })),
+    ...fieldHistory.map((entry) => ({
+      kind: "field" as const,
       at: entry.createdAt,
       entry,
     })),
@@ -40,14 +50,19 @@ export function buildActivity<C extends DatedComment>(
   return items.sort((a, b) => {
     const byTime = a.at.getTime() - b.at.getTime();
     if (byTime !== 0) return byTime;
-    // Equal timestamps: status before comment, then by id — deterministic,
-    // so two renders of the same record never disagree about the order.
-    if (a.kind !== b.kind) return a.kind === "status" ? -1 : 1;
+    // Equal timestamps: status, then field changes (a promotion's auto-admit
+    // reads as its consequence), then comments; ties break by id —
+    // deterministic, so two renders never disagree about the order.
+    if (a.kind !== b.kind) return kindRank(a.kind) - kindRank(b.kind);
     const [aId, bId] = [itemId(a), itemId(b)];
     return aId < bId ? -1 : aId > bId ? 1 : 0;
   });
 }
 
+function kindRank(kind: "status" | "field" | "comment"): number {
+  return kind === "status" ? 0 : kind === "field" ? 1 : 2;
+}
+
 function itemId<C extends DatedComment>(item: ActivityItem<C>): string {
-  return item.kind === "status" ? item.entry.id : item.node.comment.id;
+  return item.kind === "comment" ? item.node.comment.id : item.entry.id;
 }

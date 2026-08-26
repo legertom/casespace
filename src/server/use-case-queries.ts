@@ -3,6 +3,7 @@ import { and, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import {
   eltOrgs,
+  fieldChanges,
   people,
   statusChanges,
   teams,
@@ -11,7 +12,7 @@ import {
   useCases,
   users,
 } from "@/db/schema";
-import type { Department, UcStatus, UrlKind } from "@/lib/domain";
+import type { AuditedField, Department, UcStatus, UrlKind } from "@/lib/domain";
 import { creditsIdentity, type Identity } from "@/lib/people-match";
 
 export interface UseCaseFilters {
@@ -45,7 +46,12 @@ export interface UseCaseUrlEntry {
 export type UseCaseRow = typeof useCases.$inferSelect & {
   teamName: string | null;
   eltOrgName: string | null;
-  authors: { id: string; displayName: string; personId: string | null; userId: string | null }[];
+  authors: {
+    id: string;
+    displayName: string;
+    personId: string | null;
+    userId: string | null;
+  }[];
   urls: UseCaseUrlEntry[];
 };
 
@@ -55,11 +61,13 @@ export async function listUseCases(
   const db = getDb();
   const conds = [isNull(useCases.deletedAt)];
   if (filters.status) conds.push(eq(useCases.status, filters.status));
-  if (filters.department) conds.push(eq(useCases.department, filters.department));
+  if (filters.department)
+    conds.push(eq(useCases.department, filters.department));
   if (filters.teamId) conds.push(eq(useCases.teamId, filters.teamId));
   if (filters.eltOrgId) conds.push(eq(useCases.eltOrgId, filters.eltOrgId));
   if (filters.eltUnallocated) conds.push(isNull(useCases.eltOrgId));
-  if (filters.createdById) conds.push(eq(useCases.createdById, filters.createdById));
+  if (filters.createdById)
+    conds.push(eq(useCases.createdById, filters.createdById));
   // `!== undefined`, not truthiness: `false` means "community only" and is
   // exactly the value the surrounding truthy idiom would drop, which would
   // make the Community filter silently return everything.
@@ -161,6 +169,16 @@ export interface StatusChangeEntry {
   changedByName: string | null;
 }
 
+/** One row of the field-change audit trail, ready for the Activity stream. */
+export interface FieldChangeEntry {
+  id: string;
+  field: AuditedField;
+  fromValue: string | null;
+  toValue: string | null;
+  createdAt: Date;
+  changedByName: string | null;
+}
+
 export async function getUseCase(id: string) {
   const db = getDb();
   const [row] = await db
@@ -208,6 +226,20 @@ export async function getUseCase(id: string) {
     .where(eq(statusChanges.useCaseId, id))
     .orderBy(desc(statusChanges.createdAt));
 
+  const fieldHistory: FieldChangeEntry[] = await db
+    .select({
+      id: fieldChanges.id,
+      field: fieldChanges.field,
+      fromValue: fieldChanges.fromValue,
+      toValue: fieldChanges.toValue,
+      createdAt: fieldChanges.createdAt,
+      changedByName: users.name,
+    })
+    .from(fieldChanges)
+    .leftJoin(users, eq(fieldChanges.changedById, users.id))
+    .where(eq(fieldChanges.useCaseId, id))
+    .orderBy(desc(fieldChanges.createdAt));
+
   let ownerPersonName: string | null = null;
   if (row.uc.ownerPersonId) {
     const [p] = await db
@@ -226,6 +258,7 @@ export async function getUseCase(id: string) {
     authors,
     urls,
     history,
+    fieldHistory,
   };
 }
 
@@ -239,6 +272,7 @@ export async function getOwnership(id: string) {
       createdById: useCases.createdById,
       ownerUserId: useCases.ownerUserId,
       status: useCases.status,
+      inProgram: useCases.inProgram,
       deletedAt: useCases.deletedAt,
     })
     .from(useCases)
@@ -252,7 +286,10 @@ export async function getOwnership(id: string) {
     createdById: uc.createdById,
     ownerUserId: uc.ownerUserId,
     status: uc.status,
-    authorUserIds: authorRows.map((a) => a.userId).filter((x): x is string => !!x),
+    inProgram: uc.inProgram,
+    authorUserIds: authorRows
+      .map((a) => a.userId)
+      .filter((x): x is string => !!x),
   };
 }
 

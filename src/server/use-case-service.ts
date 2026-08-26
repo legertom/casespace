@@ -4,6 +4,7 @@ import { getDb } from "@/db/client";
 import {
   aiLeads,
   eltOrgs,
+  fieldChanges,
   notifications,
   people,
   statusChanges,
@@ -17,6 +18,7 @@ import { newUseCaseNotifications } from "@/lib/new-use-case-notifications";
 import {
   canSetStatus,
   suggestEltOrg,
+  type AuditedField,
   type Department,
   type Role,
   type UcStatus,
@@ -254,6 +256,101 @@ export async function createUseCase(
   });
 }
 
+/**
+ * The audit rows one update earns — see AUDITED_FIELDS in lib/domain for the
+ * philosophy. Reads the record's pre-state itself; the caller inserts the
+ * rows inside the update's transaction so the trail and the change land
+ * together or not at all.
+ */
+async function auditRowsForUpdate(
+  actor: Actor,
+  id: string,
+  input: UseCaseUpdateInput,
+  patch: Record<string, unknown>,
+  authors: PersonRef[] | null,
+): Promise<(typeof fieldChanges.$inferInsert)[]> {
+  const db = getDb();
+  const [before] = await db
+    .select({
+      ownerName: useCases.ownerName,
+      eltOrgId: useCases.eltOrgId,
+      gateNamed: useCases.gateNamed,
+      gateTool: useCases.gateTool,
+      gateAdoption: useCases.gateAdoption,
+      gateOwner: useCases.gateOwner,
+    })
+    .from(useCases)
+    .where(eq(useCases.id, id));
+  if (!before) return [];
+
+  const rows: (typeof fieldChanges.$inferInsert)[] = [];
+  const record = (
+    field: AuditedField,
+    fromValue: string | null,
+    toValue: string | null,
+  ) => {
+    if (fromValue !== toValue)
+      rows.push({
+        useCaseId: id,
+        field,
+        fromValue,
+        toValue,
+        changedById: actor.id,
+      });
+  };
+
+  if ("owner" in input) {
+    record(
+      "owner",
+      before.ownerName,
+      (patch.ownerName as string | null) ?? null,
+    );
+  }
+
+  if (authors) {
+    const was = await db
+      .select({ displayName: useCaseAuthors.displayName })
+      .from(useCaseAuthors)
+      .where(eq(useCaseAuthors.useCaseId, id))
+      .orderBy(useCaseAuthors.position);
+    record(
+      "authors",
+      was.map((a) => a.displayName).join(", ") || null,
+      authors.map((a) => a.displayName).join(", ") || null,
+    );
+  }
+
+  if ("eltOrgId" in patch && patch.eltOrgId !== before.eltOrgId) {
+    record(
+      "elt_org",
+      await eltOrgName(before.eltOrgId),
+      await eltOrgName(patch.eltOrgId as string | null),
+    );
+  }
+
+  const gates = [
+    ["gate_named", "gateNamed", before.gateNamed],
+    ["gate_tool", "gateTool", before.gateTool],
+    ["gate_adoption", "gateAdoption", before.gateAdoption],
+    ["gate_owner", "gateOwner", before.gateOwner],
+  ] as const;
+  for (const [field, key, was] of gates) {
+    if (key in patch) record(field, String(was), String(patch[key]));
+  }
+
+  return rows;
+}
+
+async function eltOrgName(id: string | null): Promise<string | null> {
+  if (!id) return null;
+  const db = getDb();
+  const [o] = await db
+    .select({ name: eltOrgs.name })
+    .from(eltOrgs)
+    .where(eq(eltOrgs.id, id));
+  return o?.name ?? null;
+}
+
 export async function updateUseCase(
   actor: Actor,
   id: string,
@@ -305,12 +402,21 @@ export async function updateUseCase(
   // Same contract as authors: `[]` clears the list, absent leaves it alone.
   const urls = "urls" in input && input.urls ? input.urls : null;
 
+  // The audit trail: a change to any field that moves the program's numbers
+  // or its credit gets a row, written in the same transaction as the change.
+  // Values are display strings so the trail outlives the directory.
+  const audit = await auditRowsForUpdate(actor, id, input, patch, authors);
+
   // One transaction, chiefly for the two swaps: a delete-then-insert with a
   // failure in between would silently strip every credit — or every link —
   // from the record.
   await db.transaction(async (tx) => {
     if (Object.keys(patch).length > 0) {
       await tx.update(useCases).set(patch).where(eq(useCases.id, id));
+    }
+
+    if (audit.length > 0) {
+      await tx.insert(fieldChanges).values(audit);
     }
 
     if (authors) {
@@ -424,6 +530,18 @@ export async function setStatus(
       changedById: actor.id,
       note: note ?? null,
     });
+
+    // Promotion past the Qualified gate silently admits a community record —
+    // the trail makes the silent part visible, next to the promotion itself.
+    if (patch.inProgram === true && !ownership.inProgram) {
+      await tx.insert(fieldChanges).values({
+        useCaseId: id,
+        field: "in_program",
+        fromValue: "false",
+        toValue: "true",
+        changedById: actor.id,
+      });
+    }
   });
 }
 
@@ -482,8 +600,19 @@ export async function setProgramMembership(
   }
   const ownership = await getOwnership(id);
   if (!ownership) throw new NotFoundError("Use case not found.");
+  // A no-op toggle writes nothing — the trail records changes, not clicks.
+  if (ownership.inProgram === inProgram) return;
   const db = getDb();
-  await db.update(useCases).set({ inProgram }).where(eq(useCases.id, id));
+  await db.transaction(async (tx) => {
+    await tx.update(useCases).set({ inProgram }).where(eq(useCases.id, id));
+    await tx.insert(fieldChanges).values({
+      useCaseId: id,
+      field: "in_program",
+      fromValue: String(!inProgram),
+      toValue: String(inProgram),
+      changedById: actor.id,
+    });
+  });
 }
 
 export async function softDeleteUseCase(

@@ -44,6 +44,16 @@ in-app report it came from.
 
 ## 2026-08-25
 
+### The record remembers who moved the things that count
+Requested by: Tom Leger
+
+A record's Activity stream now shows changes to the fields that move the
+program's numbers or its credit: added to or removed from the program (including
+the quiet admission that comes with passing the Qualified gate), owner changes,
+credit changes, ELT allocation, and the four documented gates — each with who
+and when, right beside the status history. Ordinary text edits stay unlogged
+on purpose.
+
 ### Counting follows the owner, not the typist
 Requested by: Tom Leger
 

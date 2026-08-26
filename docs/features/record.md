@@ -48,13 +48,17 @@ whoever owns it.
   [linked workflows](linked-workflows.md), which relate two *records*.
 - **The seven scoping-worksheet ratings**.
 - **[Linked workflows](linked-workflows.md)**.
-- **Activity** — the record's story in one stream: every status change and
-  every [comment](comments.md), interleaved oldest-first, with the comment
-  box at the bottom where the story ends. Status events stay compact
-  one-liners; comments keep their cards and their threading. History notes
-  show with their entries — except the annual-ROI confirmation note, which
-  only admins see here, for [the same reason Wins is gated](wins.md): it may
-  carry dollar figures.
+- **Activity** — the record's story in one stream: every status change,
+  every change to a field that moves the numbers or the credit (program
+  membership, owner, authors, ELT allocation, the four documented gates),
+  and every [comment](comments.md), interleaved oldest-first, with the
+  comment box at the bottom where the story ends. Status and field events
+  stay compact one-liners; comments keep their cards and their threading.
+  Ordinary worksheet edits are deliberately not logged — a trail drowning in
+  text edits is a trail nobody reads. History notes show with their
+  entries — except the annual-ROI confirmation note, which only admins see
+  here, for [the same reason Wins is gated](wins.md): it may carry dollar
+  figures.
 
 ## Editing where you read
 
@@ -126,14 +130,17 @@ sees the card, and the check is enforced server-side.
 Moving a record to Qualified or Confirmed Positive ROI ticks it on its own —
 that promotion *is* an admin saying the record counts.
 
-Admins reach for this on their own records too: only an AI Lead's record is
-stamped in-program at creation, so a workflow you log as an admin starts as a
-community record and you tick the box if you mean it to count.
+Admins reach for this on their own records too: membership is stamped at
+creation from the record's owner (an unowned record follows its logger), so
+a workflow you log as your own starts as a community record and you tick the
+box if you mean it to count.
 
-**There is no history entry for a membership change.** The status-change log
-is for statuses, and a no-op entry there would corrupt Movement and the
-weekly post, which both read it as a promotion or a regression. A record's
-badge tells you where it stands now, not who moved it.
+**Every membership change lands in the Activity stream.** The toggle writes
+a field-change entry — "Added to the program", with who and when — and so
+does the silent admission when a promotion past the Qualified gate takes a
+community record on. It lives beside the status log, not in it: a membership
+row in the status-change table would corrupt Movement and the weekly post,
+which read that table as promotions and regressions.
 
 ## Related
 

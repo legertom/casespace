@@ -133,6 +133,7 @@ export default async function UseCaseDetailPage({
                 ...h,
                 note: visibleHistoryNote(h, user.role),
               }))}
+              fieldHistory={uc.fieldHistory}
               comments={comments}
               people={mentionable}
               currentUserId={user.id}

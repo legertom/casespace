@@ -395,6 +395,24 @@ export function roiGaps(uc: RoiFields): string[] {
   return gaps;
 }
 
+/**
+ * The record fields that get an audit row when they change — the ones that
+ * move the program's numbers or its credit. Status has its own table
+ * (status_changes); everything else on the worksheet changes silently,
+ * deliberately: a trail drowning in text edits is a trail nobody reads.
+ */
+export const AUDITED_FIELDS = [
+  "in_program",
+  "owner",
+  "authors",
+  "elt_org",
+  "gate_named",
+  "gate_tool",
+  "gate_adoption",
+  "gate_owner",
+] as const;
+export type AuditedField = (typeof AUDITED_FIELDS)[number];
+
 /** The 45 counts records at Qualified or better. */
 export function countsTowardDocumented(status: UcStatus): boolean {
   return status === "qualified" || status === "confirmed_positive_roi";

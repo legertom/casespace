@@ -17,6 +17,7 @@ import {
 } from "drizzle-orm/pg-core";
 import {
   APPROACHES,
+  AUDITED_FIELDS,
   DEPARTMENTS,
   LINK_KINDS,
   ROLES,
@@ -456,6 +457,30 @@ export const statusChanges = pgTable("status_changes", {
   toStatus: ucStatusEnum("to_status").notNull(),
   changedById: uuid("changed_by_id").references(() => users.id),
   note: text("note"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/** Which record fields get an audit row — see AUDITED_FIELDS in lib/domain. */
+export const auditedFieldEnum = pgEnum("audited_field", AUDITED_FIELDS);
+
+/**
+ * The audit trail for the fields that move the program's numbers or its
+ * credit: program membership, owner, authors, ELT allocation, and the four
+ * documented gates. Status has its own table above. Values are display
+ * strings, not ids, so the trail stays readable after roster and directory
+ * changes; null means "none". Written in the same transaction as the change.
+ */
+export const fieldChanges = pgTable("field_changes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  useCaseId: uuid("use_case_id")
+    .notNull()
+    .references(() => useCases.id, { onDelete: "cascade" }),
+  field: auditedFieldEnum("field").notNull(),
+  fromValue: text("from_value"),
+  toValue: text("to_value"),
+  changedById: uuid("changed_by_id").references(() => users.id),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
