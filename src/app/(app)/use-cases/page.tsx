@@ -4,24 +4,26 @@ import {
   DEPARTMENTS,
   DEPARTMENT_LABELS,
   STATUSES,
-  STATUS_LABELS,
   countsTowardDocumented,
   type Department,
   type UcStatus,
 } from "@/lib/domain";
 import {
   DEFAULT_PROGRAM_SCOPE,
-  PROGRAM_SCOPE_LABELS,
-  PROGRAM_SCOPES,
   parseProgramScope,
   scopeToFilter,
 } from "@/lib/program-scope";
 import { listNames } from "@/lib/format";
 import { canCreateUseCase } from "@/lib/permissions";
+import { aiConfigured } from "@/lib/ai/config";
 import { identityForPerson, identityForUser } from "@/server/identity";
-import { listEltOrgs } from "@/server/reference";
+import { listEltOrgs, listPeopleLite } from "@/server/reference";
 import { listUseCases } from "@/server/use-case-queries";
 import { CommunityBadge, StatusBadge } from "@/components/status-badge";
+import {
+  UseCaseFilters,
+  type CasebookFilterState,
+} from "@/components/use-case-filters";
 
 export const metadata = { title: "Use cases" };
 
@@ -71,12 +73,12 @@ export default async function UseCasesPage({
   const eltLabel = eltUnallocated ? "Unallocated" : (eltOrg?.name ?? null);
 
   // The casebook defaults to the program — the one page Kate lives on shows
-  // her world first. Community work is one select away, and the empty state
+  // her world first. Community work is one tab away, and the empty state
   // below points at it. Note the home page's "Your use cases" ignores this
   // entirely: you always see your own, whichever slice it falls in.
   const programScope = parseProgramScope(sp.program);
 
-  // One filter set, shared by both queries below so they cannot drift apart.
+  // One filter set, shared by both derived views below so they cannot drift.
   const scope = {
     department,
     q,
@@ -87,11 +89,35 @@ export default async function UseCasesPage({
     inProgram: scopeToFilter(programScope),
   };
 
-  const rows = await listUseCases({ status, ...scope });
+  // Status is applied here rather than in SQL so one fetch also yields the
+  // per-stage counts the filter rail shows. `everything` is the unfiltered
+  // casebook: stable tab totals, typeahead titles, and the empty-state links
+  // all read from it, so those numbers can never disagree.
+  const [rows, everything, people] = await Promise.all([
+    listUseCases(scope),
+    listUseCases({}),
+    listPeopleLite(),
+  ]);
 
-  const visible = documentedOnly
-    ? rows.filter((r) => countsTowardDocumented(r.status))
-    : rows;
+  const stageCounts: Record<string, number> = { documented: 0 };
+  for (const s of STATUSES) stageCounts[s] = 0;
+  for (const r of rows) {
+    stageCounts[r.status] += 1;
+    if (countsTowardDocumented(r.status)) stageCounts.documented += 1;
+  }
+
+  const visible = status
+    ? rows.filter((r) => r.status === status)
+    : documentedOnly
+      ? rows.filter((r) => countsTowardDocumented(r.status))
+      : rows;
+
+  const inProgramTotal = everything.filter((r) => r.inProgram).length;
+  const scopeTotals = {
+    program: inProgramTotal,
+    community: everything.length - inProgramTotal,
+    all: everything.length,
+  };
 
   const hasFilters = Boolean(
     q ||
@@ -103,23 +129,26 @@ export default async function UseCasesPage({
     eltLabel ||
     programScope !== DEFAULT_PROGRAM_SCOPE,
   );
-  // A filter that matches nothing shouldn't read as "the casebook is empty" —
-  // tell them what does exist and give them one click to it. One unfiltered
-  // fetch feeds both counts below, so the links can never disagree about
-  // what the casebook holds.
-  const everything =
-    visible.length === 0 && hasFilters ? await listUseCases({}) : [];
   const totalEverything = everything.length;
   // Nothing in the program view, but community records exist — the likeliest
   // confusing empty state now that the default is a filter.
   const communityWaiting =
-    programScope === "program"
-      ? everything.filter((r) => !r.inProgram).length
-      : 0;
+    programScope === "program" ? scopeTotals.community : 0;
+
+  const filterState: CasebookFilterState = {
+    q: q ?? "",
+    status: documentedOnly ? "documented" : (status ?? ""),
+    department: department ?? "",
+    program: programScope,
+    mine,
+    personId: personId ?? null,
+    personName,
+    eltId: eltParam ?? null,
+  };
 
   return (
     <div>
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div>
         <div>
           <h1 className="font-serif text-4xl">
             {personName
@@ -139,82 +168,20 @@ export default async function UseCasesPage({
                     ? "Owned by people outside the AI Leads roster. Real work — it just isn't counted toward the 45 or the 15."
                     : programScope === "all"
                       ? "Every AI workflow in the casebook, program and community — everyone sees everything."
-                      : "Workflows counting toward the program. Switch the filter to see community submissions too."}
+                      : "Workflows counting toward the program. Community submissions are one tab away."}
           </p>
         </div>
       </div>
 
-      <form className="mt-8 flex flex-wrap items-center gap-3" method="get">
-        {personId && <input type="hidden" name="person" value={personId} />}
-        {eltLabel && eltParam && (
-          <input type="hidden" name="elt" value={eltParam} />
-        )}
-        <input
-          type="search"
-          name="q"
-          defaultValue={q ?? ""}
-          placeholder="Search title, description, owner…"
-          className="w-64 rounded-md border border-hairline-strong bg-surface px-3 py-1.5 text-sm"
-          aria-label="Search use cases"
-        />
-        <select
-          name="status"
-          defaultValue={documentedOnly ? "documented" : (status ?? "")}
-          className="rounded-md border border-hairline-strong bg-surface px-3 py-1.5 text-sm"
-          aria-label="Filter by status"
-        >
-          <option value="">All statuses</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {STATUS_LABELS[s]}
-            </option>
-          ))}
-          <option value="documented">Qualified or better (the 45)</option>
-        </select>
-        <select
-          name="department"
-          defaultValue={department ?? ""}
-          className="rounded-md border border-hairline-strong bg-surface px-3 py-1.5 text-sm"
-          aria-label="Filter by department"
-        >
-          <option value="">All departments</option>
-          {DEPARTMENTS.map((d) => (
-            <option key={d} value={d}>
-              {DEPARTMENT_LABELS[d]}
-            </option>
-          ))}
-        </select>
-        <select
-          name="program"
-          defaultValue={programScope}
-          className="rounded-md border border-hairline-strong bg-surface px-3 py-1.5 text-sm"
-          aria-label="Filter by program scope"
-        >
-          {PROGRAM_SCOPES.map((sc) => (
-            <option key={sc} value={sc}>
-              {PROGRAM_SCOPE_LABELS[sc]}
-            </option>
-          ))}
-        </select>
-        <label className="inline-flex items-center gap-1.5 text-sm text-ink-muted">
-          <input type="checkbox" name="mine" value="1" defaultChecked={mine} />
-          Mine
-        </label>
-        <button
-          type="submit"
-          className="rounded-md border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface"
-        >
-          Filter
-        </button>
-        {hasFilters && (
-          <Link
-            href="/use-cases"
-            className="text-sm text-ink-faint hover:text-accent"
-          >
-            Clear
-          </Link>
-        )}
-      </form>
+      <UseCaseFilters
+        state={filterState}
+        scopeTotals={scopeTotals}
+        stageCounts={stageCounts}
+        people={people.map((p) => ({ id: p.id, name: p.name }))}
+        titles={everything.map((r) => ({ id: r.id, title: r.title }))}
+        resultCount={visible.length}
+        aiEnabled={aiConfigured()}
+      />
 
       {visible.length === 0 ? (
         <div className="mt-16 max-w-md">
@@ -265,7 +232,7 @@ export default async function UseCasesPage({
           )}
         </div>
       ) : (
-        <ul className="mt-8 divide-y divide-hairline border-y border-hairline">
+        <ul className="mt-6 divide-y divide-hairline border-y border-hairline">
           {visible.map((uc) => (
             <li key={uc.id}>
               <Link

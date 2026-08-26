@@ -17,6 +17,7 @@ export const MODELS = {
 export type AiFeature =
   | "coach"
   | "notes_parser"
+  | "search_parser"
   | "whats_new";
 
 export function aiConfigured(): boolean {

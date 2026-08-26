@@ -604,6 +604,36 @@ export const aiUsage = pgTable("ai_usage", {
     .defaultNow(),
 });
 
+export const searchViaEnum = pgEnum("search_via", ["rules", "ai", "text"]);
+
+/**
+ * What people type into the casebook search — the evidence for whether the
+ * rule parser's vocabulary is enough and when the AI fallback earns its keep.
+ * A row is a settled query or an applied parse, never a keystroke, and the
+ * AI fallback runs only when a human clicks its row — nothing here watches
+ * typing.
+ */
+export const searchEvents = pgTable(
+  "search_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    query: text("query").notNull(),
+    /** How it resolved: the rule parser, the AI fallback, or plain text search. */
+    via: searchViaEnum("via").notNull(),
+    /** The filters the parse produced; empty for plain text. */
+    parsed: jsonb("parsed").notNull().default({}),
+    /** Rows the resulting view matched, when the caller knew. */
+    resultCount: integer("result_count"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [index("search_events_created_idx").on(t.createdAt)],
+);
+
 /** Coach conversations (per user). Messages stored as AI SDK UIMessage JSON. */
 export const coachChats = pgTable("coach_chats", {
   id: uuid("id").primaryKey().defaultRandom(),

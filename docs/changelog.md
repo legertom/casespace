@@ -42,6 +42,29 @@ in-app report it came from.
 
 ---
 
+## 2026-08-26
+
+### The casebook filters as fast as you can think
+Requested by: Tom Leger
+
+No more Filter button. Program scope is now the casebook's tabs, the seven
+statuses sit in pipeline order as a clickable rail with live counts (plus
+"The 45" for qualified-or-better), and every control applies the moment you
+touch it — the URL still carries every filter, so any view is a link you can
+share. Active filters read back as chips you can remove one at a time.
+
+### The search box understands what you meant
+Requested by: Tom Leger
+
+Searching now suggests use cases, people, departments, and statuses as you
+type — and "pati" finds Patricia, accents and abbreviations included. Type a
+phrase like `launched in css by lotte` and it offers to become those exact
+filters in one click. When the built-in rules can't read a query, an Ask AI
+row can turn it into filters instead — it runs only when you click it, and
+what it applies is always visible chips you can correct. Searches (never
+keystrokes) are logged so the vocabulary can grow around what people actually
+ask for.
+
 ## 2026-08-25
 
 ### The record remembers who moved the things that count
