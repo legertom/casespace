@@ -35,10 +35,16 @@ export default async function Home() {
             December 31.
           </p>
         </div>
+        {/*
+          The header carries this same button from md up, so showing it here
+          too just duplicates it. Below md the header's is hidden behind the
+          menu, and logging a use case is the one thing this page exists to
+          get people to do — so it stays, on small screens only.
+        */}
         {canLog && (
           <Link
             href="/use-cases/new"
-            className="rounded-md bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-deep"
+            className="rounded-md bg-accent px-4 py-2 text-sm text-white transition-colors hover:bg-accent-deep md:hidden"
           >
             Log a use case
           </Link>
