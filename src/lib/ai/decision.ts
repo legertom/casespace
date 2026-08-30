@@ -15,6 +15,10 @@ export const DISMISSED_CREATE =
   "Dismissed — do not save this. Ask what to change if unclear.";
 export const UPDATED = "Accepted — the record was updated.";
 export const DISMISSED_UPDATE = "Dismissed — leave the record as it is.";
+export const FEEDBACK_FILED =
+  "Accepted — the feedback was filed for the admins.";
+export const DISMISSED_FEEDBACK =
+  "Dismissed — do not file this. Ask what to change if unclear.";
 
 export function createdOutcome(id: string): string {
   return `${CREATED_AT}${id}`;
@@ -38,7 +42,10 @@ export function settledLine(outcome: string): string {
       return "Taken to the form to finish there.";
     case DISMISSED_CREATE:
     case DISMISSED_UPDATE:
+    case DISMISSED_FEEDBACK:
       return "Dismissed.";
+    case FEEDBACK_FILED:
+      return "Filed.";
     default:
       return "Decision recorded.";
   }

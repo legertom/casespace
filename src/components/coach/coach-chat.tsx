@@ -10,7 +10,9 @@ import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Proposal } from "@/lib/ai/proposal";
+import type { FeedbackProposal } from "@/lib/ai/feedback-proposal";
 import { ProposalCard, UpdateProposalCard } from "./proposal-card";
+import { FeedbackProposalCard } from "./feedback-proposal-card";
 
 interface Props {
   chatId: string;
@@ -115,7 +117,9 @@ export function CoachChat({
               I can walk you through logging a use case, check the scoreboard,
               review a record&rsquo;s ROI evidence, or explain what
               &ldquo;documented&rdquo; and &ldquo;Confirmed Positive ROI&rdquo;
-              take. I never save anything without your say-so.
+              take. If something in Casespace is broken or awkward, tell me and
+              I&rsquo;ll write it up for the admins. I never save anything
+              without your say-so.
             </p>
           </div>
         )}
@@ -202,6 +206,36 @@ export function CoachChat({
                             onDecision={(outcome) =>
                               addToolOutput({
                                 tool: "propose_update",
+                                toolCallId: part.toolCallId,
+                                output: outcome,
+                              })
+                            }
+                          />
+                        );
+                      }
+                      return null;
+                    }
+                    case "tool-propose_feedback": {
+                      if (part.state === "input-streaming")
+                        return (
+                          <ReadToolChip key={i} label="Writing up the feedback…" />
+                        );
+                      if (
+                        part.state === "input-available" ||
+                        part.state === "output-available"
+                      ) {
+                        return (
+                          <FeedbackProposalCard
+                            key={part.toolCallId}
+                            proposal={part.input as FeedbackProposal}
+                            settled={
+                              part.state === "output-available"
+                                ? String(part.output)
+                                : undefined
+                            }
+                            onDecision={(outcome) =>
+                              addToolOutput({
+                                tool: "propose_feedback",
                                 toolCallId: part.toolCallId,
                                 output: outcome,
                               })

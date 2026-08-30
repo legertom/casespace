@@ -5,6 +5,11 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { feedback } from "@/db/schema";
 import { requireAdmin, requireUser } from "@/lib/current-user";
+import {
+  composeFeedback,
+  feedbackProposalSchema,
+  type FeedbackProposal,
+} from "@/lib/ai/feedback-proposal";
 import type { ActionResult } from "./actions";
 import { failure } from "./guards";
 
@@ -42,6 +47,24 @@ export async function submitFeedbackAction(
   }
   revalidatePath("/feedback");
   return {};
+}
+
+/**
+ * File a feedback report the Coach drafted, once the human has clicked.
+ *
+ * The reporter's role is read from the session, never from the proposal: the
+ * "filed by" line is the one part of the message an admin reads as fact, so it
+ * cannot come from anything the model can be talked into.
+ */
+export async function acceptFeedbackProposalAction(
+  proposal: FeedbackProposal,
+): Promise<ActionResult> {
+  const user = await requireUser();
+  const parsed = feedbackProposalSchema.safeParse(proposal);
+  if (!parsed.success) return { error: "That report is missing something." };
+
+  const { message, path } = composeFeedback(parsed.data, user.role);
+  return submitFeedbackAction({ message, path: path ?? undefined });
 }
 
 export async function resolveFeedbackAction(

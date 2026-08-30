@@ -18,6 +18,7 @@ import {
   gatewayOptions,
 } from "@/lib/ai/config";
 import { coachInstructions } from "@/lib/ai/coach-prompt";
+import { feedbackProposalSchema } from "@/lib/ai/feedback-proposal";
 import { proposalSchema, updateProposalSchema } from "@/lib/ai/proposal";
 import { recordAiUsage } from "@/lib/ai/usage";
 import { getCurrentUser } from "@/lib/current-user";
@@ -211,6 +212,12 @@ export async function POST(req: Request) {
       description:
         "Propose changes to an existing use case for the human to review. Only include the fields that change. The human's decision comes back as the tool result.",
       inputSchema: updateProposalSchema,
+    }),
+
+    propose_feedback: tool({
+      description:
+        "Propose a product-feedback report about Casespace itself — a bug, a gap, something confusing, or a change someone wants in the tool. Not for anything about a use-case record; that is propose_update. Ask what they were doing and what they expected before proposing. The human's decision comes back as the tool result.",
+      inputSchema: feedbackProposalSchema,
     }),
   };
 

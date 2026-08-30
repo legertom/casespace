@@ -4,7 +4,7 @@ surface:
   - /coach
   - /api/coach
 audience: everyone
-updated: 2026-08-25
+updated: 2026-08-29
 code:
   - src/app/(app)/coach/page.tsx
   - src/app/api/coach/route.ts
@@ -82,16 +82,18 @@ composer.
 
 ## The rule that shapes everything: it never writes
 
-The Coach has five tools. Three read; two propose. The difference is
-structural, not a policy someone remembers to follow:
+The Coach has six tools, plus one more for admins. Three read; three propose.
+The difference is structural, not a policy someone remembers to follow:
 
 | Tool | Does |
 |---|---|
 | `search_use_cases` | Search the casebook |
 | `get_use_case` | One record in full, including ROI gaps and history |
 | `get_progress` | The scoreboard |
+| `get_coach_learnings` | How its own proposals landed. Admin-only, gated at the tool table |
 | `propose_use_case` | **Renders a card.** No execute path |
 | `propose_update` | **Renders a card.** No execute path |
+| `propose_feedback` | **Renders a card.** No execute path |
 
 The read tools have an `execute` function and run on the server. The proposal
 tools **deliberately have none**. A tool with no `execute` cannot run — the AI
@@ -103,6 +105,11 @@ would mean adding an `execute`. The only write is `acceptProposalAction`, and
 it runs as **you** — your role, your permissions. A viewer who somehow got a
 card would get a
 `ForbiddenError`, because the Coach's proposal doesn't carry authority; you do.
+
+`propose_feedback` is the one card a viewer can legitimately accept: filing
+[feedback](feedback.md) needs a session, not a role. It writes to `feedback`,
+never to the casebook, and it stamps the reporter's role from the session
+rather than from anything the model supplied.
 
 The system prompt also tells it not to propose to viewers at all, and to point
 them at the AI Lead for their team instead.

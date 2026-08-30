@@ -1,7 +1,7 @@
 ---
 title: Changelog
 audience: everyone
-updated: 2026-08-26
+updated: 2026-08-29
 code:
   - src/lib/changelog.ts
   - src/server/changelog.ts
@@ -41,6 +41,18 @@ entry is honest, an invented one is not. Add `Feedback: <id>` to point at the
 in-app report it came from.
 
 ---
+
+## 2026-08-29
+
+### Tell the Coach when Casespace gets in your way
+Requested by: Tom Leger
+
+Say something in Casespace is broken, confusing, or missing and the Coach now
+writes it up for the admins. It asks what you were doing and what you expected
+first, then shows you the report before anything is filed — nothing goes in
+without your click. Reports arrive with the page, the steps, and the Coach's
+own read of whether it looks like a bug or a request, so the people fixing it
+can start from something more than one line.
 
 ## 2026-08-26
 
