@@ -1,7 +1,7 @@
 ---
 title: Local development
 audience: engineering
-updated: 2026-08-15
+updated: 2026-08-29
 code:
   - package.json
   - drizzle.config.ts
@@ -11,7 +11,11 @@ code:
 
 # Local development
 
+The repository is at **https://github.com/legertom/casespace**.
+
 ```bash
+git clone https://github.com/legertom/casespace.git
+cd casespace
 pnpm install
 cp .env.example .env.local        # DATABASE_URL + AUTH_SECRET at minimum
 pnpm db:migrate                   # apply schema

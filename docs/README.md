@@ -9,6 +9,10 @@ New here? Read [the program](concepts/program.md), then
 These pages are also served inside the app at **`/docs`** — same files, one
 source of truth.
 
+The code lives at **https://github.com/legertom/casespace**. Everything here
+describes what is in that repository; [local development](operations/local-dev.md)
+covers cloning and running it.
+
 ## What shipped
 
 **[Changelog](changelog.md)** — every improvement to Casespace itself, newest
