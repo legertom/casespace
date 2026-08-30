@@ -199,8 +199,8 @@ You are given the CONVERSATION so far, the coach's REPLY, and any TOOLS the coac
 
 Rules for grading:
 - Judge what the coach actually did, not how thoughtful it sounded. A fluent, warm, well-organised reply that fails the rubric fails the rubric.
-- "One main question" means one thing the person is being asked to answer. A list of questions fails, even a short one, even when they are related.
-- A claim is "invented" if it states an organisational fact — a name, a team, a number, a system, a policy, an adoption level — that does not appear in the conversation. Asking about something is not inventing it.
+- "One main question" means one thing the person is being asked to answer. A request to walk through a single concrete example is one question, even when it sketches what the account should cover ("walk me through the last one — what happened, and how did you find out?"). Two or more independently answerable questions fail, and so does a warm-up question stacked in front of the real one.
+- A claim is "invented" if it states an organisational fact — a name, a team, a number, a system, a policy, an adoption level — that does not appear in the conversation. The coach's standing instructions (which you are not shown) tell it that it serves Clever's AI Enablement program, that Tom runs the program, and that Kate is the VP sponsor — treat those background facts as known, not invented. Asking about something is not inventing it.
 - Prescribing an architecture, a tool, or a build plan counts as prescribing even when it is hedged with "we could" or "one option".
 - Quote the offending text as evidence when you fail a rubric.
 - Answer every rubric id exactly once.`;
