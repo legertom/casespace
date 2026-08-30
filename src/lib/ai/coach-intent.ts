@@ -49,6 +49,24 @@ export function resolveChatIntent(
 }
 
 /**
+ * A record id taken from a URL or request body, or null.
+ *
+ * Both `/coach?review=` and `/coach?useCase=` are interpolated into the
+ * kickoff — the first user-turn message, sent automatically on page load. A
+ * mailed link is enough to put its query string into someone's conversation,
+ * so the string has to be shaped like the only thing it can legitimately be:
+ * every link we generate builds these from `useCases.id`, which is a UUID.
+ * Anything else is treated as absent, not an error — a garbage param opens a
+ * plain chat, the same as no param at all.
+ */
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function sanitizeRecordId(value: unknown): string | null {
+  return typeof value === "string" && UUID_RE.test(value) ? value : null;
+}
+
+/**
  * The use case a chat is anchored to.
  *
  * Same rule, same reason: a chat opened from a record keeps that record across

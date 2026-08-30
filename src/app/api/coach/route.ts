@@ -17,7 +17,11 @@ import {
   aiConfigured,
   gatewayOptions,
 } from "@/lib/ai/config";
-import { resolveChatIntent, resolveChatUseCaseId } from "@/lib/ai/coach-intent";
+import {
+  resolveChatIntent,
+  resolveChatUseCaseId,
+  sanitizeRecordId,
+} from "@/lib/ai/coach-intent";
 import { coachInstructions } from "@/lib/ai/coach-prompt";
 import {
   discoveryProposalTools,
@@ -94,7 +98,7 @@ export async function POST(req: Request) {
   const requestedUseCaseId = resolveChatUseCaseId(
     Boolean(existing),
     existing?.useCaseId,
-    typeof useCaseId === "string" && useCaseId ? useCaseId : null,
+    sanitizeRecordId(useCaseId),
   );
   const linkedUseCase = requestedUseCaseId
     ? await useCaseContext(requestedUseCaseId).catch(() => null)

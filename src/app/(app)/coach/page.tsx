@@ -3,7 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import type { UIMessage } from "ai";
 import { getDb } from "@/db/client";
 import { coachChats } from "@/db/schema";
-import { resolveChatIntent } from "@/lib/ai/coach-intent";
+import { resolveChatIntent, sanitizeRecordId } from "@/lib/ai/coach-intent";
 import { AI_NOT_CONFIGURED_MESSAGE, aiConfigured } from "@/lib/ai/config";
 import { requireUser } from "@/lib/current-user";
 import type { CoachIntent } from "@/lib/domain";
@@ -23,7 +23,13 @@ export default async function CoachPage({
   }>;
 }) {
   const user = await requireUser();
-  const { chat, intent, review, useCase } = await searchParams;
+  const raw = await searchParams;
+  const { chat, intent } = raw;
+  // Both of these end up inside the kickoff message, so a mailed link could
+  // put arbitrary text into the conversation it opens. A non-UUID is treated
+  // as absent — the page opens a plain chat instead. See sanitizeRecordId.
+  const review = sanitizeRecordId(raw.review) ?? undefined;
+  const useCase = sanitizeRecordId(raw.useCase) ?? undefined;
   const db = getDb();
 
   const recent = await db
