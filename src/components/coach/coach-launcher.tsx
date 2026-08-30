@@ -74,7 +74,7 @@ export function CoachLauncher() {
         >
           <div className="flex items-center justify-between border-b border-hairline px-4 py-2.5">
             <p className="font-serif">The Coach</p>
-            <div className="flex items-center gap-3 text-xs">
+            <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1 text-xs">
               <button
                 type="button"
                 className="text-ink-faint hover:text-accent"
@@ -86,6 +86,18 @@ export function CoachLauncher() {
               >
                 New chat
               </button>
+              {/* Discovery starts on the full page rather than in here. The
+                  panel is one persistent conversation per browser, and
+                  working a problem through wants both the room and a chat of
+                  its own — turning this into a mode switcher would be the
+                  wrong shape for a 26rem box. */}
+              <Link
+                href="/coach?intent=discovery"
+                className="text-ink-faint hover:text-accent"
+                onClick={() => setOpen(false)}
+              >
+                Work through an idea ↗
+              </Link>
               <Link
                 href="/coach"
                 className="text-ink-faint hover:text-accent"

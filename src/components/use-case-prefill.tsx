@@ -17,14 +17,14 @@ interface Props {
   defaultTeam?: TeamOption | null;
   onSubmit: (
     input: UseCaseCreateInput,
-    source: "form" | "wizard" | "notes",
+    source: "form" | "wizard" | "notes" | "discovery",
     learning?: ProposalLearning,
   ) => Promise<ActionResult>;
 }
 
 interface PrefillPayload {
   input: Partial<UseCaseCreateInput>;
-  source?: "wizard" | "notes";
+  source?: "wizard" | "notes" | "discovery";
   /** Ties what saves here back to what the AI proposed — see coach_events. */
   proposalRef?: string;
   /** The team the proposal named, before any picker resolved it to an id. */

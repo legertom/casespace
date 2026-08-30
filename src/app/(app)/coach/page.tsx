@@ -3,8 +3,10 @@ import { desc, eq } from "drizzle-orm";
 import type { UIMessage } from "ai";
 import { getDb } from "@/db/client";
 import { coachChats } from "@/db/schema";
+import { resolveChatIntent } from "@/lib/ai/coach-intent";
 import { AI_NOT_CONFIGURED_MESSAGE, aiConfigured } from "@/lib/ai/config";
 import { requireUser } from "@/lib/current-user";
+import type { CoachIntent } from "@/lib/domain";
 import { fmtDateShort } from "@/lib/format";
 import { CoachChat } from "@/components/coach/coach-chat";
 
@@ -13,10 +15,15 @@ export const metadata = { title: "Coach" };
 export default async function CoachPage({
   searchParams,
 }: {
-  searchParams: Promise<{ chat?: string; intent?: string; review?: string }>;
+  searchParams: Promise<{
+    chat?: string;
+    intent?: string;
+    review?: string;
+    useCase?: string;
+  }>;
 }) {
   const user = await requireUser();
-  const { chat, intent, review } = await searchParams;
+  const { chat, intent, review, useCase } = await searchParams;
   const db = getDb();
 
   const recent = await db
@@ -32,6 +39,11 @@ export default async function CoachPage({
 
   let initialMessages: UIMessage[] | undefined;
   let chatId = chat;
+  // A reopened chat carries its own intent and context forward. The URL that
+  // opened it is long gone by then — /coach?chat=<id> says nothing about the
+  // mode — so the row decides, here as in the route. See lib/ai/coach-intent.
+  let storedIntent: CoachIntent | null = null;
+  let storedUseCaseId: string | null = null;
   if (chatId) {
     const [row] = await db
       .select()
@@ -39,18 +51,43 @@ export default async function CoachPage({
       .where(eq(coachChats.id, chatId));
     if (row && row.userId === user.id) {
       initialMessages = row.messages as UIMessage[];
+      storedIntent = row.intent;
+      storedUseCaseId = row.useCaseId;
     } else {
       chatId = undefined;
     }
   }
   if (!chatId) chatId = crypto.randomUUID();
 
-  const kickoff = review
-    ? `Run an ROI review for use case ${review}. Check the evidence against the ROI confirmation bar and produce the Kate-ready packet.`
-    : intent === "wizard"
-      ? "Walk me through logging a new use case."
-      : undefined;
-  const chatIntent = review ? "roi_review" : intent === "wizard" ? "wizard" : "qa";
+  // `review` is its own door and brings a record with it. Of the rest, only
+  // wizard and discovery are openable straight from a URL; anything else is a
+  // plain question.
+  const requestedIntent: CoachIntent = review
+    ? "roi_review"
+    : intent === "discovery" || intent === "wizard"
+      ? intent
+      : "qa";
+  const chatIntent = resolveChatIntent(storedIntent, requestedIntent);
+  // Mirrors the route: a chat that already exists keeps the record it was
+  // opened from, and the URL only speaks for a brand-new one.
+  const useCaseId = initialMessages
+    ? (storedUseCaseId ?? undefined)
+    : (useCase || undefined);
+
+  // A conversation only kicks itself off when it is new. Discovery opens with
+  // the smallest possible ask — the intimidating version of this prompt is one
+  // that implies you should already know what you want built.
+  const kickoff = initialMessages?.length
+    ? undefined
+    : review
+      ? `Run an ROI review for use case ${review}. Check the evidence against the ROI confirmation bar and produce the Kate-ready packet.`
+      : chatIntent === "discovery"
+        ? useCaseId
+          ? `Help me work through the problem behind use case ${useCaseId}. Start with what I'm trying to get out of it. Don't assume the answer is to build more AI.`
+          : "Help me work through an AI opportunity. Start with what I'm working on. Don't assume the answer is to build AI."
+        : chatIntent === "wizard"
+          ? "Walk me through logging a new use case."
+          : undefined;
 
   return (
     <div className="grid h-[calc(100vh-9.5rem)] grid-cols-1 gap-10 lg:grid-cols-[15rem_1fr]">
@@ -97,6 +134,7 @@ export default async function CoachPage({
             initialMessages={initialMessages}
             kickoff={kickoff}
             intent={chatIntent}
+            useCaseId={useCaseId}
           />
         ) : (
           <div className="max-w-md py-10">

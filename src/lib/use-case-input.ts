@@ -160,7 +160,19 @@ export const UPDATE_PATCHABLE_KEYS = Object.keys(
   (k) => !(UNPATCHABLE as readonly string[]).includes(k),
 ) as PatchableKey[];
 
-export type UcSource = "form" | "wizard" | "notes" | "api" | "mcp";
+/**
+ * Which door a record came through. `discovery` is the Coach's Discovery mode,
+ * kept distinct from `wizard`: they are different conversations that produce
+ * differently-shaped records, and collapsing them would make that difference
+ * unmeasurable in `coach_events`.
+ */
+export type UcSource =
+  | "form"
+  | "wizard"
+  | "notes"
+  | "api"
+  | "mcp"
+  | "discovery";
 
 /** What `useCaseToFormInput` reads: a saved record plus its two child lists. */
 export interface SavedUseCase extends Omit<

@@ -7,6 +7,7 @@ import type { UcStatus } from "@/lib/domain";
 import {
   useCaseCreateSchema,
   useCaseUpdateSchema,
+  type UcSource,
   type UseCaseCreateInput,
   type UseCaseUpdateInput,
 } from "@/lib/use-case-input";
@@ -43,7 +44,7 @@ export interface ProposalLearning {
 
 export async function createUseCaseAction(
   raw: UseCaseCreateInput,
-  source: "form" | "wizard" | "notes" = "form",
+  source: UcSource = "form",
   learning?: ProposalLearning,
 ): Promise<ActionResult> {
   const user = await requireUser();
@@ -59,7 +60,7 @@ export async function createUseCaseAction(
   } catch (err) {
     return failure(err);
   }
-  if (learning && (source === "wizard" || source === "notes")) {
+  if (learning && source !== "form" && source !== "api" && source !== "mcp") {
     // Best-effort: learning capture is telemetry, and a telemetry failure
     // must never turn a successful save into an error screen.
     try {

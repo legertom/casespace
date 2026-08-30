@@ -54,7 +54,16 @@ export function RecordHeader({
             )}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
+          {/* Open to anyone who can see the record, unlike the two beside it:
+              thinking about somebody else's problem with them is not an edit,
+              and the checkpoint it produces is the thinker's own note. */}
+          <Link
+            href={`/coach?intent=discovery&useCase=${uc.id}`}
+            className="rounded-md border border-hairline-strong px-3.5 py-1.5 text-sm hover:bg-surface"
+          >
+            Work this problem with Coach
+          </Link>
           {(editable || isAdmin) &&
             (uc.status === "launched" || uc.status === "qualified") && (
               <Link

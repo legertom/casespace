@@ -120,6 +120,13 @@
       "when": 1787768449011,
       "tag": "0016_stale_viewer_employees",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1788109577006,
+      "tag": "0017_discovery_coach",
+      "breakpoints": true
     }
   ]
 }

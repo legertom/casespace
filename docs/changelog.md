@@ -1,7 +1,7 @@
 ---
 title: Changelog
 audience: everyone
-updated: 2026-08-29
+updated: 2026-08-30
 code:
   - src/lib/changelog.ts
   - src/server/changelog.ts
@@ -41,6 +41,34 @@ entry is honest, an invented one is not. Add `Feedback: <id>` to point at the
 in-app report it came from.
 
 ---
+
+## 2026-08-30
+
+### Work an idea out with the Coach before it's a use case
+Requested by: Tom Leger
+
+The Coach has a new mode for the conversation that happens before you have a
+use case. Bring a problem, a half-formed idea, an attempt that isn't working,
+or just the feeling that AI might help here somehow, and it works through it
+with you — one question at a time, no form to fill in.
+
+It is not trying to get you to log anything. Its job is to get the problem
+clear enough that the next useful step is obvious, and that step is often not
+software: write down what the output actually has to answer, go and ask the
+person who knows, check whether the data is even reachable, or try a small
+thing and see. Sometimes the honest answer is that AI doesn't help here, and it
+will say so.
+
+When you've got somewhere it writes up a **Discovery checkpoint** — what you're
+really solving, what's in the way, what to do next and what that should teach
+you — and you decide whether to keep it. Come back later with what you learned
+and it picks up from there rather than starting the interview again; each
+checkpoint is kept, so you end up with the story of how the problem got
+clearer. If you do want a record out of it, one click turns it into the usual
+use-case proposal, which still saves nothing until you accept it.
+
+Start from **Work through an idea** on the Coach page, the same link in the
+Coach panel, or **Work this problem with Coach** on any record.
 
 ## 2026-08-29
 

@@ -155,3 +155,24 @@ export function visibleHistoryNote(
 export function canViewCoachLearnings(role: Role): boolean {
   return role === "admin";
 }
+
+/**
+ * Whether this person may act on a Coach conversation — read its stored
+ * intent, continue it, or hang a Discovery checkpoint off it.
+ *
+ * `chatOwnerId` is the `user_id` on the chat row, or null/undefined when no
+ * row exists yet. That second case is an allow, and it is not a hole: the
+ * proposal card renders when the tool call completes, which is *before*
+ * /api/coach writes the chat row on stream end, so a person who clicks
+ * quickly has a chat id that owns nothing. A id nobody owns is nobody's to
+ * take. What this stops is the case that matters — a chat id belonging to
+ * somebody else.
+ *
+ * Both the route and the checkpoint write ask this, so the rule exists once.
+ */
+export function canUseChat(
+  chatOwnerId: string | null | undefined,
+  userId: string,
+): boolean {
+  return !chatOwnerId || chatOwnerId === userId;
+}

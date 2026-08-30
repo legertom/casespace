@@ -102,7 +102,7 @@ export interface AcceptResult extends ActionResult {
 /** The human clicked "Log it" on a proposal card — the one and only write path. */
 export async function acceptProposalAction(
   raw: unknown,
-  source: "wizard" | "notes",
+  source: "wizard" | "notes" | "discovery",
 ): Promise<AcceptResult> {
   const user = await requireUser();
   const parsed = proposalSchema.safeParse(raw);

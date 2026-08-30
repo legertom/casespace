@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  CHECKPOINT_CONTINUE,
+  CHECKPOINT_DISMISSED,
+  checkpointIdFromOutcome,
+  checkpointSavedOutcome,
   createdOutcome,
   DISMISSED_CREATE,
   DISMISSED_UPDATE,
@@ -58,5 +62,49 @@ describe("proposal decisions read back", () => {
     expect(settledLine("Something an older build wrote")).toBe(
       "Decision recorded.",
     );
+  });
+});
+
+describe("discovery checkpoint decisions", () => {
+  it("recovers the checkpoint a save wrote, both ways", () => {
+    const id = "8f2c9a71-51b6-4c0e-9a3d-2b6d7e4c1a05";
+    expect(checkpointIdFromOutcome(checkpointSavedOutcome(id))).toBe(id);
+    expect(checkpointIdFromOutcome(checkpointSavedOutcome(id, true))).toBe(id);
+  });
+
+  it("finds no checkpoint in the outcomes that saved none", () => {
+    for (const outcome of [
+      CHECKPOINT_CONTINUE,
+      CHECKPOINT_DISMISSED,
+      createdOutcome("abc"),
+      UPDATED,
+    ]) {
+      expect(checkpointIdFromOutcome(outcome)).toBeNull();
+    }
+  });
+
+  // The two saved outcomes share a prefix-shaped suffix; make sure the
+  // draft variant is not read as the plain one, which would drop the
+  // instruction to go on and propose a use case.
+  it("distinguishes save from save-and-draft", () => {
+    expect(settledLine(checkpointSavedOutcome("abc"))).toBe("Checkpoint saved.");
+    expect(settledLine(checkpointSavedOutcome("abc", true))).toBe(
+      "Saved, and drafted into a use case below.",
+    );
+  });
+
+  it("says what happened for the two outcomes that wrote nothing", () => {
+    expect(settledLine(CHECKPOINT_CONTINUE)).toBe(
+      "Kept talking — no checkpoint saved.",
+    );
+    expect(settledLine(CHECKPOINT_DISMISSED)).toBe("Dismissed.");
+  });
+
+  // The tool result is the only thing telling the Coach what to do next, and
+  // "keep talking" must not read as an invitation to start over.
+  it("tells the Coach to stop after a save and to resume after a continue", () => {
+    expect(checkpointSavedOutcome("abc")).toContain("stop");
+    expect(checkpointSavedOutcome("abc", true)).toContain("propose_use_case");
+    expect(CHECKPOINT_CONTINUE).toContain("do not restart");
   });
 });

@@ -18,7 +18,9 @@ import {
 import {
   APPROACHES,
   AUDITED_FIELDS,
+  COACH_INTENTS,
   DEPARTMENTS,
+  DISCOVERY_CONSTRAINTS,
   LINK_KINDS,
   ROLES,
   STATUSES,
@@ -54,6 +56,11 @@ export const ucSourceEnum = pgEnum("uc_source", [
   "notes",
   "api",
   "mcp",
+  // A record that came out of a Discovery conversation, not the wizard's
+  // interview. Labelling it `wizard` because that was once the closest
+  // available value would make the two doors indistinguishable in
+  // coach_events, which is the one place their difference is measurable.
+  "discovery",
 ]);
 
 export const successMetEnum = pgEnum("success_met", ["yes", "no", "not_yet"]);
@@ -65,11 +72,13 @@ export const roiStatusEnum = pgEnum("roi_status", [
 ]);
 
 /** What a Coach conversation was opened to do — set from the kickoff, never re-guessed. */
-export const coachIntentEnum = pgEnum("coach_intent", [
-  "wizard",
-  "roi_review",
-  "qa",
-]);
+export const coachIntentEnum = pgEnum("coach_intent", COACH_INTENTS);
+
+/** What a Discovery checkpoint named as the thing blocking sensible progress. */
+export const discoveryConstraintEnum = pgEnum(
+  "discovery_constraint",
+  DISCOVERY_CONSTRAINTS,
+);
 
 /**
  * The life of a proposal, in four beats. A `proposed` row with no later row
@@ -643,8 +652,20 @@ export const coachChats = pgTable("coach_chats", {
   title: text("title").notNull().default("New conversation"),
   messages: jsonb("messages").notNull().default([]),
   /** Set from the kickoff on the first turn and never rewritten — what the
-   *  person came to do, not what the conversation drifted into. */
+   *  person came to do, not what the conversation drifted into. It is also
+   *  what the route reads back to decide which instructions run, so a
+   *  reopened chat keeps its mode. See lib/ai/coach-intent. */
   intent: coachIntentEnum("intent").notNull().default("qa"),
+  /**
+   * The record this conversation was opened from — "Work this problem with
+   * Coach" on a use case. Server-owned trusted context: the Coach is told
+   * which record it is, and looks the facts up with `get_use_case` rather
+   * than being handed them. Stored once, with the intent, so the link
+   * survives a reopen and cannot be re-pointed by a later request.
+   */
+  useCaseId: uuid("use_case_id").references(() => useCases.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -698,6 +719,71 @@ export const coachEvents = pgTable(
   (t) => [
     index("coach_events_proposal_idx").on(t.proposalRef),
     index("coach_events_created_idx").on(t.createdAt),
+  ],
+);
+
+/**
+ * What a Discovery conversation concluded, at the moment it concluded it.
+ *
+ * Append-only, deliberately. When someone returns with what they learned, the
+ * new checkpoint sits beside the old one rather than replacing it: the
+ * sequence *is* the finding. "We need to define the information requirements"
+ * → "75% of it is in Gong, test extraction" → "the rest is promises only sales
+ * knows about" is a record of how a team came to understand a problem, and
+ * overwriting it to keep one current row would throw that away to save a
+ * kilobyte.
+ *
+ * Not a use case, and not a draft of one. A use case is work being tracked; a
+ * checkpoint is what was understood while reasoning about the work, and most
+ * checkpoints should never become records. `useCaseId` is nullable for exactly
+ * that reason.
+ *
+ * Personal to the person who made it. There is no admin surface over this
+ * table and there should not be one — a half-formed idea someone talked
+ * through with the Coach is not program data.
+ */
+export const discoveryCheckpoints = pgTable(
+  "discovery_checkpoints",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** No FK, for the same race coach_events documents: the card can be
+     *  clicked before the chat row is written on stream end. */
+    chatId: uuid("chat_id"),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** From the chat's own context, never from the model. Survives the
+     *  record's deletion as null — the learning outlives the record. */
+    useCaseId: uuid("use_case_id").references(() => useCases.id, {
+      onDelete: "set null",
+    }),
+    workingTitle: text("working_title").notNull(),
+
+    statedProblem: text("stated_problem"),
+    refinedProblem: text("refined_problem").notNull(),
+    baseline: text("baseline"),
+    failurePoint: text("failure_point"),
+
+    dominantConstraint: discoveryConstraintEnum("dominant_constraint").notNull(),
+    dominantConstraintDetail: text("dominant_constraint_detail").notNull(),
+
+    nextAction: text("next_action").notNull(),
+    expectedLearning: text("expected_learning").notNull(),
+    whyThisStep: text("why_this_step").notNull(),
+
+    ownerName: text("owner_name"),
+    returnCondition: text("return_condition"),
+    /** string[] — the questions still open. */
+    unresolvedQuestions: jsonb("unresolved_questions").notNull().default([]),
+
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("discovery_checkpoints_user_idx").on(t.userId, t.createdAt),
+    index("discovery_checkpoints_chat_idx").on(t.chatId),
+    index("discovery_checkpoints_use_case_idx").on(t.useCaseId),
   ],
 );
 

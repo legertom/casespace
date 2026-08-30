@@ -28,11 +28,11 @@ export default async function ReviewUseCasePage() {
 
   async function submit(
     input: UseCaseCreateInput,
-    source: "form" | "wizard" | "notes" = "form",
+    source: "form" | "wizard" | "notes" | "discovery" = "form",
     learning?: ProposalLearning,
   ) {
     "use server";
-    const safeSource = ["form", "wizard", "notes"].includes(source)
+    const safeSource = ["form", "wizard", "notes", "discovery"].includes(source)
       ? source
       : "form";
     // The handoff comes from sessionStorage, so treat it as untrusted: keep

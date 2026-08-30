@@ -6,12 +6,16 @@ import {
   lastAssistantMessageIsCompleteWithToolCalls,
   type UIMessage,
 } from "ai";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import type { DiscoveryCheckpoint } from "@/lib/ai/discovery";
 import type { Proposal } from "@/lib/ai/proposal";
 import type { FeedbackProposal } from "@/lib/ai/feedback-proposal";
+import type { CoachIntent } from "@/lib/domain";
 import { ProposalCard, UpdateProposalCard } from "./proposal-card";
+import { DiscoveryCheckpointCard } from "./discovery-checkpoint-card";
 import { FeedbackProposalCard } from "./feedback-proposal-card";
 
 interface Props {
@@ -28,7 +32,13 @@ interface Props {
   /** Where accepted create-proposals report their source. */
   source?: "wizard" | "notes";
   /** What this conversation was opened to do — stored on the chat, once. */
-  intent?: "wizard" | "roi_review" | "qa";
+  intent?: CoachIntent;
+  /**
+   * The record this conversation was opened from. Sent only so a brand-new
+   * chat can record it; the server ignores it for a chat that already exists
+   * and re-reads its own stored context. See lib/ai/coach-intent.
+   */
+  useCaseId?: string;
   compact?: boolean;
 }
 
@@ -48,6 +58,7 @@ export function CoachChat({
   seed,
   source = "wizard",
   intent = "qa",
+  useCaseId,
   compact = false,
 }: Props) {
   const { messages, sendMessage, addToolOutput, status, error } = useChat({
@@ -55,10 +66,14 @@ export function CoachChat({
     messages: initialMessages,
     transport: new DefaultChatTransport({
       api: "/api/coach",
-      body: { chatId, intent },
+      body: { chatId, intent, useCaseId },
     }),
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
   });
+  // A record that came out of a Discovery conversation says so, rather than
+  // borrowing the wizard's label — the two doors are only distinguishable in
+  // coach_events if they report themselves differently.
+  const proposalSource = intent === "discovery" ? "discovery" : source;
   const [input, setInput] = useState("");
   const kickoffSent = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -121,6 +136,49 @@ export function CoachChat({
               I&rsquo;ll write it up for the admins. I never save anything
               without your say-so.
             </p>
+            {/* Quick starts, not a landing page. Discovery is first because
+                it is the capability nobody would guess is here; the two
+                below it are the ones people already know to ask for. Only on
+                the full page — the panel points at it from its header, since
+                a Discovery conversation wants the room. */}
+            {!compact && (
+              <ul className="mt-6 max-w-md space-y-2">
+                <li>
+                  <Link
+                    href="/coach?intent=discovery"
+                    className="block rounded-md border border-hairline-strong px-3.5 py-2.5 hover:bg-surface"
+                  >
+                    <span className="text-ink">Work through an idea</span>
+                    <span className="mt-0.5 block text-ink-faint">
+                      Untangle a problem and figure out the next useful step.
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/coach?intent=wizard"
+                    className="block rounded-md border border-hairline-strong px-3.5 py-2.5 hover:bg-surface"
+                  >
+                    <span className="text-ink">Log a use case</span>
+                    <span className="mt-0.5 block text-ink-faint">
+                      Walk through the structured intake.
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => inputRef.current?.focus()}
+                    className="block w-full rounded-md border border-hairline-strong px-3.5 py-2.5 text-left hover:bg-surface"
+                  >
+                    <span className="text-ink">Ask the Coach</span>
+                    <span className="mt-0.5 block text-ink-faint">
+                      Ask about Casespace or the program.
+                    </span>
+                  </button>
+                </li>
+              </ul>
+            )}
           </div>
         )}
         {messages.map((message) => (
@@ -149,6 +207,41 @@ export function CoachChat({
                       return <ReadToolChip key={i} label="Read the record" />;
                     case "tool-get_progress":
                       return <ReadToolChip key={i} label="Checked the scoreboard" />;
+                    case "tool-get_discovery_history":
+                      return (
+                        <ReadToolChip key={i} label="Read your earlier checkpoints" />
+                      );
+                    case "tool-propose_discovery_checkpoint": {
+                      if (part.state === "input-streaming")
+                        return (
+                          <ReadToolChip key={i} label="Writing up a checkpoint…" />
+                        );
+                      if (
+                        part.state === "input-available" ||
+                        part.state === "output-available"
+                      ) {
+                        return (
+                          <DiscoveryCheckpointCard
+                            key={part.toolCallId}
+                            checkpoint={part.input as DiscoveryCheckpoint}
+                            chatId={chatId}
+                            settled={
+                              part.state === "output-available"
+                                ? String(part.output)
+                                : undefined
+                            }
+                            onDecision={(outcome) =>
+                              addToolOutput({
+                                tool: "propose_discovery_checkpoint",
+                                toolCallId: part.toolCallId,
+                                output: outcome,
+                              })
+                            }
+                          />
+                        );
+                      }
+                      return null;
+                    }
                     case "tool-propose_use_case": {
                       if (part.state === "input-streaming")
                         return <ReadToolChip key={i} label="Drafting a proposal…" />;
@@ -160,7 +253,7 @@ export function CoachChat({
                           <ProposalCard
                             key={part.toolCallId}
                             proposal={part.input as Proposal}
-                            source={source}
+                            source={proposalSource}
                             proposalRef={part.toolCallId}
                             chatId={chatId}
                             settled={

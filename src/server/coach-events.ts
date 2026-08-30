@@ -13,7 +13,8 @@ import type { UseCaseCreateInput } from "@/lib/use-case-input";
  * watches the write path, it is not part of it.
  */
 
-export type Door = "wizard" | "notes";
+/** Which AI door proposed it: the intake wizard, the notes parser, or Discovery. */
+export type Door = "wizard" | "notes" | "discovery";
 
 const MAX_NOTE_CHARS = 500;
 

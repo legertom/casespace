@@ -6,6 +6,7 @@ import {
   canLinkUseCases,
   canQualify,
   canUnlinkUseCases,
+  canUseChat,
   canViewCoachLearnings,
   canViewPulse,
   visibleHistoryNote,
@@ -207,5 +208,28 @@ describe("viewers stay out of the casebook's write surface", () => {
     expect(canCreateUseCase("employee")).toBe(true);
     expect(canCreateUseCase("contributor")).toBe(true);
     expect(canCreateUseCase("admin")).toBe(true);
+  });
+});
+
+/**
+ * Coach conversations are personal. Everything Discovery persists hangs off
+ * this one rule, so it is asserted here rather than trusted to two callers
+ * happening to agree.
+ */
+describe("a Coach conversation belongs to one person", () => {
+  it("lets its owner act on it", () => {
+    expect(canUseChat("user-1", "user-1")).toBe(true);
+  });
+
+  it("keeps everybody else out", () => {
+    expect(canUseChat("user-1", "user-2")).toBe(false);
+  });
+
+  // Not a hole: the proposal card renders when the tool call completes, which
+  // is before /api/coach writes the chat row on stream end. A chat id with no
+  // row is owned by nobody, and a quick click should not lose its checkpoint.
+  it("allows a chat id that nobody owns yet", () => {
+    expect(canUseChat(null, "user-1")).toBe(true);
+    expect(canUseChat(undefined, "user-1")).toBe(true);
   });
 });

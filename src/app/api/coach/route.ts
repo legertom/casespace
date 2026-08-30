@@ -17,9 +17,12 @@ import {
   aiConfigured,
   gatewayOptions,
 } from "@/lib/ai/config";
+import { resolveChatIntent, resolveChatUseCaseId } from "@/lib/ai/coach-intent";
 import { coachInstructions } from "@/lib/ai/coach-prompt";
-import { feedbackProposalSchema } from "@/lib/ai/feedback-proposal";
-import { proposalSchema, updateProposalSchema } from "@/lib/ai/proposal";
+import {
+  discoveryProposalTools,
+  proposalTools,
+} from "@/lib/ai/proposal-tools";
 import { recordAiUsage } from "@/lib/ai/usage";
 import { getCurrentUser } from "@/lib/current-user";
 import {
@@ -29,9 +32,15 @@ import {
   etDateString,
   countsTowardRoi,
   roiGaps,
+  type CoachIntent,
 } from "@/lib/domain";
-import { visibleHistoryNote } from "@/lib/permissions";
+import { canUseChat, visibleHistoryNote } from "@/lib/permissions";
 import { getCoachLearnings } from "@/server/coach-learnings-queries";
+import {
+  CHECKPOINT_HISTORY_LIMIT,
+  listDiscoveryCheckpoints,
+  useCaseContext,
+} from "@/server/discovery-queries";
 import { buildProgressReport } from "@/server/progress-report";
 import { getUseCase, listUseCases } from "@/server/use-case-queries";
 
@@ -44,24 +53,52 @@ export async function POST(req: Request) {
     return Response.json({ error: AI_NOT_CONFIGURED_MESSAGE }, { status: 503 });
   }
 
-  const { messages, chatId, intent } = (await req.json()) as {
+  const { messages, chatId, intent, useCaseId } = (await req.json()) as {
     messages: UIMessage[];
     chatId?: string;
     intent?: string;
+    useCaseId?: string;
   };
-  const chatIntent =
-    intent === "wizard" || intent === "roi_review" ? intent : "qa";
 
   const db = getDb();
+
+  // What this conversation is, and what it is about, are the server's to say.
+  // The browser sends an intent taken from whatever URL it was loaded with —
+  // and /coach?chat=<id> carries none — so an existing chat answers for
+  // itself. Without this, reopening a Discovery conversation from Recent would
+  // quietly run it as a QA chat, and a crafted request could rewrite an
+  // existing chat's recorded provenance. See lib/ai/coach-intent.
+  let existing:
+    | { userId: string; intent: CoachIntent; useCaseId: string | null }
+    | undefined;
   if (chatId) {
-    const [existing] = await db
-      .select({ userId: coachChats.userId })
+    [existing] = await db
+      .select({
+        userId: coachChats.userId,
+        intent: coachChats.intent,
+        useCaseId: coachChats.useCaseId,
+      })
       .from(coachChats)
       .where(eq(coachChats.id, chatId));
-    if (existing && existing.userId !== user.id) {
+    if (!canUseChat(existing?.userId, user.id)) {
       return new Response("Forbidden", { status: 403 });
     }
   }
+
+  const chatIntent = resolveChatIntent(existing?.intent, intent);
+
+  // A brand-new chat may name the record it was opened from; an existing one
+  // keeps the record it already had. Either way the id is validated against a
+  // live record before it becomes context, and the title comes from the
+  // database rather than from the request.
+  const requestedUseCaseId = resolveChatUseCaseId(
+    Boolean(existing),
+    existing?.useCaseId,
+    typeof useCaseId === "string" && useCaseId ? useCaseId : null,
+  );
+  const linkedUseCase = requestedUseCaseId
+    ? await useCaseContext(requestedUseCaseId).catch(() => null)
+    : null;
 
   const tools = {
     search_use_cases: tool({
@@ -200,25 +237,61 @@ export async function POST(req: Request) {
         }
       : {}),
 
+    // Discovery's two tools, gated at the tool table the same way the admin
+    // one above is. A wizard chat has no business producing checkpoints, and
+    // nobody's checkpoints belong in anyone else's conversation.
+    ...(chatIntent === "discovery"
+      ? {
+          get_discovery_history: tool({
+            description:
+              "This person's own recent Discovery checkpoints, newest first — what they last concluded, what they were going to go and learn, and what was still open. Read-only. Use it when they say they want to continue something, when this conversation is anchored to a record, or when a previous return condition matters. Don't call it when the conversation in front of you already has what you need.",
+            inputSchema: z.object({
+              useCaseId: z
+                .string()
+                .nullish()
+                .describe("Only checkpoints linked to this use case."),
+              limit: z
+                .number()
+                .int()
+                .min(1)
+                .max(CHECKPOINT_HISTORY_LIMIT)
+                .nullish()
+                .describe(`How many to return. Defaults to ${CHECKPOINT_HISTORY_LIMIT}.`),
+            }),
+            // userId is the session's, not an argument: there is no phrasing
+            // that reaches another employee's private discovery work.
+            execute: async ({ useCaseId: forUseCase, limit }) => {
+              const rows = await listDiscoveryCheckpoints({
+                userId: user.id,
+                useCaseId: forUseCase ?? undefined,
+                limit: limit ?? undefined,
+              });
+              return rows.map((r) => ({
+                id: r.id,
+                when: r.createdAt.toISOString().slice(0, 10),
+                workingTitle: r.workingTitle,
+                refinedProblem: r.refinedProblem,
+                dominantConstraint: r.dominantConstraint,
+                dominantConstraintDetail: r.dominantConstraintDetail,
+                nextAction: r.nextAction,
+                expectedLearning: r.expectedLearning,
+                returnCondition: r.returnCondition,
+                unresolvedQuestions: r.unresolvedQuestions,
+                useCase: r.useCaseId
+                  ? { id: r.useCaseId, title: r.useCaseTitle }
+                  : null,
+              }));
+            },
+          }),
+          ...discoveryProposalTools,
+        }
+      : {}),
+
     // Proposal tools have NO execute — they surface as cards the human
     // accepts, edits, or dismisses. Nothing writes without their click.
-    propose_use_case: tool({
-      description:
-        "Propose a new use-case record for the human to review. Use once you have at least a title and description; include everything else you learned. The human's decision comes back as the tool result.",
-      inputSchema: proposalSchema,
-    }),
-
-    propose_update: tool({
-      description:
-        "Propose changes to an existing use case for the human to review. Only include the fields that change. The human's decision comes back as the tool result.",
-      inputSchema: updateProposalSchema,
-    }),
-
-    propose_feedback: tool({
-      description:
-        "Propose a product-feedback report about Casespace itself — a bug, a gap, something confusing, or a change someone wants in the tool. Not for anything about a use-case record; that is propose_update. Ask what they were doing and what they expected before proposing. The human's decision comes back as the tool result.",
-      inputSchema: feedbackProposalSchema,
-    }),
+    // Declared in lib/ai/proposal-tools so the evals grade these exact
+    // descriptions rather than a second copy of them.
+    ...proposalTools,
   };
 
   const result = streamText({
@@ -227,6 +300,8 @@ export async function POST(req: Request) {
       userName: user.name,
       role: user.role,
       todayEt: etDateString(new Date()),
+      intent: chatIntent,
+      useCase: linkedUseCase,
     }),
     messages: await convertToModelMessages(messages),
     tools,
@@ -254,9 +329,13 @@ export async function POST(req: Request) {
                 title: firstUserText,
                 messages: finalMessages,
                 intent: chatIntent,
+                useCaseId: linkedUseCase?.id ?? null,
               })
-              // `intent` is deliberately absent from the update: it records
-              // what the person came to do, not what the chat drifted into.
+              // `intent` and `useCaseId` are deliberately absent from the
+              // update: they record what the person came to do and what they
+              // came to work on, not what the chat drifted into. They are also
+              // what the next turn reads back as authoritative, so a rewrite
+              // here would defeat the check at the top of this route.
               .onConflictDoUpdate({
                 target: coachChats.id,
                 set: { messages: finalMessages, updatedAt: new Date() },

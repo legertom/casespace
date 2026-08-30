@@ -537,3 +537,90 @@ export function isStale(
 export function daysInStatus(lastStatusChangeAt: Date, now: Date): number {
   return Math.floor((now.getTime() - lastStatusChangeAt.getTime()) / DAY_MS);
 }
+
+// ---------------------------------------------------------------------------
+// Coach conversations
+// ---------------------------------------------------------------------------
+
+/**
+ * What a Coach conversation was opened to do. Set once, from the door the
+ * person came through, and never re-guessed from what the chat drifted into —
+ * see `resolveChatIntent` in lib/ai/coach-intent.
+ *
+ * `discovery` is the odd one out: the other three are things the Coach helps
+ * you finish, and discovery is a thing it helps you understand. It changes the
+ * instructions, so it has to survive a reopen.
+ */
+export const COACH_INTENTS = [
+  "wizard",
+  "roi_review",
+  "qa",
+  "discovery",
+] as const;
+
+export type CoachIntent = (typeof COACH_INTENTS)[number];
+
+/**
+ * What currently prevents sensible progress on a fuzzy AI idea — the thing a
+ * Discovery conversation is trying to name.
+ *
+ * Deliberately not a technical list. The dominant constraint on most AI work
+ * at Clever is not model capability; it is that nobody has said what the
+ * output must contain, or that the person who would act on it gets nothing
+ * out of doing so. `unclear` is a real answer, and so is a checkpoint whose
+ * next step is "work out which of these it is".
+ */
+export const DISCOVERY_CONSTRAINTS = [
+  "unclear_requirements",
+  "missing_information",
+  "input_quality",
+  "missing_context",
+  "data_access",
+  "permissions",
+  "workflow",
+  "technical_feasibility",
+  "model_capability",
+  "reliability",
+  "evaluation",
+  "human_adoption",
+  "incentives",
+  "ownership",
+  "organizational_alignment",
+  "scale",
+  "cost",
+  "security_privacy",
+  "other",
+  "unclear",
+] as const;
+
+export type DiscoveryConstraint = (typeof DISCOVERY_CONSTRAINTS)[number];
+
+/** How each constraint reads on the checkpoint card. */
+export const DISCOVERY_CONSTRAINT_LABELS: Record<DiscoveryConstraint, string> = {
+  unclear_requirements: "Unclear requirements",
+  missing_information: "Missing information",
+  input_quality: "Input quality",
+  missing_context: "Missing context",
+  data_access: "Data availability or access",
+  permissions: "Permissions",
+  workflow: "Workflow ambiguity",
+  technical_feasibility: "Technical feasibility",
+  model_capability: "Model capability",
+  reliability: "Reliability",
+  evaluation: "Evaluation",
+  human_adoption: "Human adoption",
+  incentives: "Incentives",
+  ownership: "Ownership",
+  organizational_alignment: "Organizational alignment",
+  scale: "Scale",
+  cost: "Cost",
+  security_privacy: "Security and privacy",
+  other: "Something else",
+  unclear: "Not yet clear",
+};
+
+export function isDiscoveryConstraint(
+  value: string,
+): value is DiscoveryConstraint {
+  return (DISCOVERY_CONSTRAINTS as readonly string[]).includes(value);
+}

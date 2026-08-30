@@ -66,7 +66,7 @@ export function ProposalCard({
   settled,
 }: BaseProps & {
   proposal: Proposal;
-  source: "wizard" | "notes";
+  source: "wizard" | "notes" | "discovery";
   /** Correlates this card's four possible outcomes in `coach_events`. */
   proposalRef: string;
   chatId?: string;

@@ -4,7 +4,7 @@ surface:
   - /coach
   - /api/coach
 audience: everyone
-updated: 2026-08-29
+updated: 2026-08-30
 code:
   - src/app/(app)/coach/page.tsx
   - src/app/api/coach/route.ts
@@ -14,7 +14,13 @@ code:
   - src/components/coach/ask-coach-selection.tsx
   - src/components/coach/notes-door.tsx
   - src/lib/ai/coach-prompt.ts
+  - src/lib/ai/coach-intent.ts
   - src/lib/ai/proposal.ts
+  - src/lib/ai/proposal-tools.ts
+  - src/lib/ai/discovery.ts
+  - src/components/coach/discovery-checkpoint-card.tsx
+  - src/server/discovery-queries.ts
+  - src/server/actions-discovery.ts
   - src/lib/coach-bus.ts
   - src/server/actions-ai.ts
 ---
@@ -40,6 +46,27 @@ It carries the program's bars in its instructions: the four gates, the
 [counting rules](../concepts/counting-rules.md), the evidence behind a ROI
 confirmation, and the [seven statuses](../concepts/statuses.md). It is told to
 teach those when relevant and **not to lecture unprompted**.
+
+### Work through a fuzzy idea (Discovery mode)
+
+`/coach?intent=discovery` — **Work through an idea** on the Coach page, the
+same link in the floating panel's header, or **Work this problem with Coach**
+on any record.
+
+A different job from everything else here: you arrive with a problem, an idea,
+an attempt that isn't working, or plain uncertainty, and the Coach helps you
+work out what is actually in the way and what the smallest useful next step is.
+It has no fixed interview, and it is explicitly not trying to produce a use
+case — "fix the source data first" and "AI doesn't help here" are good
+outcomes. It ends by proposing a **Discovery Checkpoint** card, which saves
+only on your click.
+
+It is a mode of this Coach, not a second one: the program's bars, the counting
+rules, the voice, the casebook tools, and the writes rule below are all the
+same instructions. What changes is the mode section — Discovery gets its own,
+and the wizard's interview is absent from it.
+
+**[Discovery Coach](discovery-coach.md)** has the whole story.
 
 ### Walk you through logging one (wizard mode)
 
@@ -82,8 +109,9 @@ composer.
 
 ## The rule that shapes everything: it never writes
 
-The Coach has six tools, plus one more for admins. Three read; three propose.
-The difference is structural, not a policy someone remembers to follow:
+The Coach has six tools, plus one for admins and two more in Discovery mode.
+Some read; the rest propose. The difference is structural, not a policy
+someone remembers to follow:
 
 | Tool | Does |
 |---|---|
@@ -91,14 +119,20 @@ The difference is structural, not a policy someone remembers to follow:
 | `get_use_case` | One record in full, including ROI gaps and history |
 | `get_progress` | The scoreboard |
 | `get_coach_learnings` | How its own proposals landed. Admin-only, gated at the tool table |
+| `get_discovery_history` | Your own prior Discovery checkpoints. Discovery mode only, scoped to your session |
 | `propose_use_case` | **Renders a card.** No execute path |
 | `propose_update` | **Renders a card.** No execute path |
 | `propose_feedback` | **Renders a card.** No execute path |
+| `propose_discovery_checkpoint` | **Renders a card.** No execute path. Discovery mode only |
 
 The read tools have an `execute` function and run on the server. The proposal
 tools **deliberately have none**. A tool with no `execute` cannot run — the AI
 SDK surfaces it to the browser as a call awaiting a result, which is the
 proposal card. Your click *is* the tool result the model gets back.
+
+There is a unit test asserting exactly this — that no tool in
+`proposal-tools.ts` has an `execute` — so breaking it fails `pnpm test` rather
+than shipping.
 
 So there is no code path by which the model saves a record, and adding one
 would mean adding an `execute`. The only write is `acceptProposalAction`, and
@@ -106,10 +140,12 @@ it runs as **you** — your role, your permissions. A viewer who somehow got a
 card would get a
 `ForbiddenError`, because the Coach's proposal doesn't carry authority; you do.
 
-`propose_feedback` is the one card a viewer can legitimately accept: filing
-[feedback](feedback.md) needs a session, not a role. It writes to `feedback`,
-never to the casebook, and it stamps the reporter's role from the session
-rather than from anything the model supplied.
+`propose_feedback` and `propose_discovery_checkpoint` are the two cards a
+viewer can legitimately accept: filing [feedback](feedback.md) and saving a
+[Discovery checkpoint](discovery-coach.md#discovery-checkpoints) each need a
+session, not a role. Neither writes to the casebook, and both take the
+identity they stamp from the session rather than from anything the model
+supplied.
 
 The system prompt also tells it not to propose to viewers at all, and to point
 them at the AI Lead for their team instead.
@@ -166,6 +202,18 @@ Chats persist to `coach_chats`, keyed by a chat id, with the messages stored
 as JSON. The route checks ownership on every request: a chat id belonging to
 someone else returns 403. Token usage for every turn is logged to `ai_usage`.
 
+Each chat also stores **what it was opened to do** (`intent`) and, when it was
+opened from a record, **which record** (`use_case_id`). Both are written once,
+on the first turn, and never rewritten — they record what the person came to
+do, not what the conversation drifted into.
+
+They are also *authoritative*. Reopening a chat hits `/coach?chat=<id>`, which
+carries no intent, so the server reads the stored one and runs the turn under
+it. That is what keeps a reopened Discovery conversation in Discovery mode, and
+it means a client cannot change an existing chat's intent or re-point it at
+another record by sending different values. `src/lib/ai/coach-intent.ts` holds
+the rule, and it is unit-tested.
+
 ## Without a gateway key
 
 The route returns 503 with a plain notice and the panel says so. Everything
@@ -180,6 +228,7 @@ community record unless they are on the AI Leads roster.
 
 ## Related
 
+- [Discovery Coach](discovery-coach.md) — working a fuzzy problem out
 - [Logging a use case](logging-a-use-case.md) — the three doors
 - [AI configuration](../operations/ai-config.md) — models, usage, the writes rule
 - [Gates and ROI](../concepts/gates-and-roi.md) — the bars it teaches
