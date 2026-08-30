@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { splitPost } from "./whats-new-prompt";
+import { EDITORIAL_INSTRUCTIONS, splitPost } from "./whats-new-prompt";
+
+describe("EDITORIAL_INSTRUCTIONS", () => {
+  it("requires the current H2 standing against both program targets", () => {
+    expect(EDITORIAL_INSTRUCTIONS).toContain("out of 45");
+    expect(EDITORIAL_INSTRUCTIONS).toContain("out of 15");
+    expect(EDITORIAL_INSTRUCTIONS).toContain("ahead of or behind a pace");
+  });
+});
 
 describe("splitPost", () => {
   it("lifts the h1 out of the body", () => {

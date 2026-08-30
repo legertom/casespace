@@ -66,6 +66,11 @@ describe.skipIf(!aiConfigured())("What's New — a full week", () => {
           "Does the post name the people behind the week's work, using the names in the source data?",
       },
       {
+        id: "h2-standing",
+        question:
+          "Does the opening state the current H2 standing against both program targets — documented use cases out of 45 and Confirmed Positive ROI use cases out of 15 — without making a pace or schedule claim?",
+      },
+      {
         id: "changelog-scope",
         question:
           "Does the 'New in Casespace' section describe only the entries present in casespaceChanges, without inferring any other tool change from the rest of the data?",

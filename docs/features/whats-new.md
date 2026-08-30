@@ -5,7 +5,7 @@ surface:
   - /whats-new/[week]
   - /whats-new/[week]/edit
 audience: everyone
-updated: 2026-08-25
+updated: 2026-08-29
 code:
   - src/app/(app)/whats-new/page.tsx
   - src/app/(app)/whats-new/[week]/page.tsx
@@ -44,6 +44,11 @@ EDT)** and writes the post for the prior week from real data:
 - Pulse snapshots, where there are new ones
 
 Sonnet 5 writes the prose; the facts come from the database, not the model.
+
+The opening always places the week's activity in the H2 program: the current
+documented total out of 45 and the current Confirmed Positive ROI total out of
+15, alongside what is still in flight. It reports the standing, not a pace
+judgement — Casespace does not label the program ahead or behind.
 
 **It publishes itself.** There is no draft state and no approval step — a
 post is live the moment the cron writes it, and everyone can read it before

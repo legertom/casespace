@@ -137,6 +137,14 @@ Admins can now privately track each AI Lead's August-through-December monthly
 1:1s from the roster. Email addresses no longer sit permanently inside input
 boxes, either: click an address when it needs editing, then save it in place.
 
+### The H2 goals, in every weekly note
+
+What's New now states the program's current H2 standing in every opening:
+documented use cases out of 45 and confirmed positive-ROI use cases out of
+15, with the in-flight work behind those numbers. It gives everyone the same
+clear context for the week without pretending there is a schedule to be ahead
+of or behind.
+
 ## 2026-08-20
 
 ### Point a record at the thing itself
