@@ -26,6 +26,7 @@ import {
 import {
   canCreateUseCase,
   canEditUseCase,
+  canMoveUseCaseStatus,
   canManageProgram,
 } from "@/lib/permissions";
 import { foldName } from "@/lib/people-match";
@@ -459,10 +460,12 @@ export async function setStatus(
   if (!ownership) throw new NotFoundError("Use case not found.");
   const from = ownership.status as UcStatus;
 
-  // Admins may move any record; editors only their own.
-  if (actor.role !== "admin" && !canEditUseCase(actor, ownership)) {
+  // Admins and AI Leads may move any record; employees only their own.
+  if (!canMoveUseCaseStatus(actor, ownership)) {
     throw new ForbiddenError(
-      "You can only move use cases you created, own, or authored.",
+      actor.role === "employee"
+        ? "You can only move use cases you created, own, or authored."
+        : "Your role can't move use cases through the pipeline.",
     );
   }
   if (!canSetStatus(actor.role, from, to)) {

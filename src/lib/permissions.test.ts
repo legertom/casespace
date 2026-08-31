@@ -4,6 +4,7 @@ import {
   canCreateUseCase,
   canEditUseCase,
   canLinkUseCases,
+  canMoveUseCaseStatus,
   canQualify,
   canUnlinkUseCases,
   canUseChat,
@@ -39,6 +40,43 @@ describe("use case editing", () => {
 
   it("viewers are read-only even on records naming them", () => {
     expect(canEditUseCase({ id: "owner", role: "viewer" }, uc)).toBe(false);
+  });
+});
+
+/**
+ * Moving a record is program knowledge, like linking — so leads reach records
+ * they had no hand in. Which *transitions* they may make is canSetStatus's
+ * question (domain.test.ts): pre-Qualified only, the gate stays Kate's.
+ */
+describe("moving records through the pipeline", () => {
+  it("admins and AI Leads move any record", () => {
+    expect(canMoveUseCaseStatus({ id: "stranger", role: "admin" }, uc)).toBe(
+      true,
+    );
+    expect(
+      canMoveUseCaseStatus({ id: "stranger", role: "contributor" }, uc),
+    ).toBe(true);
+  });
+
+  it("employees move records they created, own, or authored — and no others", () => {
+    expect(canMoveUseCaseStatus({ id: "creator", role: "employee" }, uc)).toBe(
+      true,
+    );
+    expect(canMoveUseCaseStatus({ id: "owner", role: "employee" }, uc)).toBe(
+      true,
+    );
+    expect(canMoveUseCaseStatus({ id: "author-1", role: "employee" }, uc)).toBe(
+      true,
+    );
+    expect(canMoveUseCaseStatus({ id: "stranger", role: "employee" }, uc)).toBe(
+      false,
+    );
+  });
+
+  it("viewers move nothing, even records naming them", () => {
+    expect(canMoveUseCaseStatus({ id: "owner", role: "viewer" }, uc)).toBe(
+      false,
+    );
   });
 });
 

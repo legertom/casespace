@@ -17,12 +17,13 @@ interface Props {
   id: string;
   current: UcStatus;
   role: Role;
-  canEdit: boolean;
+  /** canMoveUseCaseStatus, decided by the page — the server re-checks it. */
+  canMove: boolean;
   /** Open items from the ROI checklist — warns (never blocks) on confirmation. */
   roiGaps?: string[];
 }
 
-export function StatusControls({ id, current, role, canEdit, roiGaps = [] }: Props) {
+export function StatusControls({ id, current, role, canMove, roiGaps = [] }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<ActionResult | null>(null);
@@ -31,7 +32,7 @@ export function StatusControls({ id, current, role, canEdit, roiGaps = [] }: Pro
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
 
-  const actorRole: Role = canEdit || role === "admin" ? role : "viewer";
+  const actorRole: Role = canMove ? role : "viewer";
   const options = STATUSES.filter((s) => canSetStatus(actorRole, current, s));
   if (options.length === 0 && role !== "admin") return null;
 

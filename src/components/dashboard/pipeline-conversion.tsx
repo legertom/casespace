@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { STATUSES, STATUS_LABELS, type UcStatus } from "@/lib/domain";
+import {
+  STATUSES,
+  STATUS_DESCRIPTIONS,
+  STATUS_LABELS,
+  type UcStatus,
+} from "@/lib/domain";
 import { PIPELINE_RAMP } from "@/lib/pipeline-ramp";
 import { cumulativeReach } from "@/lib/pipeline-shapes";
 
@@ -37,6 +42,8 @@ export function PipelineConversion({
   const reach = cumulativeReach(counts);
   const top = Math.max(1, reach[0]);
   const height = 16 + STATUSES.length * ROW_H + 10;
+  // The Qualified gate: only an admin moves a record across this line.
+  const gateY = 16 + STATUSES.indexOf("qualified") * ROW_H - 1;
 
   return (
     <div className="overflow-x-auto">
@@ -47,6 +54,15 @@ export function PipelineConversion({
         <text x={VIEW_W - 8} y={10} fontSize={9.5} fill={FAINT} textAnchor="end">
           step
         </text>
+        <line
+          x1={8}
+          y1={gateY}
+          x2={VIEW_W - 8}
+          y2={gateY}
+          stroke={FAINT}
+          strokeWidth={1}
+          strokeDasharray="5 4"
+        />
         {STATUSES.map((s, i) => {
           const y = 16 + i * ROW_H;
           const reached = Math.max(3, (reach[i] / top) * BAR_W);
@@ -63,6 +79,8 @@ export function PipelineConversion({
               className="group"
               aria-label={`${STATUS_LABELS[s]} — ${counts[i]} here now, ${reach[i]} reached this stage or beyond`}
             >
+              {/* Native tooltip on hover — the same text the legend spells out. */}
+              <title>{`${STATUS_LABELS[s]} — ${STATUS_DESCRIPTIONS[s]}`}</title>
               <rect
                 x={4}
                 y={y + 1}

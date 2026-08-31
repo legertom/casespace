@@ -86,6 +86,26 @@ export function canUnlinkUseCases(
   return ends.some((end) => canEditUseCase(user, end));
 }
 
+/**
+ * Who may move a record through the pipeline at all. Which *transitions* they
+ * may make is the separate question canSetStatus answers — this one is about
+ * the record, not the statuses.
+ *
+ * - Admins and AI Leads move any record. Where a record stands is program
+ *   knowledge, same as linking (canLinkUseCases): the lead who knows a
+ *   workflow has launched usually doesn't own its record — most of the
+ *   casebook was typed in by an admin on a lead's behalf.
+ * - Employees move records they can edit (creator, owner, or author).
+ * - Viewers move nothing (canEditUseCase already says so).
+ */
+export function canMoveUseCaseStatus(
+  user: SessionUser,
+  uc: UseCaseOwnership,
+): boolean {
+  if (user.role === "admin" || user.role === "contributor") return true;
+  return canEditUseCase(user, uc);
+}
+
 /** Only an admin can promote to (or demote from) Qualified — it records Kate's decision. */
 export function canQualify(role: Role): boolean {
   return role === "admin";

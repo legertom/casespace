@@ -268,6 +268,21 @@ export const STATUS_SHORT_LABELS: Record<UcStatus, string> = {
   confirmed_positive_roi: "ROI Confirmed",
 };
 
+/**
+ * One plain sentence per stage, for the dashboard's pipeline legend. Written
+ * for the person deciding where their record belongs, not for the program's
+ * bookkeeping — the two counted stages still say what the counting means.
+ */
+export const STATUS_DESCRIPTIONS: Record<UcStatus, string> = {
+  in_discovery: "Still being scoped — what the workflow is and whether it's worth building.",
+  approved_by_fl: "The Functional Leader has signed off on building it.",
+  under_construction: "Actively being built.",
+  in_testing: "Being tested by one or more users.",
+  launched: "In use by your team.",
+  qualified: "Through the Qualified gate — counts toward the 45.",
+  confirmed_positive_roi: "Measured, positive ROI confirmed — counts toward the 15.",
+};
+
 export function statusRank(s: UcStatus): number {
   return STATUSES.indexOf(s);
 }
@@ -309,9 +324,10 @@ export type Role = (typeof ROLES)[number];
  *   Kate — not the record's contents, and not the shape of the graph.
  *   (Kate's call, relayed by Tom, 2026-08-16; the 15 stays a subset of the
  *   45 through the counting rules, not through a required path.)
- * - Editors — AI Leads and employees — move records they can edit freely
- *   among the five pre-Qualified statuses (forward or back; people fix
- *   mistakes). Ownership is enforced separately, in use-case-service.
+ * - AI Leads and employees move records freely among the five pre-Qualified
+ *   statuses (forward or back; people fix mistakes). Which *records* they may
+ *   move is the separate question canMoveUseCaseStatus (permissions.ts)
+ *   answers: leads any record, employees only their own.
  * - Anything entering or leaving Qualified or Confirmed Positive ROI is
  *   admin-only: both record Kate's decisions.
  */

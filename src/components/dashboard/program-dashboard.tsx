@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   DEPARTMENT_LABELS,
+  STATUS_DESCRIPTIONS,
   STATUS_LABELS,
   STATUS_SHORT_LABELS,
   TARGET_DOCUMENTED,
@@ -81,6 +82,16 @@ function PipelineQueues({ byStatus }: { byStatus: Record<UcStatus, number> }) {
           strokeLinecap="round"
           className="stroke-ink"
         />
+        {/* The Qualified gate: only an admin moves a record across this line. */}
+        <line
+          x1={20 + SLOT * STATUSES.indexOf("qualified")}
+          y1={12}
+          x2={20 + SLOT * STATUSES.indexOf("qualified")}
+          y2={platformY + 46}
+          strokeWidth={1.25}
+          strokeDasharray="5 4"
+          className="stroke-ink-faint"
+        />
         {STATUSES.map((s, i) => {
           const n = byStatus[s];
           const cx = 20 + SLOT * i + SLOT / 2;
@@ -94,6 +105,8 @@ function PipelineQueues({ byStatus }: { byStatus: Record<UcStatus, number> }) {
                 n === 1 ? "use case" : "use cases"
               }`}
             >
+              {/* Native tooltip on hover — the same text the legend spells out. */}
+              <title>{`${STATUS_LABELS[s]} — ${STATUS_DESCRIPTIONS[s]}`}</title>
               {/* Whole column is the hit target; the marks are too thin to aim
                   at. Inset so neighbouring columns don't share an edge on
                   hover, and run past the label so descenders clear it. */}
@@ -382,6 +395,30 @@ export async function ProgramDashboard() {
             }}
           />
         </div>
+        {/* Shared by both drawings — what each stage means, and what the
+            dashed line in them is. Column-major so each column reads in
+            pipeline order; row-major would interleave the stages. */}
+        <ul className="mt-5 grid gap-x-10 gap-y-1.5 text-xs text-ink-faint sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-4">
+          {STATUSES.map((s) => (
+            <li key={s} className="flex items-baseline gap-2">
+              <span
+                className="size-2.5 shrink-0 translate-y-px rounded-[3px]"
+                style={{ backgroundColor: PIPELINE_RAMP[s] }}
+              />
+              <span>
+                <span className="font-medium text-ink-muted">
+                  {STATUS_SHORT_LABELS[s]}
+                </span>
+                {" — "}
+                {STATUS_DESCRIPTIONS[s]}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs text-ink-faint">
+          The dashed line is the Qualified gate — only an admin moves a record
+          across it.
+        </p>
       </section>
 
       {/* ------------------------------------------------ the 15 by ELT org */}

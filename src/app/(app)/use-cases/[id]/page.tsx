@@ -10,6 +10,7 @@ import {
   canEditUseCase,
   canLinkUseCases,
   canManageProgram,
+  canMoveUseCaseStatus,
   visibleHistoryNote,
 } from "@/lib/permissions";
 import { listComments, listMentionableUsers } from "@/server/comment-queries";
@@ -58,16 +59,16 @@ export default async function UseCaseDetailPage({
   const canLink = canLinkUseCases(user.role);
   const linkable = canLink ? await listLinkableUseCases(uc.id) : [];
 
-  const editable = canEditUseCase(
-    { id: user.id, role: user.role },
-    {
-      createdById: uc.createdById,
-      ownerUserId: uc.ownerUserId,
-      authorUserIds: uc.authors
-        .map((a) => a.userId)
-        .filter((x): x is string => !!x),
-    },
-  );
+  const ownership = {
+    createdById: uc.createdById,
+    ownerUserId: uc.ownerUserId,
+    authorUserIds: uc.authors
+      .map((a) => a.userId)
+      .filter((x): x is string => !!x),
+  };
+  const sessionUser = { id: user.id, role: user.role };
+  const editable = canEditUseCase(sessionUser, ownership);
+  const canMove = canMoveUseCaseStatus(sessionUser, ownership);
 
   // Pickers only matter to someone who can edit; don't make viewers pay for them.
   const [people, teams, orgs] = editable
@@ -170,7 +171,7 @@ export default async function UseCaseDetailPage({
               id={uc.id}
               current={uc.status}
               role={user.role}
-              canEdit={editable}
+              canMove={canMove}
               roiGaps={roiGaps(uc)}
             />
           </aside>
