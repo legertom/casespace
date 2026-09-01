@@ -1,7 +1,12 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { STATUSES, STATUS_LABELS, type UcStatus } from "@/lib/domain";
+import {
+  STATUSES,
+  STATUS_DESCRIPTIONS,
+  STATUS_LABELS,
+  type UcStatus,
+} from "@/lib/domain";
 import { PipelineConversion } from "./pipeline-conversion";
 
 const CASES: Record<string, number[]> = {
@@ -65,9 +70,49 @@ describe("the pipeline as a conversion report", () => {
 
   it("says both numbers in the label a screen reader hears", () => {
     const markup = draw(CASES.live);
+    expect(markup).toContain("6 here now, 17 reached this stage or beyond");
+  });
+
+  /**
+   * The caption a sighted person gets on hover lives *inside* the stage link,
+   * where the link's aria-label overrides it for assistive tech. So the label
+   * has to carry the description itself, or a screen reader hears the numbers
+   * and never what the stage means.
+   *
+   * Asserted on Launched because its description is the one with no
+   * apostrophe — renderToStaticMarkup escapes those to &#x27;.
+   */
+  it("puts the stage's meaning in that label too", () => {
+    const markup = draw(CASES.live);
     expect(markup).toContain(
-      `${STATUS_LABELS.in_discovery} — 6 here now, 17 reached this stage or beyond`,
+      `aria-label="${STATUS_LABELS.launched} — ${STATUS_DESCRIPTIONS.launched} 3 here now`,
     );
+  });
+
+  /**
+   * Every stage says what it means on its own row, with nothing hidden behind
+   * a hover — that is the whole point of the description column, and the
+   * reason this chart carries no key beneath it.
+   */
+  it("prints what every stage means, on the stage's own row", () => {
+    const markup = draw(CASES.live);
+    for (const s of STATUSES) {
+      // renderToStaticMarkup escapes apostrophes, so compare like for like.
+      const escaped = STATUS_DESCRIPTIONS[s].replaceAll("'", "&#x27;");
+      expect(markup, s).toContain(`>${escaped}</text>`);
+    }
+  });
+
+  /**
+   * The descriptions are only legible if the chart keeps its width. Letting it
+   * shrink to a phone would render them at half size, so it scrolls instead —
+   * a min-width well under the viewBox is the silent way that breaks.
+   */
+  it("holds enough width for the descriptions to stay legible", () => {
+    const markup = draw(CASES.live);
+    const viewBox = Number(markup.match(/viewBox="0 0 (\d+)/)![1]);
+    const minW = Number(markup.match(/min-w-\[(\d+)px\]/)![1]);
+    expect(minW / viewBox).toBeGreaterThan(0.8);
   });
 
   it("keeps the longest status name inside its gutter", () => {

@@ -8,11 +8,27 @@ import {
 import { PIPELINE_RAMP } from "@/lib/pipeline-ramp";
 import { cumulativeReach } from "@/lib/pipeline-shapes";
 
-const VIEW_W = 600;
 const ROW_H = 32;
 const LABEL_R = 184;
 const BAR_X = 196;
 const BAR_W = 300;
+const COUNT_X = BAR_X + BAR_W + 10;
+/** Step conversion, right-aligned, just before the description column. */
+const STEP_R = 570;
+/**
+ * Each stage says what it means on its own row, rather than in a caption
+ * somewhere else on the page: at seven rows the eye is never near a shared
+ * caption when it reaches the row it cares about. Costs width, which this
+ * chart has — the bars are a fixed 300 and the gutter is sized to the longest
+ * status name, so the rest of the viewBox was empty.
+ */
+const DESC_X = 590;
+/**
+ * Wide enough for the longest description with room to spare: measured, the
+ * longest runs ~407 units from DESC_X, and the margin past it absorbs the
+ * font falling back to something wider on a machine without the app's own.
+ */
+const VIEW_W = 1040;
 
 const HAIR = "#e5ded1";
 const INK = "#22201c";
@@ -32,6 +48,11 @@ const WEAK_STEP = 60;
  * that stage right now — which is exactly what the row links to — and the pale
  * remainder is the ones already further along. A single-tone bar would show
  * one number and hand you a different one on click.
+ *
+ * Every row also carries what its stage means, in the column on the right.
+ * That is deliberately not a tooltip: what a stage means is the thing a
+ * newcomer needs most, and hiding it behind a hover puts it out of reach of
+ * every phone and every person who doesn't think to point at a bar.
  */
 export function PipelineConversion({
   byStatus,
@@ -47,12 +68,18 @@ export function PipelineConversion({
 
   return (
     <div className="overflow-x-auto">
-      <svg viewBox={`0 0 ${VIEW_W} ${height}`} className="w-full min-w-[560px]">
+      {/* The min-width rises with the viewBox: the descriptions are the point
+          of the extra width, and letting the whole chart shrink to a phone
+          would render them at half size. It scrolls sideways instead. */}
+      <svg viewBox={`0 0 ${VIEW_W} ${height}`} className="w-full min-w-[920px]">
         <text x={BAR_X} y={10} fontSize={9.5} fill={FAINT}>
           solid = here now · pale = reached it or beyond
         </text>
-        <text x={VIEW_W - 8} y={10} fontSize={9.5} fill={FAINT} textAnchor="end">
+        <text x={STEP_R} y={10} fontSize={9.5} fill={FAINT} textAnchor="end">
           step
+        </text>
+        <text x={DESC_X} y={10} fontSize={9.5} fill={FAINT}>
+          what the stage means
         </text>
         <line
           x1={8}
@@ -77,10 +104,8 @@ export function PipelineConversion({
               key={s}
               href={`/use-cases?status=${s}`}
               className="group"
-              aria-label={`${STATUS_LABELS[s]} — ${counts[i]} here now, ${reach[i]} reached this stage or beyond`}
+              aria-label={`${STATUS_LABELS[s]} — ${STATUS_DESCRIPTIONS[s]} ${counts[i]} here now, ${reach[i]} reached this stage or beyond`}
             >
-              {/* Native tooltip on hover — the same text the legend spells out. */}
-              <title>{`${STATUS_LABELS[s]} — ${STATUS_DESCRIPTIONS[s]}`}</title>
               <rect
                 x={4}
                 y={y + 1}
@@ -104,7 +129,7 @@ export function PipelineConversion({
                 <rect x={BAR_X} y={y + 6} width={Math.max(3, here)} height={20} rx={3} fill={PIPELINE_RAMP[s]} />
               )}
               <text
-                x={BAR_X + BAR_W + 10}
+                x={COUNT_X}
                 y={y + 20}
                 fontSize={13}
                 fontWeight={500}
@@ -114,7 +139,7 @@ export function PipelineConversion({
                 {reach[i]}
               </text>
               <text
-                x={VIEW_W - 8}
+                x={STEP_R}
                 y={y + 20}
                 fontSize={12}
                 fill={weak ? FLAG : FAINT}
@@ -122,6 +147,14 @@ export function PipelineConversion({
                 className="tabular-nums"
               >
                 {step === null ? "—" : `${step}%`}
+              </text>
+              <text
+                x={DESC_X}
+                y={y + 20}
+                fontSize={11.5}
+                className="fill-ink-muted group-hover:fill-ink"
+              >
+                {STATUS_DESCRIPTIONS[s]}
               </text>
             </Link>
           );

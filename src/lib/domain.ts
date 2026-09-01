@@ -269,9 +269,12 @@ export const STATUS_SHORT_LABELS: Record<UcStatus, string> = {
 };
 
 /**
- * One plain sentence per stage, for the dashboard's pipeline legend. Written
- * for the person deciding where their record belongs, not for the program's
- * bookkeeping — the two counted stages still say what the counting means.
+ * One plain sentence per stage, for the dashboard's pipeline legend and the
+ * caption its charts write on hover. Written for the person deciding where
+ * their record belongs, not for the program's bookkeeping — the two counted
+ * stages still say what the counting means, and that they are Kate's to set:
+ * the commonest question about the pipeline is why the last two stages aren't
+ * in someone's dropdown, and the answer belongs where the stages are named.
  */
 export const STATUS_DESCRIPTIONS: Record<UcStatus, string> = {
   in_discovery: "Still being scoped — what the workflow is and whether it's worth building.",
@@ -279,8 +282,8 @@ export const STATUS_DESCRIPTIONS: Record<UcStatus, string> = {
   under_construction: "Actively being built.",
   in_testing: "Being tested by one or more users.",
   launched: "In use by your team.",
-  qualified: "Through the Qualified gate — counts toward the 45.",
-  confirmed_positive_roi: "Measured, positive ROI confirmed — counts toward the 15.",
+  qualified: "Kate's call only — through the Qualified gate, counts toward the 45.",
+  confirmed_positive_roi: "Kate's call only — measured, positive ROI confirmed, counts toward the 15.",
 };
 
 export function statusRank(s: UcStatus): number {

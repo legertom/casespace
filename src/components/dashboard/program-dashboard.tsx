@@ -64,7 +64,9 @@ function PipelineQueues({ byStatus }: { byStatus: Record<UcStatus, number> }) {
     QUEUE.perRank,
   );
   const platformY = 60.6 + (depth - 1) * QUEUE.rowGap;
-  const height = platformY + 56;
+  // Below the stage labels, the caption line a hovered stage writes.
+  const captionY = platformY + 64;
+  const height = captionY + 8;
 
   return (
     <div className="overflow-x-auto">
@@ -101,12 +103,26 @@ function PipelineQueues({ byStatus }: { byStatus: Record<UcStatus, number> }) {
               key={s}
               href={`/use-cases?status=${s}`}
               className="group"
-              aria-label={`${STATUS_LABELS[s]} — ${n} ${
+              aria-label={`${STATUS_LABELS[s]} — ${STATUS_DESCRIPTIONS[s]} ${n} ${
                 n === 1 ? "use case" : "use cases"
               }`}
             >
-              {/* Native tooltip on hover — the same text the legend spells out. */}
-              <title>{`${STATUS_LABELS[s]} — ${STATUS_DESCRIPTIONS[s]}`}</title>
+              {/* What this stage means, written into the caption line every
+                  stage shares at the foot of the chart. All seven sit at the
+                  same spot and only the hovered one is opaque, so the reveal
+                  is instant and needs no state — unlike the OS tooltip this
+                  replaced, which waited a second and covered the chart.
+                  pointer-events-none keeps the six invisible ones from
+                  catching a mouse that is nowhere near their column. */}
+              <text
+                x={VIEW_W / 2}
+                y={captionY}
+                fontSize={12}
+                textAnchor="middle"
+                className="pointer-events-none fill-ink opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+              >
+                {`${STATUS_LABELS[s]} — ${STATUS_DESCRIPTIONS[s]}`}
+              </text>
               {/* Whole column is the hit target; the marks are too thin to aim
                   at. Inset so neighbouring columns don't share an edge on
                   hover, and run past the label so descenders clear it. */}
@@ -205,6 +221,41 @@ function PipelineQueues({ byStatus }: { byStatus: Record<UcStatus, number> }) {
         })}
       </svg>
     </div>
+  );
+}
+
+/**
+ * What each stage means, for the queues drawing above — whose stations are a
+ * column each and have nowhere to print a sentence. The funnel needs no key:
+ * it says the same thing on every row.
+ *
+ * Columns rather than a grid: multicol flows the stages down one column and on
+ * to the next, so they read in pipeline order at their natural heights. A grid
+ * would equalise each row against the tallest cell in it and leave the short
+ * stages floating.
+ */
+function StageKey() {
+  return (
+    <ul className="mt-5 text-sm text-ink-muted sm:columns-2 sm:gap-x-10">
+      {STATUSES.map((s) => (
+        <li
+          key={s}
+          className="mb-2 flex break-inside-avoid items-baseline gap-2"
+        >
+          <span
+            className="size-2.5 shrink-0 translate-y-px rounded-[3px]"
+            style={{ backgroundColor: PIPELINE_RAMP[s] }}
+          />
+          <span>
+            <span className="font-medium text-ink">
+              {STATUS_SHORT_LABELS[s]}
+            </span>
+            {" — "}
+            {STATUS_DESCRIPTIONS[s]}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -391,33 +442,23 @@ export async function ProgramDashboard() {
             initial={chart}
             charts={{
               conversion: <PipelineConversion byStatus={counts.byStatus} />,
-              platforms: <PipelineQueues byStatus={counts.byStatus} />,
+              // The key rides with this drawing alone. Its stations are too
+              // narrow to print a sentence under, where the funnel says the
+              // same thing on each row — so pairing the key with the funnel
+              // too would only print everything twice.
+              platforms: (
+                <>
+                  <PipelineQueues byStatus={counts.byStatus} />
+                  <StageKey />
+                </>
+              ),
             }}
           />
         </div>
-        {/* Shared by both drawings — what each stage means, and what the
-            dashed line in them is. Column-major so each column reads in
-            pipeline order; row-major would interleave the stages. */}
-        <ul className="mt-5 grid gap-x-10 gap-y-1.5 text-xs text-ink-faint sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-4">
-          {STATUSES.map((s) => (
-            <li key={s} className="flex items-baseline gap-2">
-              <span
-                className="size-2.5 shrink-0 translate-y-px rounded-[3px]"
-                style={{ backgroundColor: PIPELINE_RAMP[s] }}
-              />
-              <span>
-                <span className="font-medium text-ink-muted">
-                  {STATUS_SHORT_LABELS[s]}
-                </span>
-                {" — "}
-                {STATUS_DESCRIPTIONS[s]}
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-3 text-xs text-ink-faint">
-          The dashed line is the Qualified gate — only an admin moves a record
-          across it.
+        <p className="mt-3 text-sm text-ink-muted">
+          The dashed line is the Qualified gate. Only Kate moves a record across
+          it — the last two stages are hers to set, and they are the two the
+          program counts.
         </p>
       </section>
 
