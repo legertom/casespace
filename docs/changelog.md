@@ -45,7 +45,7 @@ in-app report it came from.
 ## 2026-09-02
 
 ### Everyone has a profile, and it lists their work
-Requested by: Tom Leger
+Requested by: David McGeary
 
 Click anyone's name — on the roster, on a record's credit card, on the
 dashboard, in an @mention — and you land on their profile: their title, their
@@ -60,7 +60,7 @@ still there — every profile links to it when you want stage tabs and search
 over the same set.
 
 ### The header menus open on hover and leave when you do
-Requested by: Tom Leger
+Requested by: David McGeary
 
 They used to sit open over the page until you went back and clicked the same
 word again. Now hovering your name opens the menu and moving the mouse away
@@ -73,7 +73,6 @@ profile** is the first thing in it. Tabbing to a menu opens it too, and
 Escape closes it.
 
 ### A mistyped person link no longer shows an error page
-Requested by: Tom Leger
 
 A `?person=` link with a mangled id used to render "a server error occurred".
 Now, like every other bad id in Casespace, it just isn't found — the casebook
@@ -85,6 +84,33 @@ Requested by: Tom Leger
 The page was named for two things and only ever did one of them: personal
 access tokens and the setup for filing from Claude Code, Cursor, or curl. It
 now says so, and the identity half of its old name moved to your profile.
+
+## 2026-08-31
+
+### Every stage says what it means, right on its row
+Requested by: Evelyn Wong
+
+The pipeline used to assume you already knew what "Approved by Functional
+Leader" or "Qualified" stood for. Every stage on the dashboard's funnel now
+carries its own one-line description, printed on the row it is already on —
+nothing to hover over, nothing to go and look up. Qualified and Confirmed
+Positive ROI say plainly that they are Kate's call alone, which is the
+question the pipeline raises more than any other. The queues drawing, whose
+stations are too narrow to print a sentence under, keeps its key underneath.
+
+### Move any record through the pipeline, not just your own
+
+Knowing that a workflow launched doesn't require owning its record — the AI
+Lead who knows is usually not the person the record is filed under, and until
+now the status control simply never appeared for them. Admins and AI Leads
+can now move any record; employees still move the ones that are theirs;
+viewers move none.
+
+Where a record can be moved *to* has not changed. Everyone below admin stops
+at Launched: Qualified and Confirmed Positive ROI remain Kate's decisions.
+Both pipeline drawings now show that as a dashed line between Launched and
+Qualified, so the one rule that stops a record mid-pipeline is drawn rather
+than discovered.
 
 ## 2026-08-30
 
