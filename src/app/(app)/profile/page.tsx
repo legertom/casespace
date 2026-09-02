@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { pats, userEmails } from "@/db/schema";
@@ -6,7 +7,7 @@ import { requireUser } from "@/lib/current-user";
 import { fmtDate } from "@/lib/format";
 import { PatManager } from "@/components/profile/pat-manager";
 
-export const metadata = { title: "Profile & API tokens" };
+export const metadata = { title: "MCP & API" };
 
 /** The deployment's origin, from the request — NEXT_PUBLIC_APP_URL overrides. */
 async function appOrigin(): Promise<string> {
@@ -32,9 +33,17 @@ export default async function ProfilePage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="font-serif text-4xl">{user.name}</h1>
+      <h1 className="font-serif text-4xl">MCP &amp; API</h1>
       <p className="mt-2 text-ink-muted">
-        {aliases.map((a) => a.email).join(" · ")} — role: {user.role}
+        Filing from your editor, as {user.name} — signed in with{" "}
+        {aliases.map((a) => a.email).join(" · ")}, role: {user.role}.{" "}
+        <Link
+          href="/people/me"
+          className="text-accent underline underline-offset-2"
+        >
+          Your profile and use cases
+        </Link>{" "}
+        live elsewhere.
       </p>
 
       <section className="mt-12">

@@ -1,4 +1,5 @@
 import { fmtDate } from "@/lib/format";
+import { Dropdown } from "@/components/dropdown";
 import {
   listNotifications,
   unreadNotificationCount,
@@ -28,7 +29,7 @@ export async function NotificationBell({
   ]);
 
   return (
-    <details className="relative">
+    <Dropdown className="relative">
       <summary
         aria-label={
           unread > 0 ? `Notifications, ${unread} unread` : "Notifications"
@@ -108,7 +109,7 @@ export async function NotificationBell({
           </ul>
         )}
       </div>
-    </details>
+    </Dropdown>
   );
 }
 

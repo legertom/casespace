@@ -10,6 +10,7 @@ import {
 import { VIEW_AS_LABELS, VIEW_AS_PROSE, VIEW_AS_ROLES } from "@/lib/view-as";
 import { startViewAsAction, stopViewAsAction } from "@/server/actions-view-as";
 import { CoachLauncher } from "@/components/coach/coach-launcher";
+import { Dropdown } from "@/components/dropdown";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 
 export default async function AppLayout({
@@ -82,7 +83,7 @@ export default async function AppLayout({
                 Log a use case
               </Link>
             )}
-            <details className="relative md:hidden">
+            <Dropdown className="relative md:hidden">
               <summary
                 aria-label="Open menu"
                 className="flex cursor-pointer list-none items-center justify-center rounded-md border border-hairline p-1.5 text-ink-muted hover:text-ink"
@@ -142,12 +143,12 @@ export default async function AppLayout({
                   </Link>
                 )}
               </div>
-            </details>
+            </Dropdown>
             <NotificationBell
               userId={user.id}
               isAdmin={user.role === "admin"}
             />
-            <details className="relative">
+            <Dropdown className="relative">
               <summary className="cursor-pointer list-none text-sm text-ink-muted hover:text-ink">
                 {user.name}
               </summary>
@@ -185,8 +186,14 @@ export default async function AppLayout({
                   </div>
                 )}
                 <div className="mt-3 border-t border-hairline pt-3 text-sm">
+                  <Link
+                    href="/people/me"
+                    className="block py-1 hover:text-accent"
+                  >
+                    Your profile
+                  </Link>
                   <Link href="/profile" className="block py-1 hover:text-accent">
-                    Profile &amp; API tokens
+                    MCP &amp; API
                   </Link>
                   {user.role === "admin" && (
                     <Link
@@ -203,7 +210,7 @@ export default async function AppLayout({
                   </form>
                 </div>
               </div>
-            </details>
+            </Dropdown>
           </div>
         </div>
       </header>

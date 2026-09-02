@@ -54,9 +54,10 @@ One doc per surface.
 | [Linked workflows](features/linked-workflows.md) | on every record |
 | [Goals and the adoption pulse](features/goals.md) | `/goals` |
 | [The AI Leads roster](features/roster.md) | `/roster` |
+| [A person's profile](features/person-profile.md) | `/people/[id]` |
 | [What's New](features/whats-new.md) | `/whats-new` |
 | [Wins](features/wins.md) | `/wins` (admin-only) |
-| [Your profile and access tokens](features/profile.md) | `/profile` |
+| [MCP & API](features/profile.md) | `/profile` |
 | [Feedback](features/feedback.md) | `/feedback` |
 | [View as](features/view-as.md) | admin preview |
 | [In-app documentation](features/documentation.md) | `/docs` |

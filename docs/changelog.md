@@ -1,7 +1,7 @@
 ---
 title: Changelog
 audience: everyone
-updated: 2026-08-30
+updated: 2026-09-02
 code:
   - src/lib/changelog.ts
   - src/server/changelog.ts
@@ -41,6 +41,44 @@ entry is honest, an invented one is not. Add `Feedback: <id>` to point at the
 in-app report it came from.
 
 ---
+
+## 2026-09-02
+
+### Everyone has a profile, and it lists their work
+Requested by: Tom Leger
+
+Click anyone's name — on the roster, on a record's credit card, on the
+dashboard, in an @mention — and you land on their profile: their title, their
+team if they lead one, and every use case that credits them, with a count of
+how many reach Qualified and Confirmed Positive ROI. Your own is **Your
+profile** in the menu under your name, so your records are two clicks from
+anywhere. Your page also lists anything you logged for someone else, which
+counts toward them but was previously nowhere you could find it.
+
+Names used to jump straight into the casebook's person filter. That filter is
+still there — every profile links to it when you want stage tabs and search
+over the same set.
+
+### The menu under your name closes when you look away
+Requested by: Tom Leger
+
+It used to stay open over the page until you went back and clicked your name
+again. Clicking anywhere else, tabbing out, or pressing Escape now closes it.
+The notification bell and the phone menu got the same treatment.
+
+### A mistyped person link no longer shows an error page
+Requested by: Tom Leger
+
+A `?person=` link with a mangled id used to render "a server error occurred".
+Now, like every other bad id in Casespace, it just isn't found — the casebook
+drops the filter and a profile URL 404s.
+
+### Profile & API tokens is now MCP & API
+Requested by: Tom Leger
+
+The page was named for two things and only ever did one of them: personal
+access tokens and the setup for filing from Claude Code, Cursor, or curl. It
+now says so, and the identity half of its old name moved to your profile.
 
 ## 2026-08-30
 

@@ -1,7 +1,7 @@
 ---
 title: Comments
 audience: everyone
-updated: 2026-08-16
+updated: 2026-09-02
 code:
   - src/components/comments/comment-thread.tsx
   - src/components/comments/comment-composer.tsx
@@ -34,7 +34,7 @@ before inserting, and the server is the rule.
 — names are never parsed out of the body.** That means a mention is always a
 real person, and typing someone's name in prose doesn't silently notify them.
 
-A mention renders as a chip linking to that person's records, the same
+A mention renders as a chip linking to that person's profile, the same
 destination as every other name in the app. Someone whose login isn't linked
 to a directory row gets the chip without the link — there'd be nothing to
 filter by. The names are matched only to find where to draw the chip; who

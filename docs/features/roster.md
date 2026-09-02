@@ -2,7 +2,7 @@
 title: The AI Leads roster
 surface: /roster
 audience: everyone
-updated: 2026-08-25
+updated: 2026-09-02
 code:
   - src/app/(app)/roster/page.tsx
   - src/components/roster/roster-admin.tsx
@@ -19,8 +19,8 @@ Who is contributing, by department and team. Open to everyone.
 ## What's on it
 
 Every AI Lead grouped by department, each with their teams, their state, and
-their records. Names link through to [the casebook](casebook.md) filtered to
-that person.
+their records. Names link through to [that person's profile](person-profile.md),
+which lists every use case crediting them.
 
 ## Unverified emails
 
@@ -70,5 +70,6 @@ roster does not retroactively remove their past records from the program.
 
 ## Related
 
+- [A person's profile](person-profile.md)
 - [People, roster, and ELT](../concepts/people-and-elt.md)
 - [`GET /api/v1/roster`](../integrations/rest-api.md)

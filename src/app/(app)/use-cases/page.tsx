@@ -58,6 +58,8 @@ export default async function UseCasesPage({
   const q = sp.q?.trim() || undefined;
   const mine = sp.mine === "1";
   const personId = sp.person?.trim() || undefined;
+  // `?person=` is hand-editable; a value naming nobody — including one that
+  // isn't a uuid at all — drops the filter rather than erroring.
   const person = personId ? await identityForPerson(personId) : null;
   const personName = person?.name ?? null;
 

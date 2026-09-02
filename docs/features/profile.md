@@ -1,8 +1,8 @@
 ---
-title: Your profile and access tokens
+title: MCP & API
 surface: /profile
 audience: everyone
-updated: 2026-08-14
+updated: 2026-09-02
 code:
   - src/app/(app)/profile/page.tsx
   - src/components/profile/pat-manager.tsx
@@ -10,10 +10,13 @@ code:
   - src/server/pat.ts
 ---
 
-# Your profile
+# MCP & API
 
-Your identity in Casespace, and the tokens that let you file from outside the
-web app.
+The tokens that let you file use cases from outside the web app, and the
+copy-paste setup for both surfaces.
+
+Your name, your team, and your use cases are on
+[your profile](person-profile.md) — this page is only the plumbing.
 
 ## Personal access tokens
 
@@ -35,11 +38,12 @@ command and the REST endpoint table.
 
 ## Who can do what
 
-Everyone has a profile and can create their own tokens. Tokens are personal;
-nobody sees anyone else's.
+Everyone can create their own tokens. Tokens are personal; nobody sees
+anyone else's.
 
 ## Related
 
+- [Your profile](person-profile.md)
 - [MCP](../integrations/mcp.md)
 - [REST API](../integrations/rest-api.md)
 - [Authentication](../integrations/auth.md)

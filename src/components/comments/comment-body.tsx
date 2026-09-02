@@ -31,15 +31,15 @@ export function CommentBody({ body, mentions }: Props) {
 }
 
 /**
- * A mention links to that person's records, like every other name in the app.
+ * A mention links to that person's profile, like every other name in the app.
  * People whose login isn't linked to a directory row render as a plain chip —
- * there's nothing honest to filter by.
+ * there's nothing honest to point at.
  */
 function Mention({ person }: { person: MentionableUser }) {
   const label = `@${person.name}`;
   if (!person.personId) return <span className="mention">{label}</span>;
   return (
-    <Link href={`/use-cases?person=${person.personId}`} className="mention">
+    <Link href={`/people/${person.personId}`} className="mention">
       {label}
     </Link>
   );
