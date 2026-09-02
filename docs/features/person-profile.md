@@ -9,6 +9,7 @@ code:
   - src/server/identity.ts
   - src/lib/ids.ts
   - src/components/person-link.tsx
+  - src/components/hover-menu.tsx
 ---
 
 # A person's profile
@@ -18,7 +19,8 @@ Every name in Casespace links here — on [the roster](roster.md), in a
 record's [credit card](record.md), on the dashboard, and in a
 [comment mention](comments.md).
 
-Your own is **Your profile** in the header menu, or `/people/me`.
+Your own is your name in the header — click it, or take **My profile**
+from the menu it opens. Either way that is `/people/me`.
 
 ## What's on it
 
@@ -41,6 +43,10 @@ edited on each record.
 
 ## Rules that surprise people
 
+- **Your name in the header is a link, not a button.** Hovering it opens the
+  menu; clicking it goes straight to your profile, because that is the one
+  thing most people came for. On a phone the first tap opens the menu instead
+  — there is no hover to open it with, and **My profile** is the first item.
 - **`me` is not a person id.** Directory ids are UUIDs, so `/people/me` can
   never collide with a real one. It exists because most people at Clever have
   a login and no directory row — everyone can sign in, but only AI Leads are

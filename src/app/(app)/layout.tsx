@@ -10,7 +10,7 @@ import {
 import { VIEW_AS_LABELS, VIEW_AS_PROSE, VIEW_AS_ROLES } from "@/lib/view-as";
 import { startViewAsAction, stopViewAsAction } from "@/server/actions-view-as";
 import { CoachLauncher } from "@/components/coach/coach-launcher";
-import { Dropdown } from "@/components/dropdown";
+import { HoverMenu } from "@/components/hover-menu";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 
 export default async function AppLayout({
@@ -83,11 +83,12 @@ export default async function AppLayout({
                 Log a use case
               </Link>
             )}
-            <Dropdown className="relative md:hidden">
-              <summary
-                aria-label="Open menu"
-                className="flex cursor-pointer list-none items-center justify-center rounded-md border border-hairline p-1.5 text-ink-muted hover:text-ink"
-              >
+            <HoverMenu
+              className="relative md:hidden"
+              triggerLabel="Open menu"
+              triggerClassName="flex cursor-pointer items-center justify-center rounded-md border border-hairline p-1.5 text-ink-muted hover:text-ink"
+              panelClassName="absolute right-0 z-20 mt-2 w-52 rounded-md border border-hairline bg-surface p-3 shadow-sm"
+              trigger={
                 <svg
                   aria-hidden
                   viewBox="0 0 20 20"
@@ -99,8 +100,9 @@ export default async function AppLayout({
                 >
                   <path d="M3 5.5h14M3 10h14M3 14.5h14" />
                 </svg>
-              </summary>
-              <div className="absolute right-0 z-20 mt-2 w-52 rounded-md border border-hairline bg-surface p-3 shadow-sm">
+              }
+            >
+              <div>
                 <nav
                   aria-label="Primary"
                   className="flex flex-col text-sm text-ink-muted"
@@ -143,16 +145,22 @@ export default async function AppLayout({
                   </Link>
                 )}
               </div>
-            </Dropdown>
+            </HoverMenu>
             <NotificationBell
               userId={user.id}
               isAdmin={user.role === "admin"}
             />
-            <Dropdown className="relative">
-              <summary className="cursor-pointer list-none text-sm text-ink-muted hover:text-ink">
-                {user.name}
-              </summary>
-              <div className="absolute right-0 z-20 mt-2 w-56 rounded-md border border-hairline bg-surface p-3 shadow-sm">
+            {/* The name is a link to your own profile, and hovering it opens
+                the menu — so the commonest destination costs a click, not a
+                click plus a read of five other options. */}
+            <HoverMenu
+              className="relative"
+              href="/people/me"
+              trigger={user.name}
+              triggerClassName="block text-sm text-ink-muted hover:text-ink"
+              panelClassName="absolute right-0 z-20 mt-2 w-56 rounded-md border border-hairline bg-surface p-3 shadow-sm"
+            >
+              <div>
                 <p className="truncate text-sm">{user.primaryEmail}</p>
                 <p className="mt-0.5 text-xs uppercase tracking-wide text-ink-faint">
                   {user.viewingAs
@@ -190,7 +198,7 @@ export default async function AppLayout({
                     href="/people/me"
                     className="block py-1 hover:text-accent"
                   >
-                    Your profile
+                    My profile
                   </Link>
                   <Link href="/profile" className="block py-1 hover:text-accent">
                     MCP &amp; API
@@ -210,7 +218,7 @@ export default async function AppLayout({
                   </form>
                 </div>
               </div>
-            </Dropdown>
+            </HoverMenu>
           </div>
         </div>
       </header>

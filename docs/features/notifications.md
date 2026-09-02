@@ -1,9 +1,10 @@
 ---
 title: Notifications
 audience: everyone
-updated: 2026-08-25
+updated: 2026-09-02
 code:
   - src/components/notifications/notification-bell.tsx
+  - src/components/hover-menu.tsx
   - src/lib/comment-notifications.ts
   - src/lib/link-notifications.ts
   - src/lib/new-use-case-notifications.ts
@@ -69,6 +70,9 @@ Nobody else is told. Everyone else meets new records on the casebook, which
 is open to all. An admin who logs a record is not told about their own.
 
 ## Reading them
+
+Hovering the bell opens the list; moving the mouse away closes it, as it does
+for every menu in the header. On a phone, where there is no hover, tap it.
 
 Opening a notification marks it read and takes you to the record. **Mark all
 read** clears the bell.

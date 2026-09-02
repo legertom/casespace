@@ -1,5 +1,5 @@
 import { fmtDate } from "@/lib/format";
-import { Dropdown } from "@/components/dropdown";
+import { HoverMenu } from "@/components/hover-menu";
 import {
   listNotifications,
   unreadNotificationCount,
@@ -29,35 +29,39 @@ export async function NotificationBell({
   ]);
 
   return (
-    <Dropdown className="relative">
-      <summary
-        aria-label={
-          unread > 0 ? `Notifications, ${unread} unread` : "Notifications"
-        }
-        className="relative flex cursor-pointer list-none items-center text-ink-muted hover:text-ink"
-      >
-        <svg
-          aria-hidden
-          viewBox="0 0 20 20"
-          className="size-5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M10 3a4.5 4.5 0 0 0-4.5 4.5c0 3-1.2 4.2-1.7 4.7a.5.5 0 0 0 .35.85h11.7a.5.5 0 0 0 .35-.85c-.5-.5-1.7-1.7-1.7-4.7A4.5 4.5 0 0 0 10 3Z" />
-          <path d="M8.4 16.2a1.8 1.8 0 0 0 3.2 0" />
-        </svg>
-        {unread > 0 && (
-          <span className="absolute -right-1.5 -top-1 min-w-4 rounded-full bg-accent px-1 text-center text-[10px] font-medium leading-4 text-white">
-            {unread > 9 ? "9+" : unread}
-          </span>
-        )}
-      </summary>
-      {/* A 20rem panel hung off this bell would run past the left edge of a
-          phone, so below md it spans the header instead. */}
-      <div className="fixed inset-x-4 top-14 z-20 rounded-md border border-hairline bg-surface p-3 shadow-sm md:absolute md:inset-x-auto md:right-0 md:top-auto md:mt-2 md:w-80">
+    <HoverMenu
+      className="relative"
+      triggerLabel={
+        unread > 0 ? `Notifications, ${unread} unread` : "Notifications"
+      }
+      triggerClassName="relative flex cursor-pointer items-center text-ink-muted hover:text-ink"
+      /* A 20rem panel hung off this bell would run past the left edge of a
+         phone, so below md it spans the header instead. */
+      panelClassName="fixed inset-x-4 top-14 z-20 rounded-md border border-hairline bg-surface p-3 shadow-sm md:absolute md:inset-x-auto md:right-0 md:top-auto md:mt-2 md:w-80"
+      trigger={
+        <>
+          <svg
+            aria-hidden
+            viewBox="0 0 20 20"
+            className="size-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M10 3a4.5 4.5 0 0 0-4.5 4.5c0 3-1.2 4.2-1.7 4.7a.5.5 0 0 0 .35.85h11.7a.5.5 0 0 0 .35-.85c-.5-.5-1.7-1.7-1.7-4.7A4.5 4.5 0 0 0 10 3Z" />
+            <path d="M8.4 16.2a1.8 1.8 0 0 0 3.2 0" />
+          </svg>
+          {unread > 0 && (
+            <span className="absolute -right-1.5 -top-1 min-w-4 rounded-full bg-accent px-1 text-center text-[10px] font-medium leading-4 text-white">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </>
+      }
+    >
+      <div>
         <div className="flex items-baseline justify-between gap-3">
           <p className="text-xs uppercase tracking-wide text-ink-faint">
             Notifications
@@ -109,7 +113,7 @@ export async function NotificationBell({
           </ul>
         )}
       </div>
-    </Dropdown>
+    </HoverMenu>
   );
 }
 

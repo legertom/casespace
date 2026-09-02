@@ -50,21 +50,27 @@ Requested by: Tom Leger
 Click anyone's name — on the roster, on a record's credit card, on the
 dashboard, in an @mention — and you land on their profile: their title, their
 team if they lead one, and every use case that credits them, with a count of
-how many reach Qualified and Confirmed Positive ROI. Your own is **Your
-profile** in the menu under your name, so your records are two clicks from
-anywhere. Your page also lists anything you logged for someone else, which
-counts toward them but was previously nowhere you could find it.
+how many reach Qualified and Confirmed Positive ROI. Your own is a click on
+your own name in the header, or **My profile** in the menu it opens — so your
+records are never far. Your page also lists anything you logged for someone
+else, which counts toward them but was previously nowhere you could find it.
 
 Names used to jump straight into the casebook's person filter. That filter is
 still there — every profile links to it when you want stage tabs and search
 over the same set.
 
-### The menu under your name closes when you look away
+### The header menus open on hover and leave when you do
 Requested by: Tom Leger
 
-It used to stay open over the page until you went back and clicked your name
-again. Clicking anywhere else, tabbing out, or pressing Escape now closes it.
-The notification bell and the phone menu got the same treatment.
+They used to sit open over the page until you went back and clicked the same
+word again. Now hovering your name opens the menu and moving the mouse away
+closes it — the notification bell and the phone menu behave the same. Your
+name is also a link: click it and you land on your profile without reading
+the menu at all.
+
+On a phone, where there is no hover, the first tap opens the menu — **My
+profile** is the first thing in it. Tabbing to a menu opens it too, and
+Escape closes it.
 
 ### A mistyped person link no longer shows an error page
 Requested by: Tom Leger
