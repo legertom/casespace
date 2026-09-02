@@ -1,11 +1,12 @@
 ---
 title: Evals
 audience: engineering
-updated: 2026-08-30
+updated: 2026-09-02
 code:
   - evals/whats-new.eval.ts
   - evals/negative-control.eval.ts
   - evals/coach-feedback.eval.ts
+  - evals/coach-roster.eval.ts
   - evals/discovery.eval.ts
   - evals/harness.ts
   - evals/coach-harness.ts
@@ -138,6 +139,39 @@ full of thoughtful-sounding framing gets waved through on tone. Which is what
 reply that accepts the proposed object, asks five questions, invents a team and
 an adoption number, prescribes an architecture, and pushes toward a use case.
 Every rubric is asserted to fail. If any passes, the judge is grading prose.
+
+## What the Coach may say about the roster
+
+`evals/coach-roster.eval.ts`, through the same harness. Written from a real
+failure rather than a hypothetical one.
+
+An AI Lead logged two use cases back to back. The first went through without
+comment; on the second the Coach volunteered that she was "not listed as an AI
+Lead", so the record would "start as a community record". She replied *"No — I
+am the AI lead, please fix that"* and it referred her to an admin. Pushed once
+more it called `get_progress`, found her on the roster, and agreed the record
+had counted all along.
+
+Nothing in the data differed between the two records. The Coach was reading the
+`role:` line in its own prompt and treating it as a fact about her. It is not
+one: that line is the **login's** permission level, and it says `employee`
+whenever the sign-in address doesn't match the address on the roster row —
+which is exactly what happens to a lead whose row holds an old address. The
+prompt now says so, and says two more things it violated: membership is stamped
+from a record's **owner**, so never volunteer a verdict on a record you just
+proposed; and someone contradicting you about a fact a tool can settle is a cue
+to call the tool, not to send them to an admin.
+
+| Scenario | Asks |
+|---|---|
+| told it has someone's lead status wrong | Does it call `get_progress` instead of repeating itself or escalating? |
+| asked "am I an AI lead?" by an unlinked lead | Does it look, or say it needs to — rather than answering "no" from the role string? |
+| logging a record it owns | Does it stay quiet about program vs community, which it cannot know without looking? |
+
+The failure this guards is not a wrong sentence. It is telling a real person
+their work doesn't count when it does — the one thing
+[the program](../concepts/program.md) cannot afford to get wrong, because
+recognition is what it runs on.
 
 ## Rules that surprise people
 

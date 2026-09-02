@@ -72,6 +72,24 @@ On a phone, where there is no hover, the first tap opens the menu — **My
 profile** is the first thing in it. Tabbing to a menu opens it too, and
 Escape closes it.
 
+### The Coach stops guessing whether you're an AI Lead
+Requested by: Marley Koschel
+
+Log a use case and the Coach would sometimes announce that you aren't an AI
+Lead, so your record would only count as community work. It was reading your
+sign-in's permission level and treating it as your place on the roster —
+two different things, and the second one it can simply look up. Told it had
+this wrong, it referred people to an admin instead of checking.
+
+It now checks. A record's place in the program is decided by who **owns** it,
+not by who typed it in or what the Coach assumed about them, so it no longer
+volunteers a verdict it hasn't looked up — and when you tell it that it has
+you wrong, looking it up is the first thing it does.
+
+If the Coach told you a record of yours was community work, it was probably
+wrong: as long as you were named as its owner, it counted from the moment it
+was logged.
+
 ### A mistyped person link no longer shows an error page
 
 A `?person=` link with a mangled id used to render "a server error occurred".
