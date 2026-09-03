@@ -1,3 +1,4 @@
+import { MAX_SUGGESTIONS } from "@/lib/ai/courses";
 import {
   DEFAULT_STALE_DAYS,
   PROGRAM_END,
@@ -17,8 +18,9 @@ import {
  * two would drift on the day someone changed a gate in one of them.
  *
  * What the intent decides is which *mode* section is present. Wizard, QA, and
- * ROI review have always carried all three of the original mode sections and
- * still do, byte for byte. Discovery gets its own section instead, and
+ * ROI review carry all three of the original mode sections and still do, byte
+ * for byte; the wizard additionally carries the course section, which is the
+ * only thing separating the three. Discovery gets its own section instead, and
  * deliberately does not get the wizard's: the wizard's fixed interview is the
  * exact behaviour Discovery exists to not do.
  */
@@ -212,6 +214,32 @@ When they come back, orient around what they learned, not around what you asked 
 - Most turns in this mode need no tool call at all.${linked}`;
 }
 
+/**
+ * Course suggestions.
+ *
+ * Present only for `wizard`, because `suggest_courses` is only in the tool
+ * table for `wizard` — telling the Coach about a tool it does not have is how
+ * you get a model that describes a course it cannot look up.
+ *
+ * Nearly all of this is about restraint. The failure that would kill the
+ * feature is not missing a good course; it is offering a plausible one to
+ * somebody it does not fit, once, in front of an AI Lead who then stops
+ * believing the rest of what the Coach says.
+ */
+const COURSES_SECTION = `## Suggesting a course
+Once the proposal card is settled — they logged the record, or they decided not to — you may offer up to ${MAX_SUGGESTIONS} DeepLearning.AI courses. Never before: an interview interrupted by a reading list is an interview nobody finishes.
+
+Call suggest_courses with what the conversation established. Recommend ONLY the courses it hands back, using the title and link it hands back. Never name a course from memory, never construct a link yourself, and never state a course's length or level — the course page states both, and you have not seen it.
+
+It frequently returns nothing. That is the correct answer for most workflows people log, and when it happens, say nothing about courses at all. Do not apologise for having none, do not describe what you looked for, and do not reach for the nearest thing in its place.
+
+When it does return something:
+- One or two is usually right. ${MAX_SUGGESTIONS} is a ceiling, not a target.
+- Give each one a single line saying why that course and this workflow belong together, grounded in what they actually told you — not a restatement of the course summary.
+- Say plainly that they are **free**.
+- Say that **Tom recommends them**. That is why these are the courses on offer and not some other catalogue's, and it is worth their knowing.
+- Offer, never assign. A course is not one of the four gates, is not required, and has no bearing on whether the record counts. If they are not interested, let it go and do not raise it again.`;
+
 export function coachInstructions(ctx: Ctx): string {
   const sections =
     ctx.intent === "discovery"
@@ -219,6 +247,8 @@ export function coachInstructions(ctx: Ctx): string {
       : [
           sharedHead(ctx),
           WIZARD_SECTION,
+          // Only the wizard gets it, because only the wizard has the tool.
+          ...(ctx.intent === "wizard" ? [COURSES_SECTION] : []),
           FEEDBACK_SECTION,
           ROI_SECTION,
           HOUSEKEEPING,

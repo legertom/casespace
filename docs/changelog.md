@@ -44,6 +44,18 @@ in-app report it came from.
 
 ## 2026-09-02
 
+### Free courses, suggested only when they fit
+Requested by: Tom Leger
+
+When you finish logging a use case through the Coach's wizard, it can now
+point you at one to three free DeepLearning.AI courses that fit the workflow
+you just described — and it says so plainly: they are free, and Tom
+recommends them. It offers them only after your record is filed, never in the
+middle of the interview, and most of the time it offers none at all. That is
+deliberate. The Coach matches against a hand-picked catalogue using what you
+already told it — your tools, your approaches, and the worksheet ratings you
+gave — and stays quiet rather than reaching for something that nearly fits.
+
 ### A nudge toward the Coach on every record
 Requested by: Tom Leger
 

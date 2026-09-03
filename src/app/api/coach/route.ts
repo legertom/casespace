@@ -24,12 +24,18 @@ import {
 } from "@/lib/ai/coach-intent";
 import { coachInstructions } from "@/lib/ai/coach-prompt";
 import {
+  APPROACH_TAGS_NOTE,
+  MAX_SUGGESTIONS,
+  suggestCourses,
+} from "@/lib/ai/courses";
+import {
   discoveryProposalTools,
   proposalTools,
 } from "@/lib/ai/proposal-tools";
 import { recordAiUsage } from "@/lib/ai/usage";
 import { getCurrentUser } from "@/lib/current-user";
 import {
+  APPROACHES,
   DEPARTMENTS,
   STATUSES,
   documentedGatesComplete,
@@ -237,6 +243,60 @@ export async function POST(req: Request) {
             }),
             execute: ({ windowDays }) =>
               getCoachLearnings(windowDays ?? undefined),
+          }),
+        }
+      : {}),
+
+    // Wizard-only, gated at the tool table for the same reason the two below
+    // are: a tool the Coach cannot see is a tool it cannot be talked into
+    // calling, and a course suggestion belongs to the moment somebody has just
+    // finished describing a workflow — not to a question about the scoreboard.
+    ...(chatIntent === "wizard"
+      ? {
+          suggest_courses: tool({
+            description:
+              `Free DeepLearning.AI courses relevant to the workflow just described, best first, at most ${MAX_SUGGESTIONS}. ` +
+              "Call it once, after they have accepted or declined the proposal card — never mid-interview. " +
+              "Pass what the interview established; every argument is optional. " +
+              "It returns an empty list when nothing in the catalogue genuinely fits, which is a common and correct answer: say nothing about courses in that case. " +
+              "Recommend only what this returns. Never name a course, a link, a duration, or a level from memory.",
+            inputSchema: z.object({
+              text: z
+                .string()
+                .nullish()
+                .describe(
+                  "The workflow in their words — title, description, and the current steps, run together.",
+                ),
+              aiTools: z
+                .array(z.string())
+                .nullish()
+                .describe("Tool names as they gave them, e.g. 'Claude Code', 'Zapier'."),
+              approaches: z
+                .array(z.enum(APPROACHES))
+                .nullish()
+                .describe(APPROACH_TAGS_NOTE),
+              department: z.enum(DEPARTMENTS).nullish(),
+              ratings: z
+                .object({
+                  dataAvailability: z.number().int().min(1).max(5).nullish(),
+                  risk: z.number().int().min(1).max(5).nullish(),
+                  evaluationClarity: z.number().int().min(1).max(5).nullish(),
+                  maintenanceBurden: z.number().int().min(1).max(5).nullish(),
+                })
+                .nullish()
+                .describe(
+                  "The worksheet ratings they gave, 1-5. Only pass one they actually answered.",
+                ),
+            }),
+            execute: ({ text, aiTools, approaches, department, ratings }) => ({
+              courses: suggestCourses({
+                text: text ?? undefined,
+                aiTools: aiTools ?? undefined,
+                approaches: approaches ?? undefined,
+                department: department ?? undefined,
+                ratings: ratings ?? undefined,
+              }),
+            }),
           }),
         }
       : {}),

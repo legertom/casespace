@@ -4,7 +4,7 @@ surface:
   - /coach
   - /api/coach
 audience: everyone
-updated: 2026-08-30
+updated: 2026-09-02
 code:
   - src/app/(app)/coach/page.tsx
   - src/app/api/coach/route.ts
@@ -18,6 +18,7 @@ code:
   - src/lib/ai/proposal.ts
   - src/lib/ai/proposal-tools.ts
   - src/lib/ai/discovery.ts
+  - src/lib/ai/courses.ts
   - src/components/coach/discovery-checkpoint-card.tsx
   - src/server/discovery-queries.ts
   - src/server/actions-discovery.ts
@@ -89,6 +90,10 @@ Then it assembles everything into **one** proposal card. If you want to stop
 early it proposes what it has: a half-filled record that exists beats a
 perfect one that doesn't.
 
+Once that card is settled it may offer one to three free
+**[course suggestions](course-suggestions.md)** — never before, and often
+none at all.
+
 ### Review a record's ROI
 
 Ask it to review a use case, or work the "launched but unscored" list. It
@@ -109,7 +114,8 @@ composer.
 
 ## The rule that shapes everything: it never writes
 
-The Coach has six tools, plus one for admins and two more in Discovery mode.
+The Coach has six tools, plus one for admins, one in wizard mode, and two more
+in Discovery mode.
 Some read; the rest propose. The difference is structural, not a policy
 someone remembers to follow:
 
@@ -120,6 +126,7 @@ someone remembers to follow:
 | `get_progress` | The scoreboard |
 | `get_coach_learnings` | How its own proposals landed. Admin-only, gated at the tool table |
 | `get_discovery_history` | Your own prior Discovery checkpoints. Discovery mode only, scoped to your session |
+| `suggest_courses` | Free DeepLearning.AI courses that fit the workflow just described. Wizard mode only, gated at the tool table |
 | `propose_use_case` | **Renders a card.** No execute path |
 | `propose_update` | **Renders a card.** No execute path |
 | `propose_feedback` | **Renders a card.** No execute path |
@@ -229,6 +236,7 @@ community record unless they are on the AI Leads roster.
 ## Related
 
 - [Discovery Coach](discovery-coach.md) — working a fuzzy problem out
+- [Course suggestions](course-suggestions.md) — what the wizard offers at the end
 - [Logging a use case](logging-a-use-case.md) — the three doors
 - [AI configuration](../operations/ai-config.md) — models, usage, the writes rule
 - [Gates and ROI](../concepts/gates-and-roi.md) — the bars it teaches

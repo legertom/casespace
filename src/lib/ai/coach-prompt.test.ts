@@ -11,6 +11,7 @@ const ctx = {
 const WIZARD_MARKER = "## Intake wizard mode";
 const ROI_MARKER = "## ROI review mode";
 const DISCOVERY_MARKER = "## Discovery mode";
+const COURSES_MARKER = "## Suggesting a course";
 
 describe("the shared core", () => {
   it("is in every mode", () => {
@@ -38,14 +39,26 @@ describe("the shared core", () => {
 });
 
 describe("wizard, ROI review, and QA", () => {
-  // These three have always carried all of the original mode sections. They
-  // still do, and they are identical to each other — the intent changes which
-  // *kickoff* is sent, not what the Coach is told it can do.
-  it("get the same instructions as each other", () => {
+  // These three carry all of the original mode sections, and on those they are
+  // still identical — the intent changes which *kickoff* is sent, not what the
+  // Coach is told it can do.
+  //
+  // The wizard now carries one section the other two do not, and that is the
+  // whole of the difference between them. It is asserted as a difference of
+  // exactly one section rather than by loosening the equality, because the
+  // invariant worth keeping is "these modes do not quietly diverge", not
+  // "these modes are byte-identical".
+  it("agree on everything except the wizard's course section", () => {
     const wizard = coachInstructions({ ...ctx, intent: "wizard" });
-    expect(coachInstructions({ ...ctx, intent: "qa" })).toBe(wizard);
-    expect(coachInstructions({ ...ctx, intent: "roi_review" })).toBe(wizard);
-    expect(coachInstructions(ctx)).toBe(wizard);
+    const qa = coachInstructions({ ...ctx, intent: "qa" });
+    expect(coachInstructions({ ...ctx, intent: "roi_review" })).toBe(qa);
+    expect(coachInstructions(ctx)).toBe(qa);
+
+    const dropped = wizard.replace(
+      /## Suggesting a course[\s\S]*?(?=## Product feedback mode)/,
+      "",
+    );
+    expect(dropped).toBe(qa);
   });
 
   it("keep the wizard interview and the ROI packet", () => {
@@ -130,5 +143,38 @@ describe("a discovery conversation anchored to a record", () => {
       useCase: { id: "uc-42", title: "Invoice triage" },
     });
     expect(p).not.toContain("uc-42");
+  });
+});
+
+
+describe("course suggestions", () => {
+  it("are offered in the wizard and nowhere else", () => {
+    expect(coachInstructions({ ...ctx, intent: "wizard" })).toContain(COURSES_MARKER);
+    for (const intent of COACH_INTENTS) {
+      if (intent === "wizard") continue;
+      // suggest_courses is only in the tool table for the wizard. A mode told
+      // about a tool it does not have is a mode that describes courses it
+      // cannot look up.
+      expect(
+        coachInstructions({ ...ctx, intent }),
+        intent,
+      ).not.toContain(COURSES_MARKER);
+    }
+  });
+
+  it("carries the three claims the feature exists to make", () => {
+    const p = coachInstructions({ ...ctx, intent: "wizard" });
+    expect(p).toMatch(/\bfree\b/);
+    expect(p).toContain("Tom recommends them");
+    expect(p).toContain("ONLY the courses it hands back");
+  });
+
+  it("tells it to stay quiet rather than reach for the nearest thing", () => {
+    const p = coachInstructions({ ...ctx, intent: "wizard" });
+    expect(p).toContain("say nothing about courses at all");
+    expect(p).toContain("Never before");
+    // No duration or level: neither is in the catalogue, so neither may be
+    // stated. See lib/ai/courses.
+    expect(p).toContain("never state a course's length or level");
   });
 });

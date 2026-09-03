@@ -6,7 +6,7 @@ surface:
   - /use-cases/new/review
   - /use-cases/from-notes
 audience: everyone
-updated: 2026-08-25
+updated: 2026-09-02
 code:
   - src/app/(app)/use-cases/new/page.tsx
   - src/app/(app)/use-cases/new/form/page.tsx
@@ -48,6 +48,11 @@ answer, and never one on its own judgement. The card lists all four either
 way. This is deliberate: the gates decide what counts toward the 45, and an
 admin reading a record months later cannot tell a confirmed tick from a
 guessed one, so a missing tick is far cheaper than a wrong one.
+
+Once you have logged it — or decided not to — it may offer one to three free
+[course suggestions](course-suggestions.md) that fit the workflow you just
+described. Often it offers none, which is the right answer more of the time
+than not.
 
 ### 2. Start from notes
 
@@ -116,5 +121,6 @@ second copy does not make it count, it just makes two records.
 ## Related
 
 - [The Coach](coach.md)
+- [Course suggestions](course-suggestions.md)
 - [The record page](record.md)
 - [MCP](../integrations/mcp.md) and [REST](../integrations/rest-api.md) — the other two doors
