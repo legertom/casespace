@@ -3,6 +3,7 @@ import { DEPARTMENT_LABELS } from "@/lib/domain";
 import type { UseCaseDetail } from "@/server/use-case-queries";
 import { InlineField } from "@/components/record/inline-field";
 import { CommunityBadge, ConfirmedRoiBadge, StatusBadge } from "@/components/status-badge";
+import { Coachmark } from "@/components/coachmark";
 
 /**
  * Breadcrumb, title, badges, and the record-level actions — plus the
@@ -58,12 +59,14 @@ export function RecordHeader({
           {/* Open to anyone who can see the record, unlike the two beside it:
               thinking about somebody else's problem with them is not an edit,
               and the checkpoint it produces is the thinker's own note. */}
-          <Link
-            href={`/coach?intent=discovery&useCase=${uc.id}`}
-            className="rounded-md border border-hairline-strong px-3.5 py-1.5 text-sm hover:bg-surface"
-          >
-            Work this problem with Coach
-          </Link>
+          <Coachmark id="work-this-problem" note="Feeling stuck? Try this button">
+            <Link
+              href={`/coach?intent=discovery&useCase=${uc.id}`}
+              className="block rounded-md border border-hairline-strong px-3.5 py-1.5 text-sm hover:bg-surface"
+            >
+              Work this problem with Coach
+            </Link>
+          </Coachmark>
           {(editable || isAdmin) &&
             (uc.status === "launched" || uc.status === "qualified") && (
               <Link

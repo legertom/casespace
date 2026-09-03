@@ -44,6 +44,13 @@ in-app report it came from.
 
 ## 2026-09-02
 
+### A nudge toward the Coach on every record
+Requested by: Tom Leger
+
+"Work this problem with Coach" on a record now carries a hint — *Feeling
+stuck? Try this button* — for people who had not noticed it was there. It
+goes away for good once you dismiss it or use it.
+
 ### Everyone has a profile, and it lists their work
 Requested by: David McGeary
 

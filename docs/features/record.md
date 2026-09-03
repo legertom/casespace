@@ -4,11 +4,12 @@ surface:
   - /use-cases/[id]
   - /use-cases/[id]/edit
 audience: everyone
-updated: 2026-08-25
+updated: 2026-09-02
 code:
   - src/app/(app)/use-cases/[id]/page.tsx
   - src/app/(app)/use-cases/[id]/edit/page.tsx
   - src/components/record/record-header.tsx
+  - src/components/coachmark.tsx
   - src/components/record/record-about.tsx
   - src/components/record/record-worksheet.tsx
   - src/components/record/record-roi.tsx
@@ -71,6 +72,13 @@ The vocabulary here is program jargon; the record page explains it rather
 than assuming.
 
 ## Rules that surprise people
+
+**The hint under "Work this problem with Coach" only appears once.** People
+were walking past that button, so it carries a coachmark — *Feeling stuck? Try
+this button* — until you either dismiss it or take it. Which hints you have
+seen is kept in your browser, not on the server: it is not program data, it
+does not belong in the casebook, and the worst that happens when you switch
+laptops is that you see a good hint twice.
 
 **Links are edited as a set, not in place.** Every other field on this page
 is click-to-edit; "Where to find it" opens a small editor with a Save button
