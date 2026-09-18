@@ -189,6 +189,23 @@ describe("the ratings the wizard already collects", () => {
     expect(out.some((s) => s === "governing-ai-agents" || s === "red-teaming-llm-applications")).toBe(true);
   });
 
+  // A rating has to be able to carry a course on its own, or it is decoration.
+  // Before these weights were raised above a text match, somebody who rated
+  // their own evaluation clarity a 1 — having just said in as many words that
+  // they could not tell whether their tool was accurate — was handed an
+  // introduction to prompting and nothing else.
+  it.each([
+    [{ evaluationClarity: 1 }, ["improving-accuracy-of-llm-applications", "evaluating-ai-agents"]],
+    [{ risk: 5 }, ["safe-and-reliable-ai-via-guardrails", "red-teaming-llm-applications", "governing-ai-agents"]],
+    [{ maintenanceBurden: 5 }, ["orchestrating-workflows-for-genai-applications"]],
+  ] as const)("carries a course on the rating alone", (ratings, expected) => {
+    const out = slugs({
+      text: "A tool that drafts renewal health summaries for CSMs.",
+      ratings,
+    });
+    expect(out.some((s) => (expected as readonly string[]).includes(s)), out.join(", ")).toBe(true);
+  });
+
   it("ignores ratings in the middle of the scale", () => {
     const mid = courseSignalWeights({
       text: "A weekly digest.",

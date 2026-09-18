@@ -88,6 +88,18 @@ facilitator notes available on demand.
 
 ## 2026-09-02
 
+### The wizard's course suggestions get graded against real models
+Requested by: Tom Leger
+
+`pnpm eval` now covers the course suggestions the Coach makes at the end of
+the wizard: that it holds them until your record is filed, passes on what you
+actually told it, recommends only what it was handed, and says nothing at all
+when nothing fits. Writing them turned up a real miss — somebody who rated
+their own evaluation clarity a 1, having just said they could not tell whether
+their tool was accurate, was being offered an introduction to prompting. The
+worksheet ratings now count for more than a keyword, so an honest low score
+reaches the course that answers it.
+
 ### Free courses, suggested only when they fit
 Requested by: Tom Leger
 

@@ -307,7 +307,11 @@ describe.skipIf(!aiConfigured())("negative control", () => {
   it(
     "the judge rejects a fluent reply that does everything wrong",
     async () => {
-      const run: CoachRun = { text: FLUENT_BUT_WRONG, toolCalls: [] };
+      const run: CoachRun = {
+        text: FLUENT_BUT_WRONG,
+        toolCalls: [],
+        courseResults: null,
+      };
       const findings = await judgeCoach(SCENARIOS[0].transcript, run, [
         ...UNIVERSAL,
         ...SCENARIOS[0].rubrics,

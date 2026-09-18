@@ -6,6 +6,8 @@ code:
   - src/lib/ai/courses.ts
   - src/lib/ai/coach-prompt.ts
   - src/app/api/coach/route.ts
+  - src/lib/ai/course-tools.ts
+  - evals/courses.eval.ts
 ---
 
 # Course suggestions
@@ -104,9 +106,19 @@ gets nothing are all unit-tested in `src/lib/ai/courses.test.ts` under `pnpm
 test`. `src/lib/ai/coach-prompt.test.ts` asserts that the section is present
 in the wizard and absent from every other mode.
 
-What those cannot reach is whether the Coach raises it at a graceful moment,
-which is a judgement question of the kind [evals](../operations/evals.md)
-exist for.
+What those cannot reach is everything on either side of the tool call: whether
+the Coach holds the suggestion until the card is settled, whether it asks the
+matcher a question worth answering, whether it relays what came back and
+nothing else, and whether it stays quiet on an empty result.
+`evals/courses.eval.ts` grades all four against real models — see
+[evals](../operations/evals.md#course-suggestions).
+
+Writing those found a bug worth recording. The fixture ends with somebody
+rating their own evaluation clarity a 1, and the matcher was answering with an
+introduction to prompting: a rating weighed less than a keyword, and the
+courses it should have reached are tagged two and three ways, so the spread
+normalisation buried them. Ratings now outweigh text matches, and each one is
+asserted to be able to carry a course by itself.
 
 ## Related
 

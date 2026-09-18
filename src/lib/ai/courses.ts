@@ -642,20 +642,31 @@ export function courseSignalWeights(
 
   // The worksheet ratings are the honest part of the interview: somebody who
   // rated their own evaluation clarity a 2 has told us more about what they
-  // need than any keyword will.
+  // need than any keyword will, so these outweigh a text match.
+  //
+  // They have to. A rating is worth nothing here unless it can carry a course
+  // on its own, and the courses it should reach are tagged two and three ways
+  // — "Evaluating AI Agents" is about agents and production as well as
+  // evaluation, and the spread normalisation in score() divides by all three.
+  // At a text match's weight, somebody who said in as many words that they
+  // cannot tell whether their tool is accurate was being handed an
+  // introduction to prompting.
   const r = signals.ratings;
   if (r) {
     if (typeof r.evaluationClarity === "number" && r.evaluationClarity <= 2) {
-      bump(weights, "evaluation", 2.5);
-    }
-    if (typeof r.dataAvailability === "number" && r.dataAvailability <= 2) {
-      bump(weights, "rag", 1.5);
+      bump(weights, "evaluation", 3.5);
     }
     if (typeof r.risk === "number" && r.risk >= 4) {
-      bump(weights, "safety", 2.5);
+      bump(weights, "safety", 3.5);
     }
     if (typeof r.maintenanceBurden === "number" && r.maintenanceBurden >= 4) {
-      bump(weights, "production", 2);
+      bump(weights, "production", 3);
+    }
+    // The weakest of the four, and the only inferential one: hard-to-reach
+    // data is a reason to think about retrieval, not a statement that
+    // retrieval is the answer.
+    if (typeof r.dataAvailability === "number" && r.dataAvailability <= 2) {
+      bump(weights, "rag", 2.5);
     }
   }
 

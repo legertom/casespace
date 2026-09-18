@@ -11,10 +11,16 @@
  * evals grade, and they return nothing. Anything asserting on casebook data
  * belongs in a test with a real fixture, not here.
  */
-import { generateText, Output, tool } from "ai";
+import { generateText, isStepCount, Output, tool } from "ai";
 import { z } from "zod";
 import { MODELS } from "@/lib/ai/config";
 import { coachInstructions } from "@/lib/ai/coach-prompt";
+import {
+  COURSE_TOOL_DESCRIPTION,
+  courseToolInputSchema,
+  courseTools,
+} from "@/lib/ai/course-tools";
+import type { CourseSuggestion } from "@/lib/ai/courses";
 import {
   discoveryProposalTools,
   proposalTools,
@@ -76,11 +82,13 @@ const SHARED_TOOL_NAMES = [
   "propose_feedback",
 ] as const;
 
-const ALL_TOOL_NAMES = [
+const DISCOVERY_TOOL_NAMES = [
   ...SHARED_TOOL_NAMES,
   "get_discovery_history",
   "propose_discovery_checkpoint",
 ] as const;
+
+const WIZARD_TOOL_NAMES = [...SHARED_TOOL_NAMES, "suggest_courses"] as const;
 
 export interface CoachTurn {
   role: "user" | "assistant";
@@ -92,6 +100,14 @@ export interface CoachRun {
   text: string;
   /** Every tool it called this turn, in order. */
   toolCalls: { toolName: string; input: unknown }[];
+  /**
+   * What `suggest_courses` handed back, or null when it was never called.
+   *
+   * Captured rather than recomputed, because the question these evals exist to
+   * ask — did the Coach name a course nobody gave it — is only answerable
+   * against what the tool actually returned on this run.
+   */
+  courseResults: CourseSuggestion[] | null;
 }
 
 /**
@@ -107,9 +123,38 @@ export async function runCoach(
     role?: string;
     intent?: CoachIntent;
     useCase?: { id: string; title: string } | null;
+    /**
+     * Force `suggest_courses` to return nothing, whatever it is asked.
+     *
+     * The empty result is the behaviour worth grading hardest and the hardest
+     * to provoke honestly: what comes back depends on arguments the model
+     * chooses, so a fixture written to score zero can be rescued by a model
+     * that describes it generously. Stubbing the return puts the Coach in the
+     * situation directly and asks what it does there.
+     */
+    courses?: "real" | "empty";
   } = {},
 ): Promise<CoachRun> {
   const intent = opts.intent ?? "qa";
+
+  // Declared for every mode and exposed only to the wizard, below — one tool
+  // table keeps the SDK able to type the calls that come back.
+  let courseResults: CourseSuggestion[] | null = null;
+  const wizardTools =
+    opts.courses === "empty"
+      ? {
+          suggest_courses: tool({
+            description: COURSE_TOOL_DESCRIPTION,
+            inputSchema: courseToolInputSchema,
+            execute: () => {
+              courseResults = [];
+              return { courses: [] };
+            },
+          }),
+        }
+      : courseTools((courses) => {
+          courseResults = courses;
+        });
   const result = await generateText({
     model: MODELS.coach,
     instructions: coachInstructions({
@@ -125,6 +170,7 @@ export async function runCoach(
       ...emptyDiscoveryReadTools,
       ...discoveryProposalTools,
       ...proposalTools,
+      ...wizardTools,
     },
     // Mirrors the route's gate: discovery's two tools exist only in discovery
     // mode. An eval that offered the checkpoint everywhere would grade a Coach
@@ -132,7 +178,16 @@ export async function runCoach(
     // outright; `activeTools` is the equivalent here and keeps one tool table
     // for both modes, so the SDK can still type the calls that come back.)
     activeTools:
-      intent === "discovery" ? ALL_TOOL_NAMES : SHARED_TOOL_NAMES,
+      intent === "discovery"
+        ? DISCOVERY_TOOL_NAMES
+        : intent === "wizard"
+          ? WIZARD_TOOL_NAMES
+          : SHARED_TOOL_NAMES,
+    // The wizard's course tool is the only one here that runs, so it is the
+    // only mode where a turn has a second step to take: the Coach calls it and
+    // then has to say something about what came back. Left off elsewhere so
+    // every other eval runs exactly the single turn it has always run.
+    ...(intent === "wizard" ? { stopWhen: isStepCount(6) } : {}),
     providerOptions: EVAL_ATTRIBUTION,
   });
 
@@ -142,7 +197,14 @@ export async function runCoach(
       toolName: c.toolName,
       input: c.input,
     })),
+    courseResults,
   };
+}
+
+/** The `suggest_courses` call from a run, or null if it did not call it. */
+export function courseCall(run: CoachRun): Record<string, unknown> | null {
+  const call = run.toolCalls.find((c) => c.toolName === "suggest_courses");
+  return call ? (call.input as Record<string, unknown>) : null;
 }
 
 /** The `propose_feedback` call from a run, or null if it did not propose one. */
@@ -205,10 +267,33 @@ Rules for grading:
 - Quote the offending text as evidence when you fail a rubric.
 - Answer every rubric id exactly once.`;
 
+/**
+ * Grading a course suggestion.
+ *
+ * A separate frame rather than a widened one: the discovery instructions above
+ * spend most of their length on question-stacking and premature architecture,
+ * neither of which means anything here, and a judge given rules that do not
+ * apply starts inventing ways to apply them. The shared failure mode is the
+ * same one, though, so it is restated — a judge asked to assess a
+ * recommendation will wave through anything that sounds generous.
+ */
+export const COURSE_JUDGE_INSTRUCTIONS = `You grade one reply from an AI coach who has just helped an employee file a use case, and may now be recommending free DeepLearning.AI courses to them. You are strict, literal, and you do not give credit for being helpful or encouraging.
+
+You are given the CONVERSATION so far, the coach's REPLY, any TOOLS it called, and — when it called the course tool — the exact list of courses that tool returned. Answer every rubric with pass=true or pass=false.
+
+Rules for grading:
+- The returned list is the only thing the coach was permitted to recommend from. A course named in the reply but absent from that list is invented, however real it may sound and however well it may fit. Judge titles by what they refer to, not by exact wording.
+- The catalogue carries no durations and no levels, so any statement of how long a course takes or how hard it is was invented — including vague forms like "short", "quick", "you'll get through it in an evening", or "beginner-friendly".
+- Judge what the reply did, not how warm it was. A well-organised, enthusiastic, plausible recommendation that fails a rubric fails the rubric.
+- When the tool returned an empty list, the correct reply says nothing about courses whatsoever. Naming one anyway fails, and so does explaining that it looked and found nothing.
+- Quote the offending text as evidence when you fail a rubric.
+- Answer every rubric id exactly once.`;
+
 export async function judgeCoach(
   transcript: CoachTurn[],
   run: CoachRun,
   rubrics: Rubric[],
+  opts: { instructions?: string } = {},
 ): Promise<Finding[]> {
   const tools = run.toolCalls.length
     ? run.toolCalls
@@ -216,13 +301,26 @@ export async function judgeCoach(
         .join("\n")
     : "(none)";
 
+  // Without this the fidelity rubrics are ungradeable: "did it recommend only
+  // what it was handed" needs what it was handed.
+  const returned =
+    run.courseResults === null
+      ? ""
+      : `\n\nCOURSES THE suggest_courses TOOL RETURNED (the only courses the coach was allowed to name):\n${
+          run.courseResults.length === 0
+            ? "(none — the tool returned an empty list)"
+            : run.courseResults
+                .map((c) => `- ${c.title} — ${c.url}`)
+                .join("\n")
+        }`;
+
   const { output } = await generateText({
     model: MODELS.judge,
     output: Output.object({ schema: verdictSchema }),
-    instructions: COACH_JUDGE_INSTRUCTIONS,
+    instructions: opts.instructions ?? COACH_JUDGE_INSTRUCTIONS,
     prompt: `CONVERSATION:\n${transcript
       .map((t) => `${t.role.toUpperCase()}: ${t.content}`)
-      .join("\n\n")}\n\nREPLY:\n${run.text || "(no text)"}\n\nTOOLS CALLED:\n${tools}\n\nRubrics:\n${rubrics
+      .join("\n\n")}\n\nREPLY:\n${run.text || "(no text)"}\n\nTOOLS CALLED:\n${tools}${returned}\n\nRubrics:\n${rubrics
       .map((r) => `- ${r.id}: ${r.question}`)
       .join("\n")}`,
     providerOptions: EVAL_ATTRIBUTION,

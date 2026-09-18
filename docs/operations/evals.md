@@ -8,6 +8,7 @@ code:
   - evals/coach-feedback.eval.ts
   - evals/coach-roster.eval.ts
   - evals/discovery.eval.ts
+  - evals/courses.eval.ts
   - evals/harness.ts
   - evals/coach-harness.ts
   - evals/fixtures.ts
@@ -15,6 +16,7 @@ code:
   - src/lib/ai/whats-new-prompt.ts
   - src/lib/ai/discovery.ts
   - src/lib/ai/proposal-tools.ts
+  - src/lib/ai/course-tools.ts
   - vitest.eval.config.ts
 ---
 
@@ -24,11 +26,13 @@ code:
 pnpm eval
 ```
 
-Runs three suites against real models: the [weekly post](../features/whats-new.md)'s
-editorial brief against fixture weeks, the [Coach](../features/coach.md)'s
-product-feedback routing, and [Discovery](../features/discovery-coach.md)'s
-coaching judgement — the last two against scripted conversations. Several
-minutes and a few dozen model calls.
+Runs five suites against real models: the [weekly post](../features/whats-new.md)'s
+editorial brief against fixture weeks, then four against scripted
+conversations — the [Coach](../features/coach.md)'s product-feedback routing,
+what it may say about the roster, [Discovery](../features/discovery-coach.md)'s
+coaching judgement, and the wizard's
+[course suggestions](../features/course-suggestions.md). Several minutes and a
+few dozen model calls.
 
 ## Why the weekly post
 
@@ -173,6 +177,57 @@ their work doesn't count when it does — the one thing
 [the program](../concepts/program.md) cannot afford to get wrong, because
 recognition is what it runs on.
 
+## Course suggestions
+
+`evals/courses.eval.ts`, through the same harness. Which courses come back for
+a given set of signals is settled deterministically in `pnpm test`, and none of
+it is what can go wrong in production. Everything on either side of the tool
+call is.
+
+| Scenario | Asks |
+|---|---|
+| mid-interview | Does it get through the interview without volunteering a reading list? |
+| asked for courses mid-interview | Does it hold that line when somebody pushes on it? |
+| the call itself | Does the workflow, the tools, the approaches and a rating the person actually gave reach the matcher — or does it ask an empty question? |
+| the reply | Only courses that came back, no invented link, no duration or level, free, credited to Tom, offered rather than assigned, and a reason tied to what they said |
+| an empty result | Does it say nothing at all, rather than reaching for the nearest plausible course? |
+
+Two of those need explaining.
+
+**The empty result is stubbed**, which no other eval here does. It is the
+behaviour the feature is staked on and the hardest to provoke honestly: what
+comes back depends on arguments the model chooses, so a fixture written to
+score zero can be rescued by a model that describes it generously. Forcing the
+return puts the Coach in the situation directly and asks what it does there.
+
+**The course tool is the one read tool in the harness that is real.** Every
+other one is a stub returning nothing. This one runs the actual matcher,
+because "did it recommend something nobody gave it" is not a question you can
+ask a stub — and it is why `suggest_courses` was lifted out of the route into
+`src/lib/ai/course-tools.ts`, on the same reasoning as `proposal-tools.ts`
+above. The harness records what the tool returned and hands it to the judge as
+the only list the reply was allowed to draw from.
+
+The judge gets its own frame here rather than the discovery one. Most of those
+instructions are about question-stacking and premature architecture, neither of
+which means anything to a course recommendation, and a judge given rules that
+do not apply starts finding ways to apply them. What carries over is the
+warning: a judge assessing a recommendation will wave through anything that
+sounds generous. `FLUENT_BUT_WRONG` in the same file is the check on that — a
+warm, confident, well-formatted suggestion that names two courses the tool never
+returned, invents a link, states durations and levels the catalogue does not
+carry, mentions neither the price nor Tom, and makes the whole thing a
+condition on the record reaching Qualified. Every rubric is asserted to fail.
+
+Writing these found a real bug, which is the argument for having written them.
+The fixture ends with somebody rating their own evaluation clarity a 1 — saying
+in as many words that they cannot tell whether their tool is accurate — and the
+matcher was handing them an introduction to prompting. A rating was worth less
+than a keyword, and the courses it should have reached are tagged two and three
+ways, so the spread normalisation buried them. The four rating weights now sit
+above a text match, and `courses.test.ts` asserts each one can carry a course
+on its own.
+
 ## Rules that surprise people
 
 - **Evals don't run in `pnpm test`.** They call real models — slow,
@@ -207,6 +262,10 @@ recognition is what it runs on.
    `coach-feedback.eval.ts`. Assert on the tool call, not on the prose around
    it, and if the tool's description is what decides the routing, make sure the
    eval imports that description rather than repeating it.
+5. A rule about what the Coach may say about a tool's *output* → a rubric in
+   the relevant file, and give the judge the output. `courses.eval.ts` is the
+   worked example: without the returned list in front of it, "did it recommend
+   only what it was handed" is not a question the judge can answer.
 
 ## Related
 
