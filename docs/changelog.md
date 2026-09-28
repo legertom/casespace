@@ -1,7 +1,7 @@
 ---
 title: Changelog
 audience: everyone
-updated: 2026-09-02
+updated: 2026-09-27
 code:
   - src/lib/changelog.ts
   - src/server/changelog.ts
@@ -41,6 +41,18 @@ entry is honest, an invented one is not. Add `Feedback: <id>` to point at the
 in-app report it came from.
 
 ---
+
+## 2026-09-27
+
+### Breakout groups for the live AI Leads sync
+Requested by: Tom Leger
+
+Admins can ask the Coach to form live groups, click the AI Leads who are
+actually present, and review just those people's use cases. They can then
+compare a Jev-selected grouping with one proposed by Claude Opus. Each plan
+covers every selected attendee exactly once. The groups first discover what
+they have in common, then give each person time to discuss the obstacle they
+brought.
 
 ## 2026-09-02
 

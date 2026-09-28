@@ -247,6 +247,17 @@ export async function POST(req: Request) {
         }
       : {}),
 
+    // The browser renders an admin-only roster picker for this client tool.
+    ...(user.role === "admin"
+      ? {
+          open_live_groups: tool({
+            description:
+              "Open the live AI Leads grouping workspace. Use when an admin asks to form live groups; the workspace shows clickable rostered AI Leads, their credited use cases, and Jev and Claude Opus grouping methods. Do not ask for typed attendance names.",
+            inputSchema: z.object({}),
+          }),
+        }
+      : {}),
+
     // Wizard-only, gated at the tool table for the same reason the two below
     // are: a tool the Coach cannot see is a tool it cannot be talked into
     // calling, and a course suggestion belongs to the moment somebody has just

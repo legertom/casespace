@@ -4,7 +4,7 @@ surface:
   - /coach
   - /api/coach
 audience: everyone
-updated: 2026-09-02
+updated: 2026-09-27
 code:
   - src/app/(app)/coach/page.tsx
   - src/app/api/coach/route.ts
@@ -19,6 +19,11 @@ code:
   - src/lib/ai/proposal-tools.ts
   - src/lib/ai/discovery.ts
   - src/lib/ai/courses.ts
+  - src/lib/ai/meeting-breakouts.ts
+  - src/server/meeting-breakouts.ts
+  - src/server/meeting-group-models.ts
+  - src/server/actions-live-groups.ts
+  - src/components/coach/live-groups-card.tsx
   - src/components/coach/discovery-checkpoint-card.tsx
   - src/server/discovery-queries.ts
   - src/server/actions-discovery.ts
@@ -112,10 +117,37 @@ over the selection. Individual fields have their own Coach button. Both drop
 the quoted text — with the record named so the Coach can look it up — into the
 composer.
 
+### Make live breakout groups (admins only)
+
+During the monthly AI Leads sync, an admin can ask the Coach to **form live
+groups**, or choose that quick start on the Coach page. The Coach opens a
+clickable list of **rostered AI Leads only**. The admin selects the people
+present; absent leads and other users cannot enter the plan. The next step
+shows every use case crediting the selected people as owner or author, so the
+admin can review the evidence before asking for groups.
+
+The admin can run **Method A · Jev** and **Method B · Claude Opus** separately
+and compare their results. Jev chooses among valid candidate groupings built
+from overlap in the selected cases. Opus proposes complete groups directly.
+Both results are checked by code: every selected attendee must appear exactly
+once, in the expected group sizes. For example, 8 attendees become two groups
+of 4; 14 become two groups of 3 and two of 4; 22 become two groups of 3 and
+four of 4. A failed or invalid model result is shown as an error, never passed
+off as a meeting plan.
+
+The chosen plan is a suggestion, not a saved meeting record or an assessment
+of anyone's ability. Sparse casebook history is visible in the review rather
+than filled with guesses.
+
+The first breakout task is for each group to discover what they have in
+common. Then each person shares the obstacle or challenge they brought, gets
+a turn to receive help, and identifies a next action. The admin only needs to
+click attendance live; the Coach does not require obstacles beforehand.
+
 ## The rule that shapes everything: it never writes
 
-The Coach has six tools, plus one for admins, one in wizard mode, and two more
-in Discovery mode.
+The Coach has six tools, plus two for admins,
+one in wizard mode, and two more in Discovery mode.
 Some read; the rest propose. The difference is structural, not a policy
 someone remembers to follow:
 
@@ -125,6 +157,7 @@ someone remembers to follow:
 | `get_use_case` | One record in full, including ROI gaps and history |
 | `get_progress` | The scoreboard |
 | `get_coach_learnings` | How its own proposals landed. Admin-only, gated at the tool table |
+| `open_live_groups` | Opens the admin-only roster picker and case review. A client tool with no execute path |
 | `get_discovery_history` | Your own prior Discovery checkpoints. Discovery mode only, scoped to your session |
 | `suggest_courses` | Free DeepLearning.AI courses that fit the workflow just described. Wizard mode only, gated at the tool table |
 | `propose_use_case` | **Renders a card.** No execute path |
@@ -135,7 +168,8 @@ someone remembers to follow:
 The read tools have an `execute` function and run on the server. The proposal
 tools **deliberately have none**. A tool with no `execute` cannot run — the AI
 SDK surfaces it to the browser as a call awaiting a result, which is the
-proposal card. Your click *is* the tool result the model gets back.
+proposal card or live-group workspace. Your click *is* the tool result the
+model gets back. The workspace's own server actions recheck admin access.
 
 There is a unit test asserting exactly this — that no tool in
 `proposal-tools.ts` has an `execute` — so breaking it fails `pnpm test` rather

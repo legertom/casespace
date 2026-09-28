@@ -11,6 +11,7 @@ import { fmtDateShort } from "@/lib/format";
 import { CoachChat } from "@/components/coach/coach-chat";
 
 export const metadata = { title: "Coach" };
+export const maxDuration = 120;
 
 export default async function CoachPage({
   searchParams,
@@ -141,6 +142,7 @@ export default async function CoachPage({
             kickoff={kickoff}
             intent={chatIntent}
             useCaseId={useCaseId}
+            isAdmin={user.role === "admin"}
           />
         ) : (
           <div className="max-w-md py-10">

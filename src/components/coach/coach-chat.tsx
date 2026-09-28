@@ -17,6 +17,7 @@ import type { CoachIntent } from "@/lib/domain";
 import { ProposalCard, UpdateProposalCard } from "./proposal-card";
 import { DiscoveryCheckpointCard } from "./discovery-checkpoint-card";
 import { FeedbackProposalCard } from "./feedback-proposal-card";
+import { LiveGroupsCard } from "./live-groups-card";
 
 interface Props {
   chatId: string;
@@ -40,6 +41,7 @@ interface Props {
    */
   useCaseId?: string;
   compact?: boolean;
+  isAdmin?: boolean;
 }
 
 function ReadToolChip({ label }: { label: string }) {
@@ -60,6 +62,7 @@ export function CoachChat({
   intent = "qa",
   useCaseId,
   compact = false,
+  isAdmin = false,
 }: Props) {
   const { messages, sendMessage, addToolOutput, status, error } = useChat({
     id: chatId,
@@ -143,6 +146,22 @@ export function CoachChat({
                 a Discovery conversation wants the room. */}
             {!compact && (
               <ul className="mt-6 max-w-md space-y-2">
+                {isAdmin && intent === "qa" && (
+                  <li>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sendMessage({ text: "Form live groups for today's AI Leads sync." });
+                      }}
+                      className="block w-full rounded-md border border-hairline-strong px-3.5 py-2.5 text-left hover:bg-surface"
+                    >
+                      <span className="text-ink">Plan live breakouts</span>
+                      <span className="mt-0.5 block text-ink-faint">
+                        Choose who is here, then review their use cases.
+                      </span>
+                    </button>
+                  </li>
+                )}
                 <li>
                   <Link
                     href="/coach?intent=discovery"
@@ -207,6 +226,25 @@ export function CoachChat({
                       return <ReadToolChip key={i} label="Read the record" />;
                     case "tool-get_progress":
                       return <ReadToolChip key={i} label="Checked the scoreboard" />;
+                    case "tool-open_live_groups":
+                      if (part.state === "input-streaming")
+                        return <ReadToolChip key={i} label="Opening live groups…" />;
+                      if (part.state === "output-available")
+                        return (
+                          <div key={i} className="my-3 rounded-md border border-hairline-strong p-3 text-sm">
+                            {String(part.output)}
+                          </div>
+                        );
+                      return (
+                        <LiveGroupsCard
+                          key={part.toolCallId}
+                          onDecision={(outcome) => addToolOutput({
+                            tool: "open_live_groups",
+                            toolCallId: part.toolCallId,
+                            output: outcome,
+                          })}
+                        />
+                      );
                     case "tool-get_discovery_history":
                       return (
                         <ReadToolChip key={i} label="Read your earlier checkpoints" />

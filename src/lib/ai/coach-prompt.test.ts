@@ -38,6 +38,21 @@ describe("the shared core", () => {
   });
 });
 
+describe("live meeting breakouts", () => {
+  it("offers the breakout procedure only to admins", () => {
+    const admin = { ...ctx, role: "admin" };
+    expect(coachInstructions({ ...admin, intent: "qa" })).toContain(
+      "open_live_groups",
+    );
+    expect(coachInstructions({ ...ctx, intent: "qa" })).not.toContain(
+      "open_live_groups",
+    );
+    expect(coachInstructions({ ...admin, intent: "discovery" })).toContain(
+      "open_live_groups",
+    );
+  });
+});
+
 describe("wizard, ROI review, and QA", () => {
   // These three carry all of the original mode sections, and on those they are
   // still identical — the intent changes which *kickoff* is sent, not what the

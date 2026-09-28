@@ -12,13 +12,18 @@ export const MODELS = {
    * it, and its calls are deliberately absent from `ai_usage`.
    */
   judge: "anthropic/claude-sonnet-5",
+  /** Direct, structured meeting-group proposal. */
+  meetingGroupsOpus: "anthropic/claude-opus-5.5",
+  /** Typed selection among valid meeting-group candidates. */
+  meetingGroupsJev: "typesafe-ai/jev",
 } as const;
 
 export type AiFeature =
   | "coach"
   | "notes_parser"
   | "search_parser"
-  | "whats_new";
+  | "whats_new"
+  | "meeting_groups";
 
 export function aiConfigured(): boolean {
   // Gateway auth: static key, or Vercel OIDC token (vercel env pull).

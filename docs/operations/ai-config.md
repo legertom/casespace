@@ -1,7 +1,7 @@
 ---
 title: AI configuration
 audience: engineering
-updated: 2026-08-15
+updated: 2026-09-27
 code:
   - src/lib/ai/config.ts
   - src/lib/ai/usage.ts
@@ -9,6 +9,7 @@ code:
   - src/lib/ai/coach-prompt.ts
   - src/lib/ai/whats-new-prompt.ts
   - src/lib/ai/editorial-checks.ts
+  - src/server/meeting-group-models.ts
 ---
 
 # AI configuration
@@ -23,9 +24,16 @@ verified against the live gateway list.
 | The Coach, and the weekly What's New post | `anthropic/claude-sonnet-5` |
 | Parsing and extraction (the notes door) | `anthropic/claude-haiku-4.5` |
 | Grading [eval](evals.md) output (`pnpm eval`) | `anthropic/claude-sonnet-5` |
+| Live meeting groups, Method A | `typesafe-ai/jev` |
+| Live meeting groups, Method B | `anthropic/claude-opus-5.5` |
 
-Features are tagged `coach`, `notes_parser`, `whats_new` for per-call
+Features are tagged `coach`, `notes_parser`, `whats_new`, `meeting_groups` for per-call
 attribution in the AI Gateway dashboard.
+
+Jev uses AI Gateway's `/v1/evaluate` HTTP endpoint because the installed
+AI SDK version predates its evaluation API. Both grouping methods send only
+the use cases credited to the AI Leads the admin selected. The grouping
+actions are admin-gated and do not write casebook records.
 
 ## Usage logging
 

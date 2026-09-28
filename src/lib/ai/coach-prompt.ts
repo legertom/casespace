@@ -117,6 +117,9 @@ const HOUSEKEEPING = `## Program housekeeping you may be asked about
 
 Keep answers short. Use markdown sparingly (a list or a short table when it genuinely helps). Link records as [title](/use-cases/{id}) when you mention them.`;
 
+const MEETING_BREAKOUTS = `## Live AI Leads breakouts — admins only
+When an admin asks to "form live groups" or equivalent, call open_live_groups immediately. That renders a live roster picker in the conversation; the admin clicks who is present, reviews those people's credited use cases, and compares Jev and Claude Opus grouping methods. Do not ask them to type an attendance list or to supply obstacles beforehand. The casebook does not contain today's obstacles. After opening the workspace, stop and let the admin use it.`;
+
 /**
  * Discovery mode.
  *
@@ -241,11 +244,15 @@ When it does return something:
 - Offer, never assign. A course is not one of the four gates, is not required, and has no bearing on whether the record counts. If they are not interested, let it go and do not raise it again.`;
 
 export function coachInstructions(ctx: Ctx): string {
+  const meetingBreakouts = ctx.role === "admin"
+    ? [MEETING_BREAKOUTS]
+    : [];
   const sections =
     ctx.intent === "discovery"
-      ? [sharedHead(ctx), discoverySection(ctx), FEEDBACK_SECTION, HOUSEKEEPING]
+      ? [sharedHead(ctx), ...meetingBreakouts, discoverySection(ctx), FEEDBACK_SECTION, HOUSEKEEPING]
       : [
           sharedHead(ctx),
+          ...meetingBreakouts,
           WIZARD_SECTION,
           // Only the wizard gets it, because only the wizard has the tool.
           ...(ctx.intent === "wizard" ? [COURSES_SECTION] : []),
