@@ -36,7 +36,7 @@ export function GroupReport({ run }: { run: SavedGroupRun }) {
               <p className="mt-1 font-medium">{group.memberIds.map((id) => names.get(id) ?? "Unknown attendee").join(", ")}</p>
               {explanation && <div className="mt-4 space-y-3 text-sm leading-relaxed">
                 <div><h3 className="font-medium">Possible commonality</h3><p className="text-ink-muted">{explanation.commonality}</p></div>
-                <div><h3 className="font-medium">Why this mix</h3><p className="text-ink-muted">{explanation.reasoning}</p></div>
+                <div><h3 className="font-medium">Why this mix</h3><p className="whitespace-pre-line text-ink-muted">{explanation.reasoning}</p></div>
                 <div><h3 className="font-medium">Recorded use-case evidence</h3>
                   {explanation.evidence.length ? <ul className="list-disc pl-5 text-ink-muted">{explanation.evidence.map((title, j) => <li key={j}>{title}</li>)}</ul> : <p className="text-ink-muted">No specific case title supports a shared thread yet.</p>}
                 </div>

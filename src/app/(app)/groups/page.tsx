@@ -26,7 +26,7 @@ export default async function GroupsPage() {
       {runs.map((run) => <li key={run.id} className="rounded-lg border border-hairline-strong p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div><Link href={`/groups/${run.id}`} className="font-serif text-xl text-accent underline underline-offset-2">{run.method === "jev" ? "Jev" : "Claude Opus"} · {run.createdAt.toLocaleDateString("en-US", { dateStyle: "medium", timeZone: "America/New_York" })}</Link>
-            <p className="mt-1 text-sm text-ink-muted">{run.attendees.length} attendees · {run.groups.length} groups{run.creatorName ? ` · ${run.creatorName}` : ""}</p>
+            <p className="mt-1 text-sm text-ink-muted">{run.attendees.length} attendees · {run.groups.length} {run.groups.length === 1 ? "group" : "groups"}{run.creatorName ? ` · ${run.creatorName}` : ""}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Link href={`/groups/${run.id}`} className="rounded-md border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface">View report</Link>

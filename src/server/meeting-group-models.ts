@@ -27,6 +27,19 @@ function compactContext(context: MeetingContext) {
   }));
 }
 
+/** Keep Jev's shared state small even when almost the whole roster attends. */
+function jevContext(context: MeetingContext) {
+  return context.attendees.map((lead) => ({
+    name: lead.name,
+    department: lead.department,
+    cases: lead.cases.map((uc) => ({
+      title: uc.title,
+      summary: uc.description.slice(0, 160),
+      approaches: uc.approaches,
+    })),
+  }));
+}
+
 /** Jev makes a bounded choice among valid partitions built from case overlap. */
 export async function formGroupsWithJev(
   context: MeetingContext,
@@ -56,7 +69,7 @@ export async function formGroupsWithJev(
       model: MODELS.meetingGroupsJev,
       state: {
         task: "Select the best valid breakout partition for AI Leads. Prefer a discoverable shared thread in each group and useful differences in experience. Judge only the recorded use cases; do not infer personality or today's obstacle.",
-        attendees: compactContext(context),
+        attendees: jevContext(context),
       },
       questions: {
         plan: {
@@ -68,7 +81,9 @@ export async function formGroupsWithJev(
     }),
     signal: AbortSignal.timeout(30000),
   });
-  if (!response.ok) throw new Error(`Jev could not form groups (Gateway ${response.status}).`);
+  if (!response.ok) throw new Error(response.status === 503
+    ? "Jev is temporarily unavailable. Try again, or use Claude Opus."
+    : `Jev could not form groups (Gateway ${response.status}).`);
   const result = await response.json() as {
     answers?: { plan?: { choice?: string } };
     usage?: { inputTokens?: number; outputTokens?: number; input_tokens?: number; output_tokens?: number };
