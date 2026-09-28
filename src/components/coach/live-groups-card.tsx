@@ -150,7 +150,7 @@ export function LiveGroupsCard({ onDecision }: { onDecision: (result: string) =>
     <section className="my-3 rounded-lg border border-hairline-strong bg-paper p-4" aria-label="Form live AI Leads groups">
       <h3 className="font-serif text-lg text-ink">Form live groups</h3>
       <p className="mt-1 text-sm text-ink-muted">
-        Click the AI Leads here today. Review their recorded work, then compare two groupings.
+        Click the AI Leads here today. Review their recorded work, then compare two groupings. Each method run saves automatically.
       </p>
       <Link href="/groups" className="mt-2 inline-block text-xs text-accent underline underline-offset-2">View saved grouping attempts</Link>
       {loading && <p className="mt-3 text-sm text-ink-faint">Loading the AI Leads roster…</p>}

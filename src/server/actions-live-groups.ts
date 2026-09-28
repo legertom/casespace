@@ -76,7 +76,6 @@ export async function formLiveMeetingGroupsAction(
       groups: plan.groups,
       report,
     }).returning({ id: meetingGroupRuns.id });
-    revalidatePath("/groups");
     return { plan, report, runId: run.id };
   } catch (err) {
     console.error("live grouping failed", err);

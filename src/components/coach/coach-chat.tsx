@@ -136,8 +136,8 @@ export function CoachChat({
               review a record&rsquo;s ROI evidence, or explain what
               &ldquo;documented&rdquo; and &ldquo;Confirmed Positive ROI&rdquo;
               take. If something in Casespace is broken or awkward, tell me and
-              I&rsquo;ll write it up for the admins. I never save anything
-              without your say-so.
+              I&rsquo;ll write it up for the admins. I never change a use-case
+              record without your say-so.
             </p>
             {/* Quick starts, not a landing page. Discovery is first because
                 it is the capability nobody would guess is here; the two

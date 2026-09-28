@@ -3,7 +3,6 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { meetingGroupRuns, users } from "@/db/schema";
 import { requireAdmin } from "@/lib/current-user";
-import { fmtDate } from "@/lib/format";
 import { GroupRunControls } from "@/components/groups/group-run-controls";
 
 export const metadata = { title: "Saved groups" };
@@ -26,7 +25,7 @@ export default async function GroupsPage() {
     {runs.length === 0 ? <p className="mt-10 text-ink-muted">No grouping attempts yet.</p> : <ol className="mt-8 space-y-3">
       {runs.map((run) => <li key={run.id} className="rounded-lg border border-hairline-strong p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div><Link href={`/groups/${run.id}`} className="font-serif text-xl text-accent underline underline-offset-2">{run.method === "jev" ? "Jev" : "Claude Opus"} · {fmtDate(run.createdAt)}</Link>
+          <div><Link href={`/groups/${run.id}`} className="font-serif text-xl text-accent underline underline-offset-2">{run.method === "jev" ? "Jev" : "Claude Opus"} · {run.createdAt.toLocaleDateString("en-US", { dateStyle: "medium", timeZone: "America/New_York" })}</Link>
             <p className="mt-1 text-sm text-ink-muted">{run.attendees.length} attendees · {run.groups.length} groups{run.creatorName ? ` · ${run.creatorName}` : ""}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
