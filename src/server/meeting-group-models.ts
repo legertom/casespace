@@ -2,6 +2,7 @@ import "server-only";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 import {
+  expandMeetingAliases,
   meetingCandidatePlans,
   validateMeetingGroups,
   type MeetingContext,
@@ -106,6 +107,7 @@ export async function formGroupsWithOpus(
   userId: string,
 ): Promise<MeetingPlan> {
   const aliases = new Map(context.attendees.map((lead, i) => [`L${i + 1}`, lead.id]));
+  const aliasNames = new Map(context.attendees.map((lead, i) => [`L${i + 1}`, lead.name]));
   const promptAttendees = compactContext(context).map((lead, i) => ({ ...lead, id: `L${i + 1}` }));
   const result = await generateText({
     model: MODELS.meetingGroupsOpus,
@@ -124,6 +126,7 @@ export async function formGroupsWithOpus(
   const groups = result.output.groups.map((group) => ({
     ...group,
     memberIds: group.memberIds.map((alias) => aliases.get(alias) ?? alias),
+    rationale: expandMeetingAliases(group.rationale, aliasNames),
   }));
   if (!validateMeetingGroups(context, groups)) {
     throw new Error("Claude Opus returned an incomplete grouping. Try it again.");

@@ -31,6 +31,14 @@ export interface MeetingPlan {
   note?: string;
 }
 
+/** Keep model-facing short IDs out of facilitator notes. */
+export function expandMeetingAliases(
+  note: string,
+  names: Map<string, string>,
+): string {
+  return note.replace(/\bL\d+\b/g, (alias) => names.get(alias) ?? alias);
+}
+
 /** The model may recommend a partition, but code decides whether it is usable. */
 export function validateMeetingGroups(
   context: MeetingContext,

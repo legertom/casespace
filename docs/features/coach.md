@@ -137,7 +137,9 @@ off as a meeting plan.
 
 The chosen plan is a suggestion, not a saved meeting record or an assessment
 of anyone's ability. Sparse casebook history is visible in the review rather
-than filled with guesses.
+than filled with guesses. After the admin chooses a plan, the groups remain
+visible in the saved Coach conversation; each group's facilitator note can be
+expanded when needed.
 
 The first breakout task is for each group to discover what they have in
 common. Then each person shares the obstacle or challenge they brought, gets

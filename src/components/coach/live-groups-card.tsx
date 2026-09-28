@@ -16,6 +16,42 @@ interface LiveLead {
   teams: string[];
 }
 
+interface ChosenGroups {
+  kind: "live_groups_choice";
+  method: "jev" | "opus";
+  groups: { names: string[]; rationale?: string }[];
+}
+
+/** The selected plan stays readable in the saved conversation. */
+export function ChosenLiveGroups({ output }: { output: unknown }) {
+  let choice: ChosenGroups | null = null;
+  try {
+    const parsed = JSON.parse(String(output)) as ChosenGroups;
+    if (parsed.kind === "live_groups_choice" && Array.isArray(parsed.groups) &&
+      parsed.groups.every((group) => Array.isArray(group.names))) choice = parsed;
+  } catch { /* Earlier conversations may contain plain text output. */ }
+  if (!choice) return <div className="my-3 rounded-md border border-hairline-strong p-3 text-sm">{String(output)}</div>;
+  return (
+    <section className="my-3 rounded-md border border-hairline-strong p-3 text-sm" aria-label="Chosen live groups">
+      <h3 className="font-medium text-ink">Chosen live groups · {choice.method === "jev" ? "Jev" : "Claude Opus"}</h3>
+      <ol className="mt-2 space-y-2">
+        {choice.groups.map((group, i) => (
+          <li key={i}>
+            <strong>Group {i + 1}:</strong> {group.names.join(", ")}
+            {group.rationale && (
+              <details className="mt-1 text-xs text-ink-muted">
+                <summary className="cursor-pointer">Why this group?</summary>
+                <p className="mt-1">{group.rationale}</p>
+              </details>
+            )}
+          </li>
+        ))}
+      </ol>
+      <p className="mt-3 text-ink-muted">Ask each group to find a shared thread in their work. Then give everyone a turn to share the obstacle they brought and choose one next step together.</p>
+    </section>
+  );
+}
+
 export function LiveGroupsCard({ onDecision }: { onDecision: (result: string) => void }) {
   const [leads, setLeads] = useState<LiveLead[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
@@ -83,9 +119,15 @@ export function LiveGroupsCard({ onDecision }: { onDecision: (result: string) =>
     if (!plan || !context) return;
     setChosen(method);
     const byId = new Map(context.attendees.map((lead) => [lead.id, lead.name]));
-    onDecision(`I chose the ${method === "jev" ? "Jev" : "Claude Opus"} live breakout plan: ${plan.groups.map((group, i) =>
-      `Group ${i + 1}: ${group.memberIds.map((id) => byId.get(id)).join(", ")}`,
-    ).join("; ")}. Each group should discover what they have in common, then give everyone a turn to share their live obstacle and choose a next action.`);
+    const choice: ChosenGroups = {
+      kind: "live_groups_choice",
+      method,
+      groups: plan.groups.map((group) => ({
+        names: group.memberIds.map((id) => byId.get(id) ?? "Unknown attendee"),
+        rationale: group.rationale,
+      })),
+    };
+    onDecision(JSON.stringify(choice));
   }
 
   const byDepartment = new Map<string, LiveLead[]>();
@@ -186,7 +228,12 @@ export function LiveGroupsCard({ onDecision }: { onDecision: (result: string) =>
               {plan.groups.map((group, i) => (
                 <li key={i}>
                   <strong>Group {i + 1}:</strong> {group.memberIds.map((id) => names.get(id)).join(", ")}
-                  {group.rationale && <p className="text-xs text-ink-muted">Facilitator note: {group.rationale}</p>}
+                  {group.rationale && (
+                    <details className="mt-1 text-xs text-ink-muted">
+                      <summary className="cursor-pointer">Why this group?</summary>
+                      <p className="mt-1">{group.rationale}</p>
+                    </details>
+                  )}
                 </li>
               ))}
             </ol>

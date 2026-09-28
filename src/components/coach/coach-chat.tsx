@@ -17,7 +17,7 @@ import type { CoachIntent } from "@/lib/domain";
 import { ProposalCard, UpdateProposalCard } from "./proposal-card";
 import { DiscoveryCheckpointCard } from "./discovery-checkpoint-card";
 import { FeedbackProposalCard } from "./feedback-proposal-card";
-import { LiveGroupsCard } from "./live-groups-card";
+import { ChosenLiveGroups, LiveGroupsCard } from "./live-groups-card";
 
 interface Props {
   chatId: string;
@@ -230,11 +230,7 @@ export function CoachChat({
                       if (part.state === "input-streaming")
                         return <ReadToolChip key={i} label="Opening live groups…" />;
                       if (part.state === "output-available")
-                        return (
-                          <div key={i} className="my-3 rounded-md border border-hairline-strong p-3 text-sm">
-                            {String(part.output)}
-                          </div>
-                        );
+                        return <ChosenLiveGroups key={i} output={part.output} />;
                       return (
                         <LiveGroupsCard
                           key={part.toolCallId}

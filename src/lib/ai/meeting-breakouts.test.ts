@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  expandMeetingAliases,
   meetingGroupSizes,
   meetingCandidatePlans,
   validateMeetingGroups,
@@ -59,4 +60,10 @@ describe("meeting group validation", () => {
     expect(candidates.length).toBeGreaterThan(1);
     expect(candidates.every((groups) => validateMeetingGroups(large, groups))).toBe(true);
   });
+});
+
+it("replaces internal lead aliases in facilitator notes", () => {
+  const names = new Map([["L2", "Lotte Petersen-Buckley"], ["L7", "Yowan Ramchoreeter"]]);
+  expect(expandMeetingAliases("L2 and L7 share a thread.", names))
+    .toBe("Lotte Petersen-Buckley and Yowan Ramchoreeter share a thread.");
 });

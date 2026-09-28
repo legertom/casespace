@@ -53,6 +53,8 @@ compare a Jev-selected grouping with one proposed by Claude Opus. Each plan
 covers every selected attendee exactly once. The groups first discover what
 they have in common, then give each person time to discuss the obstacle they
 brought.
+The chosen plan now remains readable in the saved Coach conversation, with
+facilitator notes available on demand.
 
 ## 2026-09-02
 

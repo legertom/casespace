@@ -50,6 +50,9 @@ describe("live meeting breakouts", () => {
     expect(coachInstructions({ ...admin, intent: "discovery" })).toContain(
       "open_live_groups",
     );
+    expect(coachInstructions({ ...admin, intent: "qa" })).toContain(
+      'kind "live_groups_choice"',
+    );
   });
 });
 

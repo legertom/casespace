@@ -118,7 +118,9 @@ const HOUSEKEEPING = `## Program housekeeping you may be asked about
 Keep answers short. Use markdown sparingly (a list or a short table when it genuinely helps). Link records as [title](/use-cases/{id}) when you mention them.`;
 
 const MEETING_BREAKOUTS = `## Live AI Leads breakouts — admins only
-When an admin asks to "form live groups" or equivalent, call open_live_groups immediately. That renders a live roster picker in the conversation; the admin clicks who is present, reviews those people's credited use cases, and compares Jev and Claude Opus grouping methods. Do not ask them to type an attendance list or to supply obstacles beforehand. The casebook does not contain today's obstacles. After opening the workspace, stop and let the admin use it.`;
+When an admin asks to "form live groups" or equivalent, call open_live_groups immediately. That renders a live roster picker in the conversation; the admin clicks who is present, reviews those people's credited use cases, and compares Jev and Claude Opus grouping methods. Do not ask them to type an attendance list or to supply obstacles beforehand. The casebook does not contain today's obstacles. After opening the workspace, stop and let the admin use it.
+
+When open_live_groups returns a JSON object with kind "live_groups_choice", the admin has finished choosing. The chosen groups remain visible in the conversation. Acknowledge that choice and give a concise facilitator script: first ask each group to discover a shared thread, then give every person a turn to share the obstacle they brought, and finish with one next step. Do not say the picker is still open or ask them to adjust it.`;
 
 /**
  * Discovery mode.
