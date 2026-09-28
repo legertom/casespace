@@ -135,11 +135,13 @@ of 4; 14 become two groups of 3 and two of 4; 22 become two groups of 3 and
 four of 4. A failed or invalid model result is shown as an error, never passed
 off as a meeting plan.
 
-The chosen plan is a suggestion, not a saved meeting record or an assessment
-of anyone's ability. Sparse casebook history is visible in the review rather
-than filled with guesses. After the admin chooses a plan, the groups remain
-visible in the saved Coach conversation; each group's facilitator note can be
-expanded when needed.
+Every successful attempt is saved immediately at [Saved groups](groups.md),
+including alternatives the admin does not choose. Each has a printable
+explanation report with assignments, possible commonalities, evidence from
+recorded use cases, and a question to start the discussion. Group sizes are
+always between 2 and 5. Sparse casebook history is identified rather than
+filled with guesses. After the admin chooses a plan, the groups and a link to
+their report remain visible in the saved Coach conversation.
 
 The first breakout task is for each group to discover what they have in
 common. Then each person shares the obstacle or challenge they brought, gets

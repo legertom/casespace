@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { MeetingContext, MeetingPlan } from "@/lib/ai/meeting-breakouts";
+import type { MeetingContext, MeetingPlan, MeetingReport } from "@/lib/ai/meeting-breakouts";
 import {
   formLiveMeetingGroupsAction,
   listLiveMeetingLeadsAction,
@@ -19,6 +19,7 @@ interface LiveLead {
 interface ChosenGroups {
   kind: "live_groups_choice";
   method: "jev" | "opus";
+  runId?: string;
   groups: { names: string[]; rationale?: string }[];
 }
 
@@ -48,6 +49,7 @@ export function ChosenLiveGroups({ output }: { output: unknown }) {
         ))}
       </ol>
       <p className="mt-3 text-ink-muted">Ask each group to find a shared thread in their work. Then give everyone a turn to share the obstacle they brought and choose one next step together.</p>
+      {choice.runId && <Link href={`/groups/${choice.runId}`} className="mt-2 inline-block text-accent underline underline-offset-2">Open saved explanation report</Link>}
     </section>
   );
 }
@@ -57,6 +59,7 @@ export function LiveGroupsCard({ onDecision }: { onDecision: (result: string) =>
   const [selected, setSelected] = useState<string[]>([]);
   const [context, setContext] = useState<MeetingContext | null>(null);
   const [plans, setPlans] = useState<Partial<Record<"jev" | "opus", MeetingPlan>>>({});
+  const [runs, setRuns] = useState<Partial<Record<"jev" | "opus", { id: string; report: MeetingReport }>>>({});
   const [loading, setLoading] = useState(true);
   const [reviewing, setReviewing] = useState(false);
   const [running, setRunning] = useState<"jev" | "opus" | null>(null);
@@ -83,6 +86,7 @@ export function LiveGroupsCard({ onDecision }: { onDecision: (result: string) =>
       : [...current, id]);
     setContext(null);
     setPlans({});
+    setRuns({});
     setError(null);
   }
 
@@ -106,7 +110,10 @@ export function LiveGroupsCard({ onDecision }: { onDecision: (result: string) =>
     try {
       const result = await formLiveMeetingGroupsAction(selected, method);
       if (result.error) setError(result.error);
-      else if (result.plan) setPlans((current) => ({ ...current, [method]: result.plan }));
+      else if (result.plan && result.report && result.runId) {
+        setPlans((current) => ({ ...current, [method]: result.plan }));
+        setRuns((current) => ({ ...current, [method]: { id: result.runId!, report: result.report! } }));
+      }
     } catch {
       setError(`Could not run ${method === "jev" ? "Jev" : "Claude Opus"}.`);
     } finally {
@@ -122,6 +129,7 @@ export function LiveGroupsCard({ onDecision }: { onDecision: (result: string) =>
     const choice: ChosenGroups = {
       kind: "live_groups_choice",
       method,
+      runId: runs[method]?.id,
       groups: plan.groups.map((group) => ({
         names: group.memberIds.map((id) => byId.get(id) ?? "Unknown attendee"),
         rationale: group.rationale,
@@ -144,6 +152,7 @@ export function LiveGroupsCard({ onDecision }: { onDecision: (result: string) =>
       <p className="mt-1 text-sm text-ink-muted">
         Click the AI Leads here today. Review their recorded work, then compare two groupings.
       </p>
+      <Link href="/groups" className="mt-2 inline-block text-xs text-accent underline underline-offset-2">View saved grouping attempts</Link>
       {loading && <p className="mt-3 text-sm text-ink-faint">Loading the AI Leads roster…</p>}
       {!loading && [...byDepartment.entries()].map(([department, members]) => (
         <div key={department} className="mt-4">
@@ -223,6 +232,7 @@ export function LiveGroupsCard({ onDecision }: { onDecision: (result: string) =>
         return (
           <div key={method} className="mt-4 rounded-md border border-hairline-strong p-3">
             <h4 className="font-medium text-ink">{method === "jev" ? "Method A · Jev" : "Method B · Claude Opus"}</h4>
+            {runs[method] && <p className="mt-1 text-xs text-ink-muted">Saved automatically · <Link href={`/groups/${runs[method].id}`} className="text-accent underline underline-offset-2">Open explanation report</Link></p>}
             {plan.note && <p className="mt-1 text-xs text-ink-faint">{plan.note}</p>}
             <ol className="mt-2 space-y-2 text-sm">
               {plan.groups.map((group, i) => (

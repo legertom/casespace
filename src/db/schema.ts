@@ -675,6 +675,17 @@ export const coachChats = pgTable("coach_chats", {
     .$onUpdate(() => new Date()),
 });
 
+/** Every successful live sorting attempt, including alternatives not chosen in Coach. */
+export const meetingGroupRuns = pgTable("meeting_group_runs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+  method: text("method").$type<"jev" | "opus">().notNull(),
+  attendees: jsonb("attendees").$type<{ id: string; name: string }[]>().notNull(),
+  groups: jsonb("groups").$type<{ memberIds: string[]; rationale?: string }[]>().notNull(),
+  report: jsonb("report").$type<import("../lib/ai/meeting-breakouts").MeetingReport>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("meeting_group_runs_created_idx").on(t.createdAt)]);
+
 /**
  * What the AI doors proposed and what the human did about it — the app's only
  * record of how well the Coach guesses. Admin-only to read (canViewCoachLearnings).

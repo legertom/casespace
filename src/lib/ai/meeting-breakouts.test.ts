@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   expandMeetingAliases,
+  groundedMeetingReport,
   meetingGroupSizes,
   meetingCandidatePlans,
   validateMeetingGroups,
@@ -15,11 +16,11 @@ describe("breakout sizes", () => {
     expect(meetingGroupSizes(count)).toEqual(expected);
   });
 
-  it("covers every turnout from six to sixty without a pair or singleton", () => {
-    for (let count = 6; count <= 60; count++) {
+  it("covers every turnout from two to sixty in groups of two to five", () => {
+    for (let count = 2; count <= 60; count++) {
       const sizes = meetingGroupSizes(count);
       expect(sizes.reduce((sum, size) => sum + size, 0)).toBe(count);
-      expect(sizes.every((size) => size === 3 || size === 4)).toBe(true);
+      expect(sizes.every((size) => size >= 2 && size <= 5)).toBe(true);
     }
   });
 });
@@ -60,6 +61,47 @@ describe("meeting group validation", () => {
     expect(candidates.length).toBeGreaterThan(1);
     expect(candidates.every((groups) => validateMeetingGroups(large, groups))).toBe(true);
   });
+
+  it("keeps randomized attendance selections complete across turnout sizes", () => {
+    const roster = Array.from({ length: 75 }, (_, i) => ({
+      id: `lead-${i}`, name: `Lead ${i}`, department: String(i % 6), teams: [],
+      cases: [{ id: `case-${i}`, title: `Workflow ${i % 9}`, description: `Reporting workflow ${i % 9}`,
+        approaches: [`approach-${i % 4}`], aiTools: [], role: "owner" as const }],
+    }));
+    let seed = 8417;
+    const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 2 ** 32; };
+    for (let count = 2; count <= 60; count++) {
+      for (let trial = 0; trial < 4; trial++) {
+        const shuffled = [...roster];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        const attendees = shuffled.slice(0, count);
+        const context = { attendees, expectedGroupSizes: meetingGroupSizes(count) };
+        const candidates = meetingCandidatePlans(context);
+        expect(candidates.length).toBeGreaterThan(0);
+        expect(candidates.every((groups) => validateMeetingGroups(context, groups))).toBe(true);
+        expect(candidates.every((groups) => groups.every((group) =>
+          group.memberIds.length >= 2 && group.memberIds.length <= 5))).toBe(true);
+      }
+    }
+  });
+});
+
+it("keeps report citations within each group's own use cases", () => {
+  const attendees = [0, 1, 2, 3].map((i) => ({
+    id: String(i), name: `Lead ${i}`, department: "other", teams: [],
+    cases: [{ id: `c${i}`, title: `Case ${i}`, description: "", approaches: [], aiTools: [], role: "owner" as const }],
+  }));
+  const groups = [{ memberIds: ["0", "1"] }, { memberIds: ["2", "3"] }];
+  const report = groundedMeetingReport({ attendees, expectedGroupSizes: [2, 2] }, groups, {
+    summary: "", limitation: "", groups: [
+      { commonality: "", reasoning: "", discussionPrompt: "", evidence: ["Case 0", "Case 3", "Made up"] },
+      { commonality: "", reasoning: "", discussionPrompt: "", evidence: ["Case 2", "Case 1"] },
+    ],
+  });
+  expect(report.groups.map((group) => group.evidence)).toEqual([["Case 0"], ["Case 2"]]);
 });
 
 it("replaces internal lead aliases in facilitator notes", () => {

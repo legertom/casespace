@@ -44,6 +44,15 @@ in-app report it came from.
 
 ## 2026-09-27
 
+### Saved sorting reports for live AI Leads groups
+Requested by: Tom Leger
+
+Every successful Jev or Claude Opus grouping now saves automatically, even
+when you compare several options. Admins can find all attempts under Saved
+groups, open a printable report explaining the possible commonality and
+recorded use-case evidence for each group, and delete attempts they no longer
+need. Groups always have 2–5 attendees.
+
 ### Breakout groups for the live AI Leads sync
 Requested by: Tom Leger
 

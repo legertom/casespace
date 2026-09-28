@@ -31,6 +31,36 @@ export interface MeetingPlan {
   note?: string;
 }
 
+export interface MeetingReportGroup {
+  commonality: string;
+  evidence: string[];
+  reasoning: string;
+  discussionPrompt: string;
+}
+
+export interface MeetingReport {
+  summary: string;
+  groups: MeetingReportGroup[];
+  limitation: string;
+}
+
+/** Case titles in a report must come from members of that exact group. */
+export function groundedMeetingReport(
+  context: MeetingContext,
+  groups: MeetingGroup[],
+  report: MeetingReport,
+): MeetingReport {
+  const byId = new Map(context.attendees.map((lead) => [lead.id, lead]));
+  return {
+    ...report,
+    groups: report.groups.map((item, i) => {
+      const titles = new Set(groups[i].memberIds.flatMap((id) =>
+        (byId.get(id)?.cases ?? []).map((uc) => uc.title)));
+      return { ...item, evidence: item.evidence.filter((title) => titles.has(title)) };
+    }),
+  };
+}
+
 /** Keep model-facing short IDs out of facilitator notes. */
 export function expandMeetingAliases(
   note: string,
@@ -45,6 +75,7 @@ export function validateMeetingGroups(
   groups: MeetingGroup[],
 ): boolean {
   const actualSizes = groups.map((group) => group.memberIds.length).sort((a, b) => a - b);
+  if (actualSizes.some((size) => size < 2 || size > 5)) return false;
   const expectedSizes = [...context.expectedGroupSizes].sort((a, b) => a - b);
   if (JSON.stringify(actualSizes) !== JSON.stringify(expectedSizes)) return false;
   const expected = new Set(context.attendees.map((lead) => lead.id));
@@ -54,7 +85,7 @@ export function validateMeetingGroups(
     new Set(actual).size === expected.size;
 }
 
-/** All attendees fit into trios or quartets once at least six people attend. */
+/** Prefer trios and quartets; a turnout of two or five stays together. */
 export function meetingGroupSizes(count: number): number[] {
   if (count < 1) return [];
   if (count < 6) return [count];

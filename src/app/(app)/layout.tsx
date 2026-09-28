@@ -204,12 +204,10 @@ export default async function AppLayout({
                     MCP &amp; API
                   </Link>
                   {user.role === "admin" && (
-                    <Link
-                      href="/feedback"
-                      className="block py-1 hover:text-accent"
-                    >
-                      Feedback
-                    </Link>
+                    <>
+                      <Link href="/groups" className="block py-1 hover:text-accent">Saved groups</Link>
+                      <Link href="/feedback" className="block py-1 hover:text-accent">Feedback</Link>
+                    </>
                   )}
                   <form action={doSignOut}>
                     <button type="submit" className="py-1 hover:text-accent">

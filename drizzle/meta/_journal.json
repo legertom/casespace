@@ -127,6 +127,13 @@
       "when": 1788109577006,
       "tag": "0017_discovery_coach",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1790563606602,
+      "tag": "0018_stale_chronomancer",
+      "breakpoints": true
     }
   ]
 }

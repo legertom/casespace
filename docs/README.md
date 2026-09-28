@@ -47,6 +47,7 @@ One doc per surface.
 | [The record page](features/record.md) | `/use-cases/[id]` |
 | [Logging a use case](features/logging-a-use-case.md) | `/use-cases/new`, `/use-cases/from-notes` |
 | [The Coach](features/coach.md) | `/coach` |
+| [Saved groups](features/groups.md) | `/groups`, `/groups/[id]` (admin-only) |
 | [Discovery Coach](features/discovery-coach.md) | `/coach?intent=discovery` |
 | [Course suggestions](features/course-suggestions.md) | at the end of the wizard |
 | [Coach learnings](features/coach-learnings.md) | `/learnings` (admin-only) |
