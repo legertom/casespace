@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { MeetingReport } from "@/lib/ai/meeting-breakouts";
+import { formatMeetingRunDate, type MeetingReport } from "@/lib/ai/meeting-breakouts";
 
 export interface SavedGroupRun {
   id: string;
@@ -19,7 +19,7 @@ export function GroupReport({ run }: { run: SavedGroupRun }) {
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">AI Leads sorting report</p>
         <h1 className="mt-1 font-serif text-3xl">Live meeting groups</h1>
         <p className="mt-2 text-sm text-ink-muted">
-          {run.createdAt.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "America/New_York", timeZoneName: "short" })} · {run.method === "jev" ? "Jev selected the groups" : "Claude Opus formed the groups"} · {run.attendees.length} attendees
+          {formatMeetingRunDate(run.createdAt)} · {run.method === "jev" ? "Jev selected the groups" : "Claude Opus formed the groups"} · {run.attendees.length} attendees
           {run.creatorName ? ` · Run by ${run.creatorName}` : ""}
         </p>
       </header>

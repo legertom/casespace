@@ -44,6 +44,13 @@ export interface MeetingReport {
   limitation: string;
 }
 
+export function formatMeetingRunDate(date: Date): string {
+  return date.toLocaleString("en-US", {
+    year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit",
+    timeZone: "America/New_York", timeZoneName: "short",
+  });
+}
+
 /** Case titles in a report must come from members of that exact group. */
 export function groundedMeetingReport(
   context: MeetingContext,

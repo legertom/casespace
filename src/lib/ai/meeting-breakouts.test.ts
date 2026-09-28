@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   expandMeetingAliases,
+  formatMeetingRunDate,
   groundedMeetingReport,
   meetingGroupSizes,
   meetingCandidatePlans,
@@ -108,4 +109,9 @@ it("replaces internal lead aliases in facilitator notes", () => {
   const names = new Map([["L2", "Lotte Petersen-Buckley"], ["L7", "Yowan Ramchoreeter"]]);
   expect(expandMeetingAliases("L2 and L7 share a thread.", names))
     .toBe("Lotte Petersen-Buckley and Yowan Ramchoreeter share a thread.");
+});
+
+it("formats saved report time in Eastern time without an invalid Intl option mix", () => {
+  expect(formatMeetingRunDate(new Date("2026-09-28T02:50:00Z")))
+    .toBe("Sep 27, 2026, 10:50 PM EDT");
 });
