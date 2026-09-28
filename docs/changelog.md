@@ -44,6 +44,14 @@ in-app report it came from.
 
 ## 2026-09-27
 
+### A shared starting point for leads without logged cases
+Requested by: Tom Leger
+
+When Jev forms live meeting groups, AI Leads without credited use cases now
+meet together when at least two are present. Their report invites them to
+compare what they are exploring and the obstacles they brought, without
+pretending the casebook already knows what they have in common.
+
 ### Saved sorting reports for live AI Leads groups
 Requested by: Tom Leger
 

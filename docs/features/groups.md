@@ -48,6 +48,9 @@ its report.
   explanation report for either method, so the report does not claim Jev wrote
   prose. If explanation generation fails, a cautious case-based report is
   saved with the successful assignment.
+- When at least two attendees have no credited cases, Jev keeps them together
+  to compare the AI work they are exploring. Their report poses a question to
+  discover in the room, since the casebook has no evidence of a shared theme.
 - Commonalities are discussion hypotheses based on logged use cases. Today's
   obstacles are supplied by people in the room, not inferred from records.
 - Deletion is permanent and affects only the selected run, not Coach chats or

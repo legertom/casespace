@@ -159,3 +159,38 @@ export function meetingCandidatePlans(context: MeetingContext): MeetingGroup[][]
 
   return candidates;
 }
+
+/** Jev compares case-backed work while keeping the no-case conversation together. */
+export function jevMeetingCandidates(context: MeetingContext): {
+  candidates: MeetingGroup[][];
+  expectedGroupSizes: number[];
+  noCaseCohort: boolean;
+} {
+  const withCases = context.attendees.filter((lead) => lead.cases.length > 0);
+  const withoutCases = context.attendees.filter((lead) => lead.cases.length === 0);
+  if (withCases.length < 2 || withoutCases.length < 2) {
+    return {
+      candidates: meetingCandidatePlans(context),
+      expectedGroupSizes: context.expectedGroupSizes,
+      noCaseCohort: false,
+    };
+  }
+  const withCasesContext = {
+    attendees: withCases,
+    expectedGroupSizes: meetingGroupSizes(withCases.length),
+  };
+  const withoutCasesContext = {
+    attendees: withoutCases,
+    expectedGroupSizes: meetingGroupSizes(withoutCases.length),
+  };
+  const casePlans = meetingCandidatePlans(withCasesContext);
+  const explorationPlans = meetingCandidatePlans(withoutCasesContext);
+  return {
+    candidates: casePlans.map((groups, i) => [...groups, ...explorationPlans[i % explorationPlans.length]]),
+    expectedGroupSizes: [
+      ...withCasesContext.expectedGroupSizes,
+      ...withoutCasesContext.expectedGroupSizes,
+    ],
+    noCaseCohort: true,
+  };
+}

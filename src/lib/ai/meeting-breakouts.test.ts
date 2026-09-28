@@ -3,6 +3,7 @@ import {
   expandMeetingAliases,
   formatMeetingRunDate,
   groundedMeetingReport,
+  jevMeetingCandidates,
   meetingGroupSizes,
   meetingCandidatePlans,
   validateMeetingGroups,
@@ -61,6 +62,52 @@ describe("meeting group validation", () => {
     const candidates = meetingCandidatePlans(large);
     expect(candidates.length).toBeGreaterThan(1);
     expect(candidates.every((groups) => validateMeetingGroups(large, groups))).toBe(true);
+  });
+
+  it("keeps five leads without cases together in Jev's 22-person options", () => {
+    const attendees = Array.from({ length: 22 }, (_, i) => ({
+      id: String(i), name: `Lead ${i}`, department: String(i % 4), teams: [],
+      cases: i < 5 ? [] : [{ id: `case-${i}`, title: `Workflow ${i % 5}`,
+        description: `Process ${i % 5}`, approaches: [], aiTools: [], role: "owner" as const }],
+    }));
+    const context = { expectedGroupSizes: meetingGroupSizes(22), attendees };
+    const { candidates, expectedGroupSizes, noCaseCohort } = jevMeetingCandidates(context);
+    expect(noCaseCohort).toBe(true);
+    expect(candidates.length).toBeGreaterThan(1);
+    expect(candidates.every((groups) => validateMeetingGroups({ ...context, expectedGroupSizes }, groups))).toBe(true);
+    expect(candidates.every((groups) => groups.some((group) =>
+      group.memberIds.length === 5 && group.memberIds.every((id) => Number(id) < 5)))).toBe(true);
+  });
+
+  it("keeps a lone unlogged lead in a mixed group", () => {
+    const context = {
+      expectedGroupSizes: [3],
+      attendees: Array.from({ length: 3 }, (_, i) => ({
+        id: String(i), name: `Lead ${i}`, department: "other", teams: [],
+        cases: i === 0 ? [] : [{ id: `case-${i}`, title: `Case ${i}`,
+          description: "", approaches: [], aiTools: [], role: "owner" as const }],
+      })),
+    };
+    const { candidates, expectedGroupSizes, noCaseCohort } = jevMeetingCandidates(context);
+    expect(noCaseCohort).toBe(false);
+    expect(expectedGroupSizes).toEqual([3]);
+    expect(candidates.every((groups) => validateMeetingGroups(context, groups))).toBe(true);
+  });
+
+  it("keeps sparse-roster Jev plans complete for varied turnout", () => {
+    for (let count = 2; count <= 60; count++) {
+      for (const withoutCases of new Set([0, 1, 2, Math.floor(count / 3), count - 1, count])) {
+        const attendees = Array.from({ length: count }, (_, i) => ({
+          id: String(i), name: `Lead ${i}`, department: String(i % 4), teams: [],
+          cases: i < withoutCases ? [] : [{ id: `case-${i}`, title: `Workflow ${i % 5}`,
+            description: `Process ${i % 5}`, approaches: [], aiTools: [], role: "owner" as const }],
+        }));
+        const context = { expectedGroupSizes: meetingGroupSizes(count), attendees };
+        const { candidates, expectedGroupSizes } = jevMeetingCandidates(context);
+        expect(candidates.length).toBeGreaterThan(0);
+        expect(candidates.every((groups) => validateMeetingGroups({ ...context, expectedGroupSizes }, groups))).toBe(true);
+      }
+    }
   });
 
   it("keeps randomized attendance selections complete across turnout sizes", () => {
