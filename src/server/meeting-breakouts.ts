@@ -1,4 +1,7 @@
 import "server-only";
+import { inArray } from "drizzle-orm";
+import { getDb } from "@/db/client";
+import { users } from "@/db/schema";
 import { creditsIdentity, makeIdentity, refCredits } from "@/lib/people-match";
 import {
   meetingGroupSizes,
@@ -18,15 +21,32 @@ export async function getMeetingBreakoutContext(leadIds: string[]): Promise<Meet
   const selected = leadIds.map((id) => byId.get(id));
   if (selected.some((lead) => !lead)) throw new Error("An attendee is not on the AI Leads roster.");
 
+  // Profile pages match both the directory name and the linked login name.
+  // Coach needs the same aliases for free-text credits such as Jon/Jonathan.
+  const userIds = selected.flatMap((lead) => lead?.userId ? [lead.userId] : []);
+  const personIds = selected.flatMap((lead) => lead?.personId ? [lead.personId] : []);
+  const db = getDb();
+  const [usersById, usersByPerson] = await Promise.all([
+    userIds.length
+      ? db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.id, userIds))
+      : [],
+    personIds.length
+      ? db.select({ id: users.id, name: users.name, personId: users.personId })
+          .from(users).where(inArray(users.personId, personIds))
+      : [],
+  ]);
+  const loginNamesById = new Map(usersById.map((user) => [user.id, user.name]));
+  const loginsByPerson = new Map(usersByPerson.map((user) => [user.personId, user]));
   const casebook = await listUseCases();
   return {
     expectedGroupSizes: meetingGroupSizes(leadIds.length),
     attendees: selected.map((lead) => {
       if (!lead) throw new Error("An attendee is not on the AI Leads roster.");
+      const personLogin = lead.personId ? loginsByPerson.get(lead.personId) : null;
       const identity = makeIdentity({
         personId: lead.personId,
-        userId: lead.userId,
-        names: [lead.name],
+        userId: personLogin?.id ?? lead.userId,
+        names: [lead.name, personLogin?.name, lead.userId ? loginNamesById.get(lead.userId) : null],
       });
       const cases: MeetingCase[] = casebook
         .filter((uc) => creditsIdentity(uc, identity))

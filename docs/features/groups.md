@@ -53,6 +53,8 @@ its report.
   discover in the room, since the casebook has no evidence of a shared theme.
 - Commonalities are discussion hypotheses based on logged use cases. Today's
   obstacles are supplied by people in the room, not inferred from records.
+- Case review recognizes both a lead's roster name and linked login name, as
+  their profile does. A credited case under a shorter login name still counts.
 - Deletion is permanent and affects only the selected run, not Coach chats or
   use cases.
 

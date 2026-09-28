@@ -50,7 +50,9 @@ Requested by: Tom Leger
 When Jev forms live meeting groups, AI Leads without credited use cases now
 meet together when at least two are present. Their report invites them to
 compare what they are exploring and the obstacles they brought, without
-pretending the casebook already knows what they have in common.
+pretending the casebook already knows what they have in common. Coach also
+recognizes a lead's linked login name when reviewing cases, so a record credited
+under a shorter name is included before Jev decides who belongs in this group.
 
 ### Saved sorting reports for live AI Leads groups
 Requested by: Tom Leger
