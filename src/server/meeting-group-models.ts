@@ -94,7 +94,9 @@ export async function formGroupsWithJev(
 const opusPlanSchema = z.object({
   groups: z.array(z.object({
     memberIds: z.array(z.string()),
-    rationale: z.string().max(300),
+    // A useful explanation can exceed 300 characters even when the model
+    // follows the request to be brief. Validate the partition separately.
+    rationale: z.string(),
   })),
 });
 
