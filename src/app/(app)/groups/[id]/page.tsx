@@ -5,6 +5,7 @@ import { meetingGroupRuns, users } from "@/db/schema";
 import { requireAdmin } from "@/lib/current-user";
 import { GroupReport } from "@/components/groups/group-report";
 import { GroupRunControls } from "@/components/groups/group-run-controls";
+import { LatecomerControls } from "@/components/groups/latecomer-controls";
 
 export const metadata = { title: "Grouping report" };
 
@@ -25,6 +26,7 @@ export default async function GroupRunPage({ params }: { params: Promise<{ id: s
   if (!run) notFound();
   return <main className="mx-auto max-w-4xl space-y-5">
     <GroupRunControls id={run.id} />
+    <LatecomerControls runId={run.id} attendeeIds={run.attendees.map((lead) => lead.id)} groupSizes={run.groups.map((group) => group.memberIds.length)} method={run.method} />
     <GroupReport run={run} />
   </main>;
 }

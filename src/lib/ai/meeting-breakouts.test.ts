@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  addLatecomerToGroup,
   expandMeetingAliases,
   formatMeetingRunDate,
   groundedMeetingReport,
   jevMeetingCandidates,
+  latecomerGroupChoices,
   meetingGroupSizes,
   meetingCandidatePlans,
   validateMeetingGroups,
@@ -24,6 +26,52 @@ describe("breakout sizes", () => {
       expect(sizes.reduce((sum, size) => sum + size, 0)).toBe(count);
       expect(sizes.every((size) => size >= 2 && size <= 5)).toBe(true);
     }
+  });
+});
+
+describe("latecomer placement", () => {
+  it("keeps every existing group fixed across turnout sizes", () => {
+    for (let count = 2; count < 60; count++) {
+      const attendees = Array.from({ length: count + 1 }, (_, i) => ({
+        id: String(i), name: `Lead ${i}`, department: "other", teams: [], cases: [],
+      }));
+      const oldGroups = [] as { memberIds: string[] }[];
+      let cursor = 0;
+      for (const size of meetingGroupSizes(count)) {
+        oldGroups.push({ memberIds: attendees.slice(cursor, cursor + size).map((lead) => lead.id) });
+        cursor += size;
+      }
+      const context = { attendees, expectedGroupSizes: meetingGroupSizes(count + 1) };
+      const choices = latecomerGroupChoices(context, oldGroups, String(count), true);
+      for (const index of choices) {
+        const updated = addLatecomerToGroup(oldGroups, String(count), index);
+        expect(updated.map((group) => group.memberIds.length).every((size) => size >= 2 && size <= 5)).toBe(true);
+        expect(updated.flatMap((group) => group.memberIds).sort()).toEqual(attendees.map((lead) => lead.id).sort());
+        expect(updated.every((group, i) => group.memberIds.slice(0, oldGroups[i].memberIds.length).join() === oldGroups[i].memberIds.join())).toBe(true);
+        expect(oldGroups.flatMap((group) => group.memberIds)).not.toContain(String(count));
+      }
+    }
+  });
+
+  it("offers Jev only an open no-case group for an uncredited latecomer", () => {
+    const attendees = Array.from({ length: 8 }, (_, i) => ({
+      id: String(i), name: `Lead ${i}`, department: "other", teams: [],
+      cases: i < 4 ? [] : [{ id: `c${i}`, title: `Case ${i}`, description: "", approaches: [], aiTools: [], role: "owner" as const }],
+    }));
+    const groups = [{ memberIds: ["0", "1", "2"] }, { memberIds: ["4", "5", "6", "7"] }];
+    const context = { attendees, expectedGroupSizes: [4, 4] };
+    expect(latecomerGroupChoices(context, groups, "3", true)).toEqual([0]);
+    expect(latecomerGroupChoices(context, groups, "3", false)).toEqual([0, 1]);
+  });
+
+  it("does not make a sixth seat or move someone when all groups are full", () => {
+    const attendees = Array.from({ length: 11 }, (_, i) => ({
+      id: String(i), name: `Lead ${i}`, department: "other", teams: [], cases: [],
+    }));
+    const groups = [{ memberIds: ["0", "1", "2", "3", "4"] }, { memberIds: ["5", "6", "7", "8", "9"] }];
+    expect(latecomerGroupChoices({ attendees, expectedGroupSizes: [5, 5, 1] }, groups, "10", true)).toEqual([]);
+    expect(() => addLatecomerToGroup(groups, "10", 0)).toThrow("no open seat");
+    expect(() => addLatecomerToGroup(groups, "0", 1)).toThrow("no open seat");
   });
 });
 

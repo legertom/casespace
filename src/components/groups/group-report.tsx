@@ -19,9 +19,12 @@ export function GroupReport({ run }: { run: SavedGroupRun }) {
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">AI Leads sorting report</p>
         <h1 className="mt-1 font-serif text-3xl">Live meeting groups</h1>
         <p className="mt-2 text-sm text-ink-muted">
-          {formatMeetingRunDate(run.createdAt)} · {run.method === "jev" ? "Jev selected the groups" : "Claude Opus formed the groups"} · {run.attendees.length} attendees
+          {formatMeetingRunDate(run.createdAt)} · {run.report.latecomer ? `Updated from ${run.method === "jev" ? "Jev" : "Claude Opus"} groups` : run.method === "jev" ? "Jev selected the groups" : "Claude Opus formed the groups"} · {run.attendees.length} attendees
           {run.creatorName ? ` · Run by ${run.creatorName}` : ""}
         </p>
+        {run.report.latecomer && <p className="mt-3 rounded-md border border-hairline bg-surface p-3 text-sm text-ink-muted print:border-0 print:p-0">
+          {run.report.latecomer.name} joined Group {run.report.latecomer.groupIndex + 1} after the original assignment. Everyone else stayed in their group. <Link href={`/groups/${run.report.latecomer.sourceRunId}`} className="text-accent underline underline-offset-2 print:hidden">View previous report</Link>
+        </p>}
       </header>
       <section>
         <h2 className="font-serif text-xl">How the groups were formed</h2>

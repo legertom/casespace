@@ -42,6 +42,49 @@ export interface MeetingReport {
   summary: string;
   groups: MeetingReportGroup[];
   limitation: string;
+  latecomer?: { sourceRunId: string; leadId: string; name: string; groupIndex: number };
+}
+
+/** Existing memberships and group numbers stay fixed when one person arrives late. */
+export function latecomerGroupChoices(
+  context: MeetingContext,
+  lockedGroups: MeetingGroup[],
+  newcomerId: string,
+  keepNoCaseTogether: boolean,
+): number[] {
+  const newcomer = context.attendees.find((lead) => lead.id === newcomerId);
+  const originalIds = context.attendees.filter((lead) => lead.id !== newcomerId).map((lead) => lead.id);
+  const assigned = lockedGroups.flatMap((group) => group.memberIds);
+  if (!newcomer || originalIds.length < 2 || lockedGroups.some((group) =>
+    group.memberIds.length < 2 || group.memberIds.length > 5) ||
+    assigned.length !== originalIds.length ||
+    new Set(assigned).size !== assigned.length ||
+    assigned.some((id) => !originalIds.includes(id))) {
+    throw new Error("The saved assignment cannot be used for a locked latecomer placement.");
+  }
+  const available = lockedGroups.flatMap((group, index) =>
+    group.memberIds.length < 5 ? [index] : []);
+  if (keepNoCaseTogether && newcomer.cases.length === 0) {
+    const noCase = available.filter((index) => lockedGroups[index].memberIds.every((id) =>
+      context.attendees.find((lead) => lead.id === id)?.cases.length === 0));
+    if (noCase.length) return noCase;
+  }
+  return available;
+}
+
+export function addLatecomerToGroup(
+  lockedGroups: MeetingGroup[],
+  newcomerId: string,
+  index: number,
+): MeetingGroup[] {
+  if (!Number.isInteger(index) || index < 0 || index >= lockedGroups.length ||
+    lockedGroups[index].memberIds.length >= 5 ||
+    lockedGroups.some((group) => group.memberIds.includes(newcomerId))) {
+    throw new Error("That group has no open seat for this AI Lead.");
+  }
+  return lockedGroups.map((group, i) => i === index
+    ? { memberIds: [...group.memberIds, newcomerId] }
+    : { ...group, memberIds: [...group.memberIds] });
 }
 
 export function formatMeetingRunDate(date: Date): string {

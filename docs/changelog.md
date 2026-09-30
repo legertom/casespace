@@ -1,7 +1,7 @@
 ---
 title: Changelog
 audience: everyone
-updated: 2026-09-27
+updated: 2026-09-30
 code:
   - src/lib/changelog.ts
   - src/server/changelog.ts
@@ -41,6 +41,17 @@ entry is honest, an invented one is not. Add `Feedback: <id>` to point at the
 in-app report it came from.
 
 ---
+
+## 2026-09-30
+
+### A seat for a late arrival
+Requested by: Tom Leger
+
+Admins can add an AI Lead who arrives after meeting groups are formed. Open a
+saved report, choose the latecomer from the AI Leads roster, review their use
+cases, and place them with the same method used for that run. Everyone already
+assigned stays in their group. The updated assignments and explanation save as
+a new report, with a link to the earlier version.
 
 ## 2026-09-27
 

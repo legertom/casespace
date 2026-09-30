@@ -4,12 +4,13 @@ surface:
   - /groups
   - /groups/[id]
 audience: admin
-updated: 2026-09-27
+updated: 2026-09-30
 code:
   - src/app/(app)/groups/page.tsx
   - src/app/(app)/groups/[id]/page.tsx
   - src/components/groups/group-report.tsx
   - src/components/groups/group-run-controls.tsx
+  - src/components/groups/latecomer-controls.tsx
   - src/server/actions-live-groups.ts
   - src/server/meeting-group-models.ts
   - src/db/schema.ts
@@ -39,6 +40,12 @@ Coach workspace or account menu. On a report, **Print or save PDF** produces a
 document you can bring to the meeting. **Delete attempt** removes that run and
 its report.
 
+If an AI Lead arrives after groups are formed, open the saved report and choose
+**Add latecomer**. Select that lead from the remaining roster, review their
+credited cases, then place them using the saved run's method. The result saves
+as another attempt, links back to the previous report, and refreshes only the
+group the latecomer joined. You can repeat this from the new report.
+
 ## Rules that surprise people
 
 - Each method click creates a new run. Repeating a method does not overwrite an
@@ -55,6 +62,10 @@ its report.
   obstacles are supplied by people in the room, not inferred from records.
 - Case review recognizes both a lead's roster name and linked login name, as
   their profile does. A credited case under a shorter login name still counts.
+- Adding a latecomer never moves anyone already assigned. Groups of five have
+  no open seat; if every group is full, form new groups instead. Jev first
+  considers an open group of leads without credited cases for a latecomer who
+  also has none.
 - Deletion is permanent and affects only the selected run, not Coach chats or
   use cases.
 
