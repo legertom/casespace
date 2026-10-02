@@ -60,6 +60,14 @@ rate-limited, the model is unavailable, the turn timed out — and shows a short
 reference you can quote. **Report this** sits under it, the same as every
 other error in Casespace, and sends the details to the admins with one click.
 
+### Every Coach failure is kept
+Requested by: Tom Leger
+
+You no longer have to report a Coach error for the admins to know about it.
+Every failed turn is recorded — who, when, and what went wrong, never what
+you typed — and admins can see the last 30 days at the foot of the Feedback
+page.
+
 ## 2026-09-30
 
 ### A seat for a late arrival

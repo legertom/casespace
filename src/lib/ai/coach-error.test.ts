@@ -5,6 +5,8 @@ import {
   coachErrorText,
   describeCoachError,
   errorDetail,
+  failureLine,
+  failureRecord,
   readCoachError,
 } from "./coach-error";
 
@@ -134,5 +136,63 @@ describe("reading a failure back in the panel", () => {
   it("ignores JSON that isn't a failure", () => {
     expect(readCoachError("[1,2]").error).toBe(COACH_SNAG);
     expect(readCoachError('{"ok":true}').error).toBe(COACH_SNAG);
+  });
+});
+
+describe("what the failure log keeps", () => {
+  it("keeps the error's own name and words, and the status from underneath", () => {
+    const err = named("AI_RetryError", "Failed after 3 attempts.", {
+      lastError: named("AI_APICallError", "Too many requests", {
+        statusCode: 429,
+      }),
+    });
+    expect(failureRecord(err)).toEqual({
+      errorName: "AI_RetryError",
+      errorMessage: "Failed after 3 attempts.",
+      statusCode: 429,
+    });
+  });
+
+  // Unlike the detail on screen, this is the copy that outlives the log.
+  it("keeps a multi-line message whole", () => {
+    const { errorMessage } = failureRecord(new Error("first\n\nsecond"));
+    expect(errorMessage).toBe("first\n\nsecond");
+  });
+
+  it("bounds what one row can hold", () => {
+    expect(
+      failureRecord(new Error("x".repeat(5000))).errorMessage.length,
+    ).toBeLessThanOrEqual(2000);
+  });
+
+  it("records something for a thrown non-error", () => {
+    expect(failureRecord("just a string")).toEqual({
+      errorName: null,
+      errorMessage: "just a string",
+      statusCode: null,
+    });
+  });
+});
+
+describe("what an admin reads for a stored failure", () => {
+  it("is the same one line the person was shown", () => {
+    expect(
+      failureLine({
+        kind: "gateway_auth",
+        errorName: "GatewayAuthenticationError",
+        errorMessage: "Invalid API key.\n\nCreate one: …",
+      }),
+    ).toBe("GatewayAuthenticationError: Invalid API key.");
+  });
+
+  // The row keeps the gateway's words; the page does not show them.
+  it("shows nothing for an account problem", () => {
+    expect(
+      failureLine({
+        kind: "gateway_account",
+        errorName: "GatewayError",
+        errorMessage: "Insufficient funds: add $5.00",
+      }),
+    ).toBeNull();
   });
 });

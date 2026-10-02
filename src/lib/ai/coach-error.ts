@@ -151,6 +151,52 @@ export function describeCoachError(err: unknown): {
   };
 }
 
+const STORED_MESSAGE_LIMIT = 2000;
+
+/**
+ * The error as the `coach_failures` row keeps it: its own name and words, and
+ * the HTTP status from wherever in the chain one turns up. The message is
+ * kept whole up to a limit — this is the copy that outlives the log.
+ */
+export function failureRecord(err: unknown): {
+  errorName: string | null;
+  errorMessage: string;
+  statusCode: number | null;
+} {
+  const links = chain(err);
+  const [outer] = links;
+  const message =
+    outer && typeof outer.message === "string" && outer.message
+      ? outer.message
+      : String(err);
+  const status = links
+    .map((e) => e.statusCode)
+    .find((s): s is number => typeof s === "number");
+  return {
+    errorName:
+      outer && typeof outer.name === "string" && outer.name ? outer.name : null,
+    errorMessage:
+      message.length > STORED_MESSAGE_LIMIT
+        ? `${message.slice(0, STORED_MESSAGE_LIMIT - 1)}…`
+        : message,
+    statusCode: status ?? null,
+  };
+}
+
+/**
+ * The one line an admin reads for a stored failure. Same rule as the panel:
+ * an account problem's words may quote a balance, so they stay in the row and
+ * off the page.
+ */
+export function failureLine(row: {
+  kind: string;
+  errorName: string | null;
+  errorMessage: string;
+}): string | null {
+  if (row.kind === "gateway_account") return null;
+  return errorDetail({ name: row.errorName ?? undefined, message: row.errorMessage });
+}
+
 /** A failure, as the one string the chat stream has room for. */
 export function coachErrorText(failure: CoachFailure): string {
   return JSON.stringify(failure);

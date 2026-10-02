@@ -911,3 +911,52 @@ export const feedback = pgTable(
   },
   (t) => [index("feedback_created_idx").on(t.createdAt)],
 );
+
+// ---------------------------------------------------------------------------
+// Coach failures — every failed turn, kept. The platform's runtime logs are
+// gone within hours, and a person who hit an error rarely mentions it the
+// same day; the first one of these to matter was reported with a screenshot
+// and nothing else. A row is what the log line said, for as long as it is
+// useful, and is written whether or not anyone presses Report.
+//
+// Never the transcript. A row holds who, which chat, how long the history
+// was, and the error's own words — enough to diagnose, nothing anyone typed.
+// Admin-only to read, on the feedback page.
+// ---------------------------------------------------------------------------
+
+export const coachFailures = pgTable(
+  "coach_failures",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** The reference the person was shown, and the one in the server log. */
+    ref: text("ref").notNull(),
+    /** Before the stream opened, the turn itself, or one tool inside it. */
+    stage: text("stage").$type<"setup" | "turn" | "tool">().notNull(),
+    /** The diagnosis — a CoachErrorKind. Text, so a new kind needs no migration. */
+    kind: text("kind").notNull(),
+    /** Null for a failure before sign-in resolved, or once the account is gone. */
+    userId: uuid("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    /**
+     * Text and no foreign key, on purpose: the id comes from the browser, a
+     * first turn fails before its chat row exists, and a log that rejects a
+     * row over a malformed id has lost the failure it was there to keep.
+     */
+    chatId: text("chat_id"),
+    intent: text("intent"),
+    model: text("model").notNull(),
+    /** How long the transcript was. All this table says about it. */
+    messageCount: integer("message_count"),
+    errorName: text("error_name"),
+    errorMessage: text("error_message").notNull(),
+    statusCode: integer("status_code"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("coach_failures_created_idx").on(t.createdAt),
+    index("coach_failures_ref_idx").on(t.ref),
+  ],
+);

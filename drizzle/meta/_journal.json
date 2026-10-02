@@ -134,6 +134,13 @@
       "when": 1790563606602,
       "tag": "0018_stale_chronomancer",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790967119192,
+      "tag": "0019_coach_failures",
+      "breakpoints": true
     }
   ]
 }

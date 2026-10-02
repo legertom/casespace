@@ -15,9 +15,12 @@ except the Coach, notes parsing, and the weekly post works without it — see
 
 ## The Coach hit a snag
 
-Ask for the **reference** under the error — six characters, e.g. `ZMGZIJ` —
-or look for it on a [feedback](../features/feedback.md) report if they
-pressed **Report this**. Then search the Vercel runtime logs for it:
+Start at the foot of the [Feedback](../features/feedback.md#coach-failures)
+page: every failed Coach turn from the last 30 days is listed there with who,
+when, and why, whether or not they reported it. If you have the **reference**
+from under their error — six characters, e.g. `ZMGZIJ` — it is on the row.
+
+For the full error, search the Vercel runtime logs for the reference:
 
 ```
 [casespace error ZMGZIJ] coach turn failed {"kind":"…","userId":"…","chatId":"…","messages":4,"intent":"qa"}
@@ -36,9 +39,9 @@ pressed **Report this**. Then search the Vercel runtime logs for it:
 | `transcript` | A tool call in the history has no result. The route repairs the cases it knows of, so this is a new one — the `chatId` is the conversation to look at. |
 | `unknown` | None of the above. The error itself follows the JSON. |
 
-Vercel keeps runtime logs briefly — hours on some plans, not weeks. If the
-report arrives the next day, the reference on the feedback item and its
-one-line detail may be all that is left, which is why the panel shows both.
+Vercel keeps runtime logs briefly — hours on some plans, not weeks. After
+that the `coach_failures` row is the record: `error_message` holds the
+error's message whole, where the page shows one line of it.
 
 **If someone says every message fails, even "hi":** that was a proposal card
 answered in the composer instead of clicked, before 2026-10-02. It can't

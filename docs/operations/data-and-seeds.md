@@ -1,7 +1,7 @@
 ---
 title: Data and seeds
 audience: engineering
-updated: 2026-08-25
+updated: 2026-10-02
 code:
   - scripts/seed.ts
   - scripts/demo-data.ts
@@ -89,7 +89,7 @@ Identity: `users`, `user_emails`, `allowed_login_emails`, `app_settings` ·
 People: `people`, `teams`, `ai_leads`, `ai_lead_teams`, `elt_orgs` ·
 Records: `use_cases` (incl. `in_program`), `use_case_authors`, `use_case_links`, `use_case_urls`, `status_changes` ·
 Program: `pulse_metrics`, `pulse_snapshots`, `posts` ·
-Surfaces: `pats`, `ai_usage`, `coach_chats` ·
+Surfaces: `pats`, `ai_usage`, `coach_chats`, `coach_failures` ·
 Conversation: `use_case_comments`, `notifications`, `feedback`
 
 ## Related

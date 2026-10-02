@@ -16,6 +16,7 @@ code:
   - src/lib/ai/coach-prompt.ts
   - src/lib/ai/coach-intent.ts
   - src/lib/ai/coach-error.ts
+  - src/server/coach-failures.ts
   - src/lib/ai/transcript-repair.ts
   - src/lib/ai/decision.ts
   - src/components/error-note.tsx
@@ -296,7 +297,13 @@ down the key, the Coach is rate-limited, the model id isn't on the gateway,
 the provider is down, the turn timed out. Anything else is "hit a snag" with
 the real error underneath. `src/lib/ai/coach-error.ts` holds the mapping.
 
-The server logs one line per failure, under the same reference:
+Every failure is also **kept**: a row in `coach_failures`, written whether or
+not anyone presses Report, and listed for admins at the foot of the
+[Feedback](feedback.md#coach-failures) page for 30 days. The platform's
+runtime logs roll over within hours, and people rarely mention an error the
+day it happens; the row is what is still there when they do.
+
+The server also logs one line per failure, under the same reference:
 
 ```
 [casespace error ZMGZIJ] coach turn failed {"kind":"gateway_auth","model":"…","userId":"…","chatId":"…","messages":4,"intent":"qa"} <the error>
@@ -305,8 +312,10 @@ The server logs one line per failure, under the same reference:
 `turn` is the whole turn failing; `tool` is one tool failing inside a turn
 that carried on (the Coach is told, with the reference); `setup` is anything
 before the stream opened. The line says who, which chat, and how long the
-transcript was. **It never contains what anyone typed** — a conversation with
-the Coach is not log material.
+transcript was, followed by the error itself. **The transcript is never
+logged or stored** — a conversation with the Coach is not log material. The
+`coach_failures` row holds the same fields and the error's own name, message,
+and HTTP status, and nothing else.
 
 A failed turn keeps the message you sent and stores nothing for the reply
 that never came. No tokens were used if the failure was before the model, so

@@ -50,6 +50,7 @@ import {
   type CoachIntent,
 } from "@/lib/domain";
 import { canUseChat, visibleHistoryNote } from "@/lib/permissions";
+import { recordCoachFailure } from "@/server/coach-failures";
 import { getCoachLearnings } from "@/server/coach-learnings-queries";
 import { errorRef } from "@/server/guards";
 import {
@@ -75,40 +76,65 @@ interface TurnContext {
   messages?: number;
 }
 
+/** Failure rows still being written — see `reportFailure`. */
+type Saves = Promise<void>[];
+
 /**
- * One failure, logged once, under a reference the person can quote. The
- * prefix matches the one server actions log under, so "search the logs for
- * the reference" is the same instruction everywhere.
+ * One failure, reported once, under a reference the person can quote: a log
+ * line, and a `coach_failures` row that is still there after the platform's
+ * logs have rolled over. The prefix matches the one server actions log under,
+ * so "search for the reference" is the same instruction everywhere.
+ *
+ * The row is written without being waited on here — two of the three callers
+ * are synchronous hooks inside the stream — so the write goes on `saves` and
+ * the request settles them before it ends. A function that returns with a
+ * write still in flight may never finish it.
  */
 function reportFailure(
   stage: "setup" | "turn" | "tool",
   err: unknown,
   ctx: TurnContext,
-  extra: Record<string, unknown> = {},
+  saves: Saves,
 ): CoachFailure {
   const ref = errorRef();
   const { kind, error, detail } = describeCoachError(err);
   console.error(
     `[casespace error ${ref}] coach ${stage} failed`,
-    JSON.stringify({ kind, model: MODELS.coach, ...ctx, ...extra }),
+    JSON.stringify({ kind, model: MODELS.coach, ...ctx }),
     err,
+  );
+  saves.push(
+    recordCoachFailure({
+      ref,
+      stage,
+      kind,
+      model: MODELS.coach,
+      userId: ctx.userId,
+      chatId: ctx.chatId,
+      intent: ctx.intent,
+      messageCount: ctx.messages,
+      err,
+    }),
   );
   return { error, detail, ref };
 }
 
 export async function POST(req: Request) {
   const ctx: TurnContext = {};
+  const saves: Saves = [];
   try {
-    return await respond(req, ctx);
+    return await respond(req, ctx, saves);
   } catch (err) {
     // Anything thrown before the stream opens — an unreadable body, the
     // database, a transcript the SDK can't convert. Same shape as a failure
     // mid-stream, so the panel shows both the same way.
-    return Response.json(reportFailure("setup", err, ctx), { status: 500 });
+    const failure = reportFailure("setup", err, ctx, saves);
+    await Promise.all(saves);
+    return Response.json(failure, { status: 500 });
   }
 }
 
-async function respond(req: Request, ctx: TurnContext) {
+async function respond(req: Request, ctx: TurnContext, saves: Saves) {
   const user = await getCurrentUser();
   if (!user) {
     return Response.json(
@@ -457,16 +483,22 @@ async function respond(req: Request, ctx: TurnContext) {
         if (turnErrors.has(err)) {
           // What the panel shows: the failure whole, as the one string the
           // stream has room for. See lib/ai/coach-error.
-          const text = coachErrorText(reportFailure("turn", err, ctx));
+          const text = coachErrorText(
+            reportFailure("turn", err, ctx, saves),
+          );
           reported.add(text);
           return text;
         }
         // What the model reads as the tool's result — so plain words, and the
         // reference in case the Coach relays it.
-        const { detail, ref } = reportFailure("tool", err, ctx);
+        const { detail, ref } = reportFailure("tool", err, ctx, saves);
         return `The tool failed (reference ${ref}): ${detail ?? "no detail"}`;
       },
       onEnd: async ({ messages: finalMessages }) => {
+        // The stream stays open until this returns, which is what gives any
+        // failure rows from this turn time to land. recordCoachFailure never
+        // rejects.
+        await Promise.all(saves);
         try {
           if (chatId) {
             const firstUserText =

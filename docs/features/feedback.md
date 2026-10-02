@@ -2,11 +2,13 @@
 title: Feedback
 surface: /feedback
 audience: admin
-updated: 2026-08-29
+updated: 2026-10-02
 code:
   - src/app/(app)/feedback/page.tsx
   - src/components/feedback/feedback-item.tsx
   - src/server/actions-feedback.ts
+  - src/server/feedback-queries.ts
+  - src/server/coach-failures.ts
   - src/components/error-note.tsx
   - src/components/coach/feedback-proposal-card.tsx
   - src/lib/ai/feedback-proposal.ts
@@ -56,6 +58,26 @@ model — see `composeFeedback` in `src/lib/ai/feedback-proposal.ts`. It is the
 one line on the card an admin reads as fact, so nothing the Coach can be
 talked into reaches it.
 
+## Coach failures
+
+Below the reports, the page lists **every Coach turn that failed in the last
+30 days** — recorded automatically, whether or not the person reported it.
+Each line has who, when (Eastern), the reference they were shown, what went
+wrong, and the error in one line. A failure that was also reported says so,
+and its reference matches the one on the report above.
+
+This list is a log, not a queue: there is nothing to resolve, and rows age
+out of view on their own. It exists because the first Coach failure that
+mattered arrived as a screenshot a day late, after the server logs had
+already rolled over.
+
+**It never shows what anyone typed** — the table doesn't hold it. And when
+the failure is the AI gateway account itself, the line says so and stops: the
+gateway's own wording can quote a balance, and no dollar figures appear in
+Casespace. The full message is in the `coach_failures` row.
+
+See [the Coach](coach.md#when-a-turn-fails) for what each failure means.
+
 ## Who can do what
 
 | | Everyone signed in | Admin |
@@ -64,6 +86,7 @@ talked into reaches it.
 | File through the Coach | ✅ | ✅ |
 | See the feedback page | — | ✅ |
 | Resolve or reopen an item | — | ✅ |
+| See Coach failures | — | ✅ |
 
 Open items are listed first; resolved ones stay visible below, so nobody files
 the same thing twice.
