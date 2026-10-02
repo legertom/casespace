@@ -4,7 +4,7 @@ surface:
   - /coach
   - /api/coach
 audience: everyone
-updated: 2026-09-27
+updated: 2026-10-02
 code:
   - src/app/(app)/coach/page.tsx
   - src/app/api/coach/route.ts
@@ -15,6 +15,10 @@ code:
   - src/components/coach/notes-door.tsx
   - src/lib/ai/coach-prompt.ts
   - src/lib/ai/coach-intent.ts
+  - src/lib/ai/coach-error.ts
+  - src/lib/ai/transcript-repair.ts
+  - src/lib/ai/decision.ts
+  - src/components/error-note.tsx
   - src/lib/ai/proposal.ts
   - src/lib/ai/proposal-tools.ts
   - src/lib/ai/discovery.ts
@@ -227,6 +231,27 @@ UUID; the server resolves people and teams against the directory when you
 accept. An unmatched name is kept as an unlinked display name rather than
 dropped.
 
+**You can reply to a card instead of clicking it.** A proposal card is a tool
+call waiting on your click, and typing "change the net impact statement to…"
+is the natural answer to a card that is nearly right. The Coach is told the
+card was left undecided — neither accepted nor dismissed, nothing written —
+and reads your reply. The card itself stays on screen and stays clickable;
+that stand-in exists only in what the model reads, never in the saved
+conversation, so a later click is still a real decision.
+
+This used to lock the conversation. A tool call with no result makes the
+whole transcript unsendable, and because the browser sends the whole history
+every turn, every later message failed too — "hi" included. The repair is
+`settleUndecidedCards` in `src/lib/ai/transcript-repair.ts`, and it is
+unit-tested against the SDK's own converter. A *read* tool left hanging by a
+cut-off stream is dropped instead: that is not a decision anyone declined to
+make, and the Coach can simply look again.
+
+**An older card can still be applied.** If the Coach proposes again after your
+reply, both cards are live, and applying the earlier one applies the earlier
+values. It is your click either way, which is the rule — but read which card
+you are clicking.
+
 **A turn is capped at six steps.** `stopWhen: isStepCount(6)` bounds how many
 tool round-trips one message can trigger, so a confused conversation can't
 loop indefinitely. After proposing, it is told to stop and wait for your
@@ -259,6 +284,36 @@ it means a client cannot change an existing chat's intent or re-point it at
 another record by sending different values. `src/lib/ai/coach-intent.ts` holds
 the rule, and it is unit-tested.
 
+## When a turn fails
+
+The panel shows what happened, the underlying error in one line, and a
+six-character **reference** — the same error note every other part of
+Casespace uses, with the same **Report this** button, which files
+[feedback](feedback.md) with the reference and detail attached.
+
+The message names the cause where the cause is knowable: the gateway turned
+down the key, the Coach is rate-limited, the model id isn't on the gateway,
+the provider is down, the turn timed out. Anything else is "hit a snag" with
+the real error underneath. `src/lib/ai/coach-error.ts` holds the mapping.
+
+The server logs one line per failure, under the same reference:
+
+```
+[casespace error ZMGZIJ] coach turn failed {"kind":"gateway_auth","model":"…","userId":"…","chatId":"…","messages":4,"intent":"qa"} <the error>
+```
+
+`turn` is the whole turn failing; `tool` is one tool failing inside a turn
+that carried on (the Coach is told, with the reference); `setup` is anything
+before the stream opened. The line says who, which chat, and how long the
+transcript was. **It never contains what anyone typed** — a conversation with
+the Coach is not log material.
+
+A failed turn keeps the message you sent and stores nothing for the reply
+that never came. No tokens were used if the failure was before the model, so
+there is nothing in `ai_usage` for it either.
+
+See [troubleshooting](../operations/troubleshooting.md#the-coach-hit-a-snag).
+
 ## Without a gateway key
 
 The route returns 503 with a plain notice and the panel says so. Everything
@@ -277,5 +332,6 @@ community record unless they are on the AI Leads roster.
 - [Course suggestions](course-suggestions.md) — what the wizard offers at the end
 - [Logging a use case](logging-a-use-case.md) — the three doors
 - [AI configuration](../operations/ai-config.md) — models, usage, the writes rule
+- [Troubleshooting](../operations/troubleshooting.md#the-coach-hit-a-snag) — finding a failed turn in the logs
 - [Gates and ROI](../concepts/gates-and-roi.md) — the bars it teaches
 - [Comments](comments.md)

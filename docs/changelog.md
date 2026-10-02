@@ -1,7 +1,7 @@
 ---
 title: Changelog
 audience: everyone
-updated: 2026-09-30
+updated: 2026-10-02
 code:
   - src/lib/changelog.ts
   - src/server/changelog.ts
@@ -41,6 +41,24 @@ entry is honest, an invented one is not. Add `Feedback: <id>` to point at the
 in-app report it came from.
 
 ---
+
+## 2026-10-02
+
+### Answer a Coach proposal in your own words
+Requested by: Jen Kampf
+
+When the Coach puts a proposal card in front of you — an ROI edit, say — you
+can now type a reply instead of clicking, and it will read what you wrote and
+propose again. Before, replying past a card quietly locked the conversation:
+every message after it failed, with nothing to explain why. Conversations
+stuck that way work again without starting over.
+
+### Coach errors that say what happened
+
+A failed Coach turn now tells you why when it can — the Coach is being
+rate-limited, the model is unavailable, the turn timed out — and shows a short
+reference you can quote. **Report this** sits under it, the same as every
+other error in Casespace, and sends the details to the admins with one click.
 
 ## 2026-09-30
 

@@ -21,6 +21,15 @@ export const DISMISSED_FEEDBACK =
   "Dismissed — do not file this. Ask what to change if unclear.";
 
 /**
+ * Not a decision, and never stored as one: what the model is told about a card
+ * the human typed a reply past instead of clicking. See
+ * `settleUndecidedCards` in lib/ai/transcript-repair — it exists only in the
+ * model's view of the transcript, so no card ever settles on it.
+ */
+export const LEFT_UNDECIDED =
+  "No decision — the human replied in the chat without choosing on this card. It was neither accepted nor dismissed, and nothing was written on its account. The card is still on their screen. Read their reply: if it changes what should be proposed, propose again rather than treating this one as agreed.";
+
+/**
  * The Discovery checkpoint card's four outcomes.
  *
  * These read as instructions because that is what they are: the string is the

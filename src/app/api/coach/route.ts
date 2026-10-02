@@ -5,6 +5,7 @@ import {
   streamText,
   toUIMessageStream,
   tool,
+  type TextStreamPart,
   type UIMessage,
 } from "ai";
 import { eq } from "drizzle-orm";
@@ -22,12 +23,21 @@ import {
   resolveChatUseCaseId,
   sanitizeRecordId,
 } from "@/lib/ai/coach-intent";
+import {
+  coachErrorText,
+  describeCoachError,
+  type CoachFailure,
+} from "@/lib/ai/coach-error";
 import { coachInstructions } from "@/lib/ai/coach-prompt";
 import { courseTools } from "@/lib/ai/course-tools";
 import {
   discoveryProposalTools,
   proposalTools,
 } from "@/lib/ai/proposal-tools";
+import {
+  settleUndecidedCards,
+  withoutEmptyAssistantTurns,
+} from "@/lib/ai/transcript-repair";
 import { recordAiUsage } from "@/lib/ai/usage";
 import { getCurrentUser } from "@/lib/current-user";
 import {
@@ -41,6 +51,7 @@ import {
 } from "@/lib/domain";
 import { canUseChat, visibleHistoryNote } from "@/lib/permissions";
 import { getCoachLearnings } from "@/server/coach-learnings-queries";
+import { errorRef } from "@/server/guards";
 import {
   CHECKPOINT_HISTORY_LIMIT,
   listDiscoveryCheckpoints,
@@ -51,19 +62,81 @@ import { getUseCase, listUseCases } from "@/server/use-case-queries";
 
 export const maxDuration = 120;
 
+/**
+ * Who and what a failure happened to — everything the log line needs to be
+ * findable from a person's name, and nothing of what they typed. Filled in as
+ * the request learns it, so an early failure logs what was known by then.
+ */
+interface TurnContext {
+  userId?: string;
+  chatId?: string;
+  intent?: string;
+  /** How long the transcript was, which is all the log says about it. */
+  messages?: number;
+}
+
+/**
+ * One failure, logged once, under a reference the person can quote. The
+ * prefix matches the one server actions log under, so "search the logs for
+ * the reference" is the same instruction everywhere.
+ */
+function reportFailure(
+  stage: "setup" | "turn" | "tool",
+  err: unknown,
+  ctx: TurnContext,
+  extra: Record<string, unknown> = {},
+): CoachFailure {
+  const ref = errorRef();
+  const { kind, error, detail } = describeCoachError(err);
+  console.error(
+    `[casespace error ${ref}] coach ${stage} failed`,
+    JSON.stringify({ kind, model: MODELS.coach, ...ctx, ...extra }),
+    err,
+  );
+  return { error, detail, ref };
+}
+
 export async function POST(req: Request) {
+  const ctx: TurnContext = {};
+  try {
+    return await respond(req, ctx);
+  } catch (err) {
+    // Anything thrown before the stream opens — an unreadable body, the
+    // database, a transcript the SDK can't convert. Same shape as a failure
+    // mid-stream, so the panel shows both the same way.
+    return Response.json(reportFailure("setup", err, ctx), { status: 500 });
+  }
+}
+
+async function respond(req: Request, ctx: TurnContext) {
   const user = await getCurrentUser();
-  if (!user) return new Response("Unauthorized", { status: 401 });
+  if (!user) {
+    return Response.json(
+      { error: "You've been signed out. Reload the page to sign back in." },
+      { status: 401 },
+    );
+  }
+  ctx.userId = user.id;
   if (!aiConfigured()) {
     return Response.json({ error: AI_NOT_CONFIGURED_MESSAGE }, { status: 503 });
   }
 
-  const { messages, chatId, intent, useCaseId } = (await req.json()) as {
+  const {
+    messages: sent,
+    chatId,
+    intent,
+    useCaseId,
+  } = (await req.json()) as {
     messages: UIMessage[];
     chatId?: string;
     intent?: string;
     useCaseId?: string;
   };
+  // An earlier failed turn may have left an empty assistant message in the
+  // stored chat; it goes no further than this.
+  const messages = withoutEmptyAssistantTurns(sent);
+  ctx.chatId = chatId;
+  ctx.messages = messages.length;
 
   const db = getDb();
 
@@ -86,11 +159,15 @@ export async function POST(req: Request) {
       .from(coachChats)
       .where(eq(coachChats.id, chatId));
     if (!canUseChat(existing?.userId, user.id)) {
-      return new Response("Forbidden", { status: 403 });
+      return Response.json(
+        { error: "That conversation belongs to someone else." },
+        { status: 403 },
+      );
     }
   }
 
   const chatIntent = resolveChatIntent(existing?.intent, intent);
+  ctx.intent = chatIntent;
 
   // A brand-new chat may name the record it was opened from; an existing one
   // keeps the record it already had. Either way the id is validated against a
@@ -318,6 +395,12 @@ export async function POST(req: Request) {
     ...proposalTools,
   };
 
+  // The cards are the tools with no execute — the same structural fact the
+  // writes rule rests on, read off the table rather than listed a second time.
+  const toolTable: Record<string, { execute?: unknown }> = tools;
+  const isCard = (name: string) =>
+    name in toolTable && typeof toolTable[name].execute !== "function";
+
   const result = streamText({
     model: MODELS.coach,
     instructions: coachInstructions({
@@ -327,16 +410,62 @@ export async function POST(req: Request) {
       intent: chatIntent,
       useCase: linkedUseCase,
     }),
-    messages: await convertToModelMessages(messages),
+    // Two ways a transcript arrives with a tool call nobody answered, and
+    // either one makes every later turn unsendable. A card someone typed a
+    // reply past is told to the model as undecided; a read tool a cut-off
+    // stream left hanging is simply dropped. Only the model's view is
+    // repaired — what is stored, and what the browser shows, keeps the card
+    // waiting on its click. See lib/ai/transcript-repair.
+    messages: await convertToModelMessages(
+      settleUndecidedCards(messages, isCard),
+      { ignoreIncompleteToolCalls: true },
+    ),
     tools,
     stopWhen: isStepCount(6),
     providerOptions: gatewayOptions(user.id, "coach"),
+    // The SDK's default prints the bare error. It is reported below instead,
+    // once, with a reference and the context that makes it findable.
+    onError: () => {},
   });
+
+  // The UI stream's one error hook fires for two different things: the turn
+  // itself failing, and a single tool failing inside a turn that carries on.
+  // Marking the first kind as it passes is what tells them apart.
+  const turnErrors = new Set<unknown>();
+  const reported = new Set<string>();
+  const stream = result.stream.pipeThrough(
+    new TransformStream<
+      TextStreamPart<typeof tools>,
+      TextStreamPart<typeof tools>
+    >({
+      transform(part, controller) {
+        if (part.type === "error") turnErrors.add(part.error);
+        controller.enqueue(part);
+      },
+    }),
+  );
 
   return createUIMessageStreamResponse({
     stream: toUIMessageStream({
-      stream: result.stream,
+      stream,
       originalMessages: messages,
+      onError: (err) => {
+        // The SDK hands a turn's error text back through this hook a second
+        // time, wrapped, while it assembles the messages for onEnd. Already
+        // reported; not a second failure.
+        if (err instanceof Error && reported.has(err.message)) return err.message;
+        if (turnErrors.has(err)) {
+          // What the panel shows: the failure whole, as the one string the
+          // stream has room for. See lib/ai/coach-error.
+          const text = coachErrorText(reportFailure("turn", err, ctx));
+          reported.add(text);
+          return text;
+        }
+        // What the model reads as the tool's result — so plain words, and the
+        // reference in case the Coach relays it.
+        const { detail, ref } = reportFailure("tool", err, ctx);
+        return `The tool failed (reference ${ref}): ${detail ?? "no detail"}`;
+      },
       onEnd: async ({ messages: finalMessages }) => {
         try {
           if (chatId) {
@@ -345,13 +474,17 @@ export async function POST(req: Request) {
                 .find((m) => m.role === "user")
                 ?.parts.find((p) => p.type === "text")
                 ?.text.slice(0, 80) ?? "Conversation";
+            // A turn that failed outright still ends with an assistant
+            // message, an empty one. What the person sent is worth keeping;
+            // that is not.
+            const toStore = withoutEmptyAssistantTurns(finalMessages);
             await db
               .insert(coachChats)
               .values({
                 id: chatId,
                 userId: user.id,
                 title: firstUserText,
-                messages: finalMessages,
+                messages: toStore,
                 intent: chatIntent,
                 useCaseId: linkedUseCase?.id ?? null,
               })
@@ -362,19 +495,29 @@ export async function POST(req: Request) {
               // here would defeat the check at the top of this route.
               .onConflictDoUpdate({
                 target: coachChats.id,
-                set: { messages: finalMessages, updatedAt: new Date() },
+                set: { messages: toStore, updatedAt: new Date() },
               });
           }
-          const usage = await result.totalUsage;
-          await recordAiUsage({
-            userId: user.id,
-            feature: "coach",
-            model: MODELS.coach,
-            inputTokens: usage.inputTokens,
-            outputTokens: usage.outputTokens,
-          });
+          // Rejects when the turn produced nothing, which the turn's own
+          // failure has already reported — there is no usage to record.
+          const usage = await Promise.resolve(result.totalUsage).catch(
+            () => null,
+          );
+          if (usage) {
+            await recordAiUsage({
+              userId: user.id,
+              feature: "coach",
+              model: MODELS.coach,
+              inputTokens: usage.inputTokens,
+              outputTokens: usage.outputTokens,
+            });
+          }
         } catch (err) {
-          console.error("coach persistence failed", err);
+          console.error(
+            "coach persistence failed",
+            JSON.stringify(ctx),
+            err,
+          );
         }
       },
     }),

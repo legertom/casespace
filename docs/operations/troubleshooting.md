@@ -1,7 +1,7 @@
 ---
 title: Troubleshooting
 audience: engineering
-updated: 2026-08-14
+updated: 2026-10-02
 ---
 
 # Troubleshooting
@@ -12,6 +12,38 @@ No gateway credentials. Set `AI_GATEWAY_API_KEY`, or enable AI Gateway on the
 Vercel project (locally, `vercel env pull` supplies an OIDC token). Everything
 except the Coach, notes parsing, and the weekly post works without it — see
 [AI configuration](ai-config.md).
+
+## The Coach hit a snag
+
+Ask for the **reference** under the error — six characters, e.g. `ZMGZIJ` —
+or look for it on a [feedback](../features/feedback.md) report if they
+pressed **Report this**. Then search the Vercel runtime logs for it:
+
+```
+[casespace error ZMGZIJ] coach turn failed {"kind":"…","userId":"…","chatId":"…","messages":4,"intent":"qa"}
+```
+
+`kind` is the diagnosis the person was shown:
+
+| `kind` | Means |
+|---|---|
+| `gateway_auth` | The gateway rejected the key or token. Check `AI_GATEWAY_API_KEY`. |
+| `gateway_account` | The gateway account needs attention. The detail is kept off the screen — it is in this log line. |
+| `rate_limit` | Too many requests. Usually passes on its own. |
+| `model_missing` | The id in `src/lib/ai/config.ts` isn't on the gateway. |
+| `provider_down` | The provider returned a 5xx or reported itself overloaded. |
+| `timeout` | The call was aborted or timed out. |
+| `transcript` | A tool call in the history has no result. The route repairs the cases it knows of, so this is a new one — the `chatId` is the conversation to look at. |
+| `unknown` | None of the above. The error itself follows the JSON. |
+
+Vercel keeps runtime logs briefly — hours on some plans, not weeks. If the
+report arrives the next day, the reference on the feedback item and its
+one-line detail may be all that is left, which is why the panel shows both.
+
+**If someone says every message fails, even "hi":** that was a proposal card
+answered in the composer instead of clicked, before 2026-10-02. It can't
+happen that way now, and a conversation stuck from before then works again
+as it is — see [the Coach](../features/coach.md#rules-that-surprise-people).
 
 ## The weekly post didn't appear on Monday
 

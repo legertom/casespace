@@ -15,7 +15,7 @@ import {
 } from "./use-case-service";
 
 /** Short, sayable-over-a-desk, and unique enough to grep the logs for. */
-function errorRef() {
+export function errorRef() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
 }
 

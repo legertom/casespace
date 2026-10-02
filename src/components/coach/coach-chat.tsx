@@ -10,6 +10,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { ErrorNote } from "@/components/error-note";
+import { readCoachError } from "@/lib/ai/coach-error";
 import type { DiscoveryCheckpoint } from "@/lib/ai/discovery";
 import type { Proposal } from "@/lib/ai/proposal";
 import type { FeedbackProposal } from "@/lib/ai/feedback-proposal";
@@ -385,12 +387,11 @@ export function CoachChat({
             Thinking…
           </p>
         )}
+        {/* The route sends a failure whole — what happened, the detail, and a
+            reference matching its log line — so a failed turn reads and
+            reports like every other error here. See lib/ai/coach-error. */}
         {error && (
-          <p role="alert" className="my-2 border-l-2 border-accent bg-accent-wash px-3 py-2 text-sm">
-            {error.message.includes("AI features")
-              ? error.message
-              : "The Coach hit a snag. Try sending that again."}
-          </p>
+          <ErrorNote result={readCoachError(error.message)} className="my-2" />
         )}
         <div ref={bottomRef} />
       </div>
