@@ -913,11 +913,11 @@ export const feedback = pgTable(
 );
 
 // ---------------------------------------------------------------------------
-// Coach failures — every failed turn, kept. The platform's runtime logs are
-// gone within hours, and a person who hit an error rarely mentions it the
-// same day; the first one of these to matter was reported with a screenshot
-// and nothing else. A row is what the log line said, for as long as it is
-// useful, and is written whether or not anyone presses Report.
+// Coach failures — every failed turn, kept. The runtime log has them too,
+// for as long as the platform keeps it and for anyone who knows what to
+// search for; the first one of these to matter was reported with a screenshot
+// and nothing else. A row says who and when without a search, and is written
+// whether or not anyone presses Report.
 //
 // Never the transcript. A row holds who, which chat, how long the history
 // was, and the error's own words — enough to diagnose, nothing anyone typed.

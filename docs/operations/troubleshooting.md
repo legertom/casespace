@@ -20,7 +20,17 @@ page: every failed Coach turn from the last 30 days is listed there with who,
 when, and why, whether or not they reported it. If you have the **reference**
 from under their error — six characters, e.g. `ZMGZIJ` — it is on the row.
 
-For the full error, search the Vercel runtime logs for the reference:
+For the full error, search the production runtime logs for the reference:
+
+```bash
+vercel logs -p casespace --scope tom-legers-projects --environment production --no-branch --since 7d -q "ZMGZIJ"
+```
+
+Production is the `casespace` project in the **Tom Leger's Clever projects**
+team (`tom-legers-projects`), serving `clever-casespace.vercel.app`. A second
+project of the same name in a personal team is connected to the same
+repository and has never built — an empty log search usually means that one
+was searched instead. The line to look for:
 
 ```
 [casespace error ZMGZIJ] coach turn failed {"kind":"…","userId":"…","chatId":"…","messages":4,"intent":"qa"}
@@ -39,8 +49,8 @@ For the full error, search the Vercel runtime logs for the reference:
 | `transcript` | A tool call in the history has no result. The route repairs the cases it knows of, so this is a new one — the `chatId` is the conversation to look at. |
 | `unknown` | None of the above. The error itself follows the JSON. |
 
-Vercel keeps runtime logs briefly — hours on some plans, not weeks. After
-that the `coach_failures` row is the record: `error_message` holds the
+Runtime logs are not kept forever — how long depends on the Vercel plan.
+Past that, the `coach_failures` row is the record: `error_message` holds the
 error's message whole, where the page shows one line of it.
 
 **If someone says every message fails, even "hi":** that was a proposal card

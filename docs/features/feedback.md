@@ -68,8 +68,9 @@ and its reference matches the one on the report above.
 
 This list is a log, not a queue: there is nothing to resolve, and rows age
 out of view on their own. It exists because the first Coach failure that
-mattered arrived as a screenshot a day late, after the server logs had
-already rolled over.
+mattered arrived as a screenshot and nothing else: the server had logged it,
+but as a bare error with no name on it, findable only by someone who already
+knew what to search for.
 
 **It never shows what anyone typed** — the table doesn't hold it. And when
 the failure is the AI gateway account itself, the line says so and stops: the

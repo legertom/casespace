@@ -81,8 +81,8 @@ type Saves = Promise<void>[];
 
 /**
  * One failure, reported once, under a reference the person can quote: a log
- * line, and a `coach_failures` row that is still there after the platform's
- * logs have rolled over. The prefix matches the one server actions log under,
+ * line, and a `coach_failures` row that says who and when without a log
+ * search. The prefix matches the one server actions log under,
  * so "search for the reference" is the same instruction everywhere.
  *
  * The row is written without being waited on here — two of the three callers

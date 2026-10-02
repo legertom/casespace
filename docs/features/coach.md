@@ -299,9 +299,9 @@ the real error underneath. `src/lib/ai/coach-error.ts` holds the mapping.
 
 Every failure is also **kept**: a row in `coach_failures`, written whether or
 not anyone presses Report, and listed for admins at the foot of the
-[Feedback](feedback.md#coach-failures) page for 30 days. The platform's
-runtime logs roll over within hours, and people rarely mention an error the
-day it happens; the row is what is still there when they do.
+[Feedback](feedback.md#coach-failures) page for 30 days. Runtime logs are
+kept only for a while and take the CLI and the right search to read; the row
+says who and when without either, and is still there when the logs are not.
 
 The server also logs one line per failure, under the same reference:
 
