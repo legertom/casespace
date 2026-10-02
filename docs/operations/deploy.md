@@ -1,7 +1,7 @@
 ---
 title: Deploying
 audience: engineering
-updated: 2026-08-25
+updated: 2026-10-02
 code:
   - vercel.json
   - package.json
@@ -18,11 +18,17 @@ migrate themselves**.
 1. **Import the repo** in Vercel (or `vercel link`).
 
 2. **Database** — install the Neon integration (`vercel integration add neon`
-   or the dashboard); it provisions `DATABASE_URL`. Run the seed once against
-   production:
+   or the dashboard); it provisions `DATABASE_URL`. Create the schema and run
+   the seed once against production:
    ```bash
+   pnpm dotenv -e prod.env -- pnpm db:migrate:steps
    pnpm dotenv -e prod.env -- pnpm db:seed
    ```
+   The first command matters on a brand-new database: the build's own
+   `drizzle-kit migrate` cannot apply the whole migration chain at once — see
+   [data and seeds](data-and-seeds.md#migrations). Rebuilding after a loss is
+   the same two commands with a restore between them:
+   [backup and restore](backup.md#rebuilding-from-one).
 
 3. **Auth** — create a Google OAuth client (Google Cloud Console → OAuth 2.0
    client, web application) with redirect URI

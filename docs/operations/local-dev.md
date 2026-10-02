@@ -1,7 +1,7 @@
 ---
 title: Local development
 audience: engineering
-updated: 2026-08-29
+updated: 2026-10-02
 code:
   - package.json
   - drizzle.config.ts
@@ -68,6 +68,8 @@ Development only — it is hard-disabled outside development builds.
 | `pnpm db:generate` / `pnpm db:migrate` | Drizzle migrations |
 | `pnpm db:seed` | Idempotent real seeds |
 | `pnpm db:demo` | Dev-only sample use cases |
+| `pnpm db:migrate:steps` | Migrations one transaction each — the way to build an **empty** database |
+| `pnpm db:backup` / `pnpm db:restore <zip>` | [Backup and restore](backup.md) of the casebook |
 
 `pnpm typecheck`, `pnpm test`, and `pnpm build` should all stay green.
 

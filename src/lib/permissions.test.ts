@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canComment,
+  canDownloadBackup,
   canCreateUseCase,
   canEditUseCase,
   canLinkUseCases,
@@ -102,6 +103,14 @@ describe("role gates", () => {
     expect(canViewCoachLearnings("viewer")).toBe(false);
     expect(canViewCoachLearnings("contributor")).toBe(false);
     expect(canViewCoachLearnings("admin")).toBe(true);
+  });
+
+  // Every status note and every sign-in address, in one file.
+  it("only an admin takes a backup", () => {
+    expect(canDownloadBackup("viewer")).toBe(false);
+    expect(canDownloadBackup("employee")).toBe(false);
+    expect(canDownloadBackup("contributor")).toBe(false);
+    expect(canDownloadBackup("admin")).toBe(true);
   });
 
   it("every role comments — viewers included, on purpose", () => {

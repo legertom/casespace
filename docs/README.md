@@ -80,6 +80,7 @@ One doc per surface.
 | [Local development](operations/local-dev.md) | Setup, commands, **what `DATABASE_URL` points at** |
 | [Deploying](operations/deploy.md) | Vercel, env vars, self-migrating builds |
 | [Data and seeds](operations/data-and-seeds.md) | Idempotent seeds, the clobber rule, migrations |
+| [Backup and restore](operations/backup.md) | `/backup` (admin-only), what the zip holds, rebuilding from one |
 | [AI configuration](operations/ai-config.md) | Models, usage logging, graceful degradation |
 | [Evals](operations/evals.md) | `pnpm eval`, the fixture weeks, grading the weekly post |
 | [Troubleshooting](operations/troubleshooting.md) | Symptoms → causes |

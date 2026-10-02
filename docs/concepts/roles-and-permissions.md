@@ -1,7 +1,7 @@
 ---
 title: Roles and permissions
 audience: everyone
-updated: 2026-08-26
+updated: 2026-10-02
 code:
   - src/lib/permissions.ts
   - src/lib/auth-provision.ts
@@ -46,6 +46,11 @@ There are exactly **three read exceptions**:
 | The Wins report | `canViewWins` | Annual-ROI notes may carry dollar figures, which never appear on an open surface |
 | Coach learnings | `canViewCoachLearnings` | Being measured is a different thing from being helped — see the helper's own note |
 
+Taking a [backup](../operations/backup.md) is admin-only as well
+(`canDownloadBackup`). It is not a fourth page of gated content — it is a
+copy of all the content, annual-ROI notes included, in a file that leaves the
+app.
+
 The **Community submissions** card on the dashboard is *not* a fourth
 exception. It is chrome hidden from non-admins because it is a queue of
 decisions only an admin can make; every record on it is public in the
@@ -71,6 +76,7 @@ server-side in the actions, not just by hiding nav links.
 | Edit roster, ELT targets, pulse snapshots | — | — | — | ✅ |
 | Regenerate / edit What's New posts | — | — | — | ✅ |
 | See pulse charts, Wins, and Coach learnings | — | — | — | ✅ |
+| Download a backup | — | — | — | ✅ |
 
 ¹ "Own" means creator, named owner, or credited author (`canEditUseCase`).
 ² Employees are narrower than AI Leads here, and only here — see below.

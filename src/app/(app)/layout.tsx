@@ -207,6 +207,7 @@ export default async function AppLayout({
                     <>
                       <Link href="/groups" className="block py-1 hover:text-accent">Saved groups</Link>
                       <Link href="/feedback" className="block py-1 hover:text-accent">Feedback</Link>
+                      <Link href="/backup" className="block py-1 hover:text-accent">Backup</Link>
                     </>
                   )}
                   <form action={doSignOut}>

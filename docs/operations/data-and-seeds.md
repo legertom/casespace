@@ -50,6 +50,13 @@ Drizzle. `pnpm db:generate` writes a migration from schema changes;
 before `next build`, so **deploys migrate themselves** — you rarely run
 migrate against production by hand.
 
+**An empty database is the exception.** `pnpm db:migrate` runs every pending
+migration in one transaction, and the full chain can't share one: 0013 adds
+the `employee` role and 0016 uses it. Build a database from nothing with
+`pnpm db:migrate:steps`, which applies one migration per transaction and
+leaves drizzle's records as `db:migrate` expects them. See
+[backup and restore](backup.md#rules-that-surprise-people).
+
 Adding a value to one of the fixed vocabularies means changing both
 `src/lib/domain.ts` **and** the matching `pgEnum` in `src/db/schema.ts`. See
 [taxonomy](../concepts/taxonomy.md).
@@ -91,6 +98,12 @@ Records: `use_cases` (incl. `in_program`), `use_case_authors`, `use_case_links`,
 Program: `pulse_metrics`, `pulse_snapshots`, `posts` ·
 Surfaces: `pats`, `ai_usage`, `coach_chats`, `coach_failures` ·
 Conversation: `use_case_comments`, `notifications`, `feedback`
+
+## Backups
+
+`pnpm db:backup` writes every use case, and the people and teams it refers
+to, into one zip; `pnpm db:restore` puts one back into an empty database.
+See [backup and restore](backup.md).
 
 ## Related
 

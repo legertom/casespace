@@ -44,6 +44,14 @@ in-app report it came from.
 
 ## 2026-10-02
 
+### A backup of the whole casebook
+Requested by: Tom Leger
+
+Admins can now download every use case as a single zip — from your name, top
+right, then Backup. Inside is a spreadsheet-ready list of every record, plus
+a complete copy of the records, their history, comments and links that the
+casebook can be rebuilt from if the database is ever lost.
+
 ### Answer a Coach proposal in your own words
 Requested by: Jen Kampf
 

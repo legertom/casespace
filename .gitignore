@@ -10,3 +10,5 @@ next-env.d.ts
 # `.env*` anchors at the start of the name, so it misses prod.env / staging.env
 # — files of real secrets. `.env.example` is not matched and stays tracked.
 *.env
+# `pnpm db:backup` writes here. Real names, emails and status notes — never commit one.
+backups/

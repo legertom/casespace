@@ -4,7 +4,9 @@
  * Visibility rule: every page is visible to every authenticated user, with
  * three read exceptions — the adoption pulse charts on Goals (canViewPulse),
  * the Wins report (canViewWins), and Coach learnings
- * (canViewCoachLearnings). The other helpers govern writes (What's New
+ * (canViewCoachLearnings). Taking a backup (canDownloadBackup) is admin-only
+ * too: not a page of program content but a copy of all of it. The other
+ * helpers govern writes (What's New
  * drafting/editing goes through canManageProgram-style admin checks in the
  * server actions).
  *
@@ -158,6 +160,15 @@ export function visibleHistoryNote(
     return null;
   }
   return entry.note;
+}
+
+/**
+ * The backup is admin-only for the Wins report's reason, and then some: it is
+ * every status note — annual-ROI notes and whatever dollars they carry — plus
+ * every name and sign-in address, in one file that leaves the building.
+ */
+export function canDownloadBackup(role: Role): boolean {
+  return role === "admin";
 }
 
 /**

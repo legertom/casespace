@@ -76,6 +76,10 @@ an API you have not verified in this repo, read the bundled docs for the
 - `pnpm db:generate` / `pnpm db:migrate` — Drizzle migrations
 - `pnpm db:seed` — idempotent real seeds (directory, roster, ELT orgs, goals)
 - `pnpm db:demo` — dev-only sample use cases
+- `pnpm db:migrate:steps` — migrations one transaction each; the only way to
+  build an **empty** database (`db:migrate` can't — see `docs/operations/backup.md`)
+- `pnpm db:backup` / `pnpm db:restore <zip>` — the casebook as a zip, and back
+  (restore only fills empty tables)
 
 Local Postgres: Homebrew `postgresql@16` (`/opt/homebrew/opt/postgresql@16/bin`),
 database `casespace`. drizzle-kit and scripts load `.env.local` via dotenv

@@ -11,8 +11,11 @@
     "eval": "vitest run --config vitest.eval.config.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:migrate:steps": "tsx scripts/migrate-steps.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "db:demo": "tsx scripts/demo-data.ts"
+    "db:demo": "tsx scripts/demo-data.ts",
+    "db:backup": "tsx scripts/backup.ts",
+    "db:restore": "tsx scripts/restore.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "^4.0.55",
@@ -20,6 +23,7 @@
     "@neondatabase/serverless": "^1.1.0",
     "ai": "^7.0.52",
     "drizzle-orm": "^0.45.2",
+    "fflate": "^0.8.3",
     "mcp-handler": "^2.1.0",
     "next": "^16.3.0",
     "next-auth": "5.0.0-beta.32",
