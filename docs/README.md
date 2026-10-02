@@ -71,7 +71,7 @@ One doc per surface.
 | [REST API (v1)](integrations/rest-api.md) | `/api/v1/*`, bearer tokens, status codes |
 | [MCP server](integrations/mcp.md) | Claude Code / Cursor, the four tools |
 | [Authentication](integrations/auth.md) | Google domain gate, aliases, dev login |
-| [Cron](integrations/cron.md) | The Monday What's New job |
+| [Cron](integrations/cron.md) | The Monday What's New job and the daily backup |
 
 ## Operations
 
@@ -80,7 +80,7 @@ One doc per surface.
 | [Local development](operations/local-dev.md) | Setup, commands, **what `DATABASE_URL` points at** |
 | [Deploying](operations/deploy.md) | Vercel, env vars, self-migrating builds |
 | [Data and seeds](operations/data-and-seeds.md) | Idempotent seeds, the clobber rule, migrations |
-| [Backup and restore](operations/backup.md) | `/backup` (admin-only), what the zip holds, rebuilding from one |
+| [Backup and restore](operations/backup.md) | `/backup` (admin-only), the daily backup, what the zip holds, rebuilding from one |
 | [AI configuration](operations/ai-config.md) | Models, usage logging, graceful degradation |
 | [Evals](operations/evals.md) | `pnpm eval`, the fixture weeks, grading the weekly post |
 | [Troubleshooting](operations/troubleshooting.md) | Symptoms → causes |

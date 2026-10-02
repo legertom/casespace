@@ -7,10 +7,14 @@ import {
   BACKUP_TABLES,
   NOT_BACKED_UP,
   backupFilename,
+  backupIsStale,
   buildBackupFiles,
   fromStoredRow,
+  isStoredBackupName,
   readBackup,
   sortStoredRows,
+  storedBackupPath,
+  storedBackupTakenAt,
   toCsv,
   toStoredRow,
   useCasesCsv,
@@ -332,5 +336,41 @@ describe("a backup that isn't whole", () => {
     expect(() => readBackup(rezip({ "manifest.json": manifest }))).toThrow(
       /version 99/,
     );
+  });
+});
+
+describe("stored backups", () => {
+  const taken = new Date("2026-10-02T07:00:00.000Z");
+  const name = backupFilename(taken);
+
+  it("are kept under one prefix, by the name they were made with", () => {
+    expect(storedBackupPath(name)).toBe(
+      "backups/casespace-backup-2026-10-02-07-00.zip",
+    );
+    expect(isStoredBackupName(name)).toBe(true);
+    expect(storedBackupTakenAt(name)).toEqual(taken);
+  });
+
+  // The download route takes this from the URL.
+  it("are the only thing the download route will fetch", () => {
+    for (const other of [
+      "../secrets.txt",
+      "backups/casespace-backup-2026-10-02-07-00.zip",
+      "casespace-backup-2026-10-02-07-00.zip/..",
+      "casespace-backup-latest.zip",
+      "",
+    ]) {
+      expect(isStoredBackupName(other)).toBe(false);
+      expect(storedBackupTakenAt(other)).toBeNull();
+    }
+  });
+
+  it("count as stale once a daily run has clearly been missed", () => {
+    const now = new Date("2026-10-03T12:00:00.000Z");
+    expect(backupIsStale(new Date("2026-10-03T07:00:00.000Z"), now)).toBe(false);
+    // Yesterday's, with today's running late: not yet.
+    expect(backupIsStale(new Date("2026-10-02T07:00:00.000Z"), now)).toBe(false);
+    expect(backupIsStale(new Date("2026-10-01T07:00:00.000Z"), now)).toBe(true);
+    expect(backupIsStale(null, now)).toBe(true);
   });
 });

@@ -1,17 +1,33 @@
 ---
 title: Cron
-surface: /api/cron/whats-new
+surface:
+  - /api/cron/whats-new
+  - /api/cron/backup
 audience: engineering
-updated: 2026-08-14
+updated: 2026-10-02
 code:
   - src/app/api/cron/whats-new/route.ts
+  - src/app/api/cron/backup/route.ts
   - src/server/whats-new.ts
   - vercel.json
 ---
 
 # Cron
 
-One scheduled job.
+Two scheduled jobs, both declared in `vercel.json` and both authenticated
+with `CRON_SECRET`.
+
+## Backup, daily
+
+| | |
+|---|---|
+| Route | `/api/cron/backup` |
+| Schedule | **daily, 07:00 UTC** (3am EDT) |
+| Does | Takes a backup of the casebook and stores it in a private Blob store |
+
+No model call, and nothing anyone reads. Without a connected Blob store it
+returns 503 and saves nothing. [Backup and restore](../operations/backup.md)
+has the rest, including how a missed run shows up.
 
 ## What's New, weekly
 

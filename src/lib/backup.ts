@@ -480,6 +480,45 @@ export function backupFilename(createdAt: Date): string {
   return `casespace-backup-${stamp}.zip`;
 }
 
+// ---------------------------------------------------------------------------
+// Stored backups
+// ---------------------------------------------------------------------------
+
+/** Where the scheduled job keeps its backups, inside the Blob store. */
+export const STORED_BACKUP_PREFIX = "backups/";
+
+export function storedBackupPath(filename: string): string {
+  return `${STORED_BACKUP_PREFIX}${filename}`;
+}
+
+/**
+ * Whether a name is one of ours — exactly the shape `backupFilename` makes.
+ * The download route takes the name from the URL, so this is what keeps it
+ * from being asked for some other path in the store.
+ */
+export function isStoredBackupName(name: string): boolean {
+  return /^casespace-backup-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}\.zip$/.test(name);
+}
+
+/** When a stored backup was taken, read back out of its name. UTC. */
+export function storedBackupTakenAt(name: string): Date | null {
+  if (!isStoredBackupName(name)) return null;
+  const [y, mo, d, h, mi] = name.match(/\d+/g)!.map(Number);
+  return new Date(Date.UTC(y, mo - 1, d, h, mi));
+}
+
+/**
+ * The job runs daily. A day and a half without a new one means a run was
+ * missed — long enough to ride out a late cron, short enough that the page
+ * says so before a second run goes missing too.
+ */
+export const STALE_AFTER_HOURS = 36;
+
+export function backupIsStale(latest: Date | null, now: Date): boolean {
+  if (!latest) return true;
+  return now.getTime() - latest.getTime() > STALE_AFTER_HOURS * 3_600_000;
+}
+
 /**
  * Open a backup and check it is one, whole. Every table file must be present,
  * match its recorded hash, and hold the number of rows the manifest says — a

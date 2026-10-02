@@ -2,8 +2,14 @@ import Link from "next/link";
 import { getTableName } from "drizzle-orm";
 import { getDb } from "@/db";
 import { countBackupRows } from "@/db/backup";
-import { BACKUP_TABLES } from "@/lib/backup";
+import { SaveBackupNow } from "@/components/backup/save-backup-now";
+import { BACKUP_TABLES, backupIsStale } from "@/lib/backup";
 import { requireAdmin } from "@/lib/current-user";
+import {
+  backupStorageConfigured,
+  listStoredBackups,
+  type StoredBackup,
+} from "@/server/backup-storage";
 
 export const metadata = { title: "Backup" };
 
@@ -24,9 +30,41 @@ const WHAT: Record<string, string> = {
   ai_lead_teams: "Which teams each lead covers",
 };
 
+const SHOWN = 30;
+
+const takenFmt = new Intl.DateTimeFormat("en-US", {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  timeZone: "America/New_York",
+  timeZoneName: "short",
+});
+
+function kilobytes(bytes: number): string {
+  return `${Math.max(1, Math.round(bytes / 1024)).toLocaleString("en-US")} KB`;
+}
+
 export default async function BackupPage() {
   await requireAdmin();
   const counts = await countBackupRows(getDb());
+  const configured = backupStorageConfigured();
+  // Storage being unreachable must not take the page down with it — the
+  // download above still works, and that is the moment it matters most.
+  let stored: StoredBackup[] = [];
+  let storageError = false;
+  if (configured) {
+    try {
+      stored = await listStoredBackups();
+    } catch (err) {
+      console.error("stored backups could not be listed", err);
+      storageError = true;
+    }
+  }
+  const latest = stored[0]?.takenAt ?? null;
+  const stale = configured && !storageError && backupIsStale(latest, new Date());
   // Records first on the page; the restore order puts what they refer to first.
   const names = BACKUP_TABLES.map((t) => getTableName(t));
   const from = names.indexOf("use_cases");
@@ -52,6 +90,70 @@ export default async function BackupPage() {
         Treat the file like the Wins report. It holds names, email addresses,
         and every status note — annual-ROI notes included.
       </p>
+
+      <h2 className="mt-10 font-serif text-2xl">Saved automatically</h2>
+      {!configured ? (
+        <p className="mt-2 max-w-prose border-l-2 border-accent bg-accent-wash px-4 py-3 text-sm">
+          Scheduled backups aren&rsquo;t set up here: there is no Blob store
+          connected, so nothing is being saved on its own. The download above
+          still works.
+        </p>
+      ) : (
+        <>
+          <p className="mt-2 max-w-prose text-sm text-ink-muted">
+            Every day a backup is taken and kept in private storage, apart from
+            the database. Nothing is ever deleted from it.
+          </p>
+          {storageError && (
+            <p role="alert" className="mt-3 max-w-prose border-l-2 border-accent bg-accent-wash px-4 py-3 text-sm">
+              The backup storage couldn&rsquo;t be reached just now, so the
+              list below is missing. Try again in a minute.
+            </p>
+          )}
+          {stale && (
+            <p role="alert" className="mt-3 max-w-prose border-l-2 border-accent bg-accent-wash px-4 py-3 text-sm">
+              {latest
+                ? `The newest saved backup is from ${takenFmt.format(latest)} — a daily run has been missed.`
+                : "Nothing has been saved yet."}{" "}
+              Save one now, and check the cron job in Vercel if this is still
+              here tomorrow.
+            </p>
+          )}
+          <div className="mt-4">
+            <SaveBackupNow />
+          </div>
+          {stored.length > 0 && (
+            <>
+              <ul className="mt-4 divide-y divide-hairline rounded-md border border-hairline bg-surface">
+                {stored.slice(0, SHOWN).map((b) => (
+                  <li
+                    key={b.name}
+                    className="flex flex-wrap items-baseline justify-between gap-2 px-4 py-2.5 text-sm"
+                  >
+                    <span>
+                      {takenFmt.format(b.takenAt)}
+                      <span className="text-ink-faint"> · {kilobytes(b.size)}</span>
+                    </span>
+                    <a
+                      href={`/api/backup/${b.name}`}
+                      download
+                      className="text-accent underline underline-offset-2"
+                    >
+                      Download
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              {stored.length > SHOWN && (
+                <p className="mt-2 text-sm text-ink-faint">
+                  The newest {SHOWN} of {stored.length}. Older ones are still
+                  in the store.
+                </p>
+              )}
+            </>
+          )}
+        </>
+      )}
 
       <h2 className="mt-10 font-serif text-2xl">What&rsquo;s in it</h2>
       <p className="mt-2 max-w-prose text-sm text-ink-muted">

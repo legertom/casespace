@@ -40,10 +40,20 @@ migrate themselves**.
    weekly post is skipped entirely, and everything else works.
 
 5. **Cron** — `vercel.json` schedules `/api/cron/whats-new` for Mondays 13:00
-   UTC. Set `CRON_SECRET`; Vercel sends it as the Authorization bearer
-   automatically.
+   UTC and `/api/cron/backup` daily at 07:00 UTC. Set `CRON_SECRET`; Vercel
+   sends it as the Authorization bearer automatically.
 
-6. **Do not set `AUTH_DEV_LOGIN`.** It is also hard-disabled outside
+6. **Backup storage** — create a **private** Blob store and connect it to
+   production only, which sets `BLOB_READ_WRITE_TOKEN`:
+   ```bash
+   vercel blob create-store casespace-backups --access private -e production
+   ```
+   Without it the daily backup saves nothing and the Backup page says so.
+   **This command, like `vercel link`, rewrites `.env.local`** from the
+   project's Development environment — including `DATABASE_URL`. Check where
+   it points afterwards, before running anything else.
+
+7. **Do not set `AUTH_DEV_LOGIN`.** It is also hard-disabled outside
    development builds, but don't rely on that.
 
 ## Environment variables
@@ -54,7 +64,8 @@ migrate themselves**.
 | `AUTH_SECRET` | ✅ | Auth.js session encryption |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | ✅ | Google sign-in |
 | `AI_GATEWAY_API_KEY` | — | Coach, notes parsing, weekly post |
-| `CRON_SECRET` | — | Required for the weekly post to run |
+| `CRON_SECRET` | — | Required for the weekly post and the daily backup to run |
+| `BLOB_READ_WRITE_TOKEN` | — | The daily backup's storage. Set by connecting the Blob store; production only |
 | `AUTH_DEV_LOGIN` | — | **Development only** |
 
 On Vercel, `VERCEL_OIDC_TOKEN` satisfies gateway auth in place of

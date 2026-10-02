@@ -52,6 +52,9 @@ right, then Backup. Inside is a spreadsheet-ready list of every record, plus
 a complete copy of the records, their history, comments and links that the
 casebook can be rebuilt from if the database is ever lost.
 
+One is also saved automatically every day, in private storage kept apart from
+the database. The Backup page lists them and says so if a day is missed.
+
 ### Answer a Coach proposal in your own words
 Requested by: Jen Kampf
 

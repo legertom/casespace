@@ -3,6 +3,7 @@ title: Backup and restore
 surface:
   - /backup
   - /api/backup
+  - /api/backup/[name]
 audience: admin
 updated: 2026-10-02
 code:
@@ -11,6 +12,12 @@ code:
   - src/lib/backup.ts
   - src/db/backup.ts
   - src/server/backup.ts
+  - src/server/backup-storage.ts
+  - src/server/actions-backup.ts
+  - src/app/api/backup/[name]/route.ts
+  - src/app/api/cron/backup/route.ts
+  - src/components/backup/save-backup-now.tsx
+  - vercel.json
   - scripts/backup.ts
   - scripts/restore.ts
   - scripts/migrate-steps.ts
@@ -22,15 +29,42 @@ code:
 One zip holding every use case and everything needed to put it back. It
 exists so that losing the database is an afternoon, not the program.
 
+One is taken **every day** and kept in private storage apart from the
+database. You can also take one yourself, any time.
+
 ## Who can do what
 
 | | Everyone signed in | Admin |
 |---|---|---|
 | See the Backup page | — | ✅ |
-| Download a backup | — | ✅ |
+| Download a backup, fresh or saved | — | ✅ |
+| Save one to storage now | — | ✅ |
 | Restore one | — | from the repository, with database access |
 
-## Taking one
+## The daily backup
+
+Every day at **07:00 UTC** (3am Eastern) a [cron job](../integrations/cron.md)
+takes a backup and writes it to a **private Vercel Blob store** named
+`casespace-backups`, connected to the production project. The store is a
+separate service from the database, so losing one does not lose the other.
+
+The Backup page lists what is there, newest first, each with a download link.
+**Save one now** does what the job does without waiting for it — worth
+pressing before a risky migration.
+
+| | |
+|---|---|
+| Route | `/api/cron/backup` |
+| Schedule | daily, `0 7 * * *`, from `vercel.json` |
+| Auth | `CRON_SECRET`, as for every cron route |
+| Needs | `BLOB_READ_WRITE_TOKEN` — set by connecting the Blob store to the project |
+| Writes | `backups/casespace-backup-<yyyy-mm-dd-hh-mm>.zip` (UTC) |
+
+Production only. The store is connected to the production environment and
+nowhere else, so a preview deployment or a laptop has no token and the page
+says scheduled backups aren't set up there.
+
+## Taking one yourself
 
 **In the app:** your name, top right → **Backup** → **Download backup
 (.zip)**. The file is made from the database at that moment, as one consistent
@@ -46,9 +80,9 @@ pnpm db:backup path/to/file.zip
 It backs up whatever `DATABASE_URL` points at and says which database that is
 before it starts. `backups/` is git-ignored.
 
-Nothing takes backups on a schedule. A backup exists when someone took one —
-put the file somewhere that isn't Casespace, and take another after a week
-with a lot of logging in it.
+The daily copies live in the same Vercel account as the app. Download one
+now and then and keep it somewhere else entirely — that is the copy that
+survives losing the account.
 
 ## What's in the zip
 
@@ -104,6 +138,26 @@ inserts everything in one transaction. It lands whole or not at all.
 
 ## Rules that surprise people
 
+**Saved backups are never deleted.** No retention window, no pruning. One is
+tens of kilobytes; a year of them is a few megabytes. A job that deletes old
+backups is a job that can delete the one you needed, and it isn't worth
+having to save that little.
+
+**The store is private, and there are no links to it.** A public blob is
+readable by anyone holding its URL. Downloads go through
+`/api/backup/[name]`, behind the same admin check as a fresh backup, and the
+route only fetches names shaped like the ones the job writes — it cannot be
+pointed at anything else in the store.
+
+**A missed run announces itself, on the page.** If the newest saved backup is
+more than 36 hours old, the Backup page says so. Nobody is emailed — there is
+no email in Casespace — so the page is where to look, and the cron's own log
+line (`backup stored` / `backup cron failed`) is the detail.
+
+**Storage being down doesn't take the page with it.** If the list can't be
+read, the page says so and the fresh download still works. That is the moment
+it matters.
+
 **A restore only fills empty tables.** If any backed-up table has a row, it
 refuses and changes nothing. Merging a backup into a live database means
 deciding which copy of each row wins, which is a different and far more
@@ -143,6 +197,10 @@ fixed order, so comparing two backups shows what changed between them.
 
 ## Verified
 
+The daily job's write to Blob storage has **not** been exercised outside
+production — there is no token anywhere else. The first saved backup
+appearing on the page is the check.
+
 On 2026-10-02 a backup of a development database (16 records, with comments,
 links and field changes added) was restored into a database built from
 nothing, and backed up again. All 14 tables matched row for row. Running
@@ -150,6 +208,7 @@ nothing, and backed up again. All 14 tables matched row for row. Running
 
 ## Related
 
+- [Cron](../integrations/cron.md) — the schedule and the other job
 - [Data and seeds](data-and-seeds.md) — migrations, and what the seed re-creates
 - [Deploying](deploy.md)
 - [Roles and permissions](../concepts/roles-and-permissions.md)
