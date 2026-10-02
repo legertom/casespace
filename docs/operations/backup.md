@@ -197,9 +197,11 @@ fixed order, so comparing two backups shows what changed between them.
 
 ## Verified
 
-The daily job's write to Blob storage has **not** been exercised outside
-production — there is no token anywhere else. The first saved backup
-appearing on the page is the check.
+On 2026-10-02 the daily job was triggered once in production
+(`vercel crons run /api/cron/backup`) and stored its first backup: 42 records,
+about 119 KB. The store reported one file of that size afterwards. Storage
+can only be exercised in production — there is no token anywhere else — so
+that run, not a local one, is the evidence.
 
 On 2026-10-02 a backup of a development database (16 records, with comments,
 links and field changes added) was restored into a database built from
