@@ -1,5 +1,5 @@
 import "server-only";
-import { and, count, desc, eq, gte } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import {
   aiLeadTeams,
@@ -7,6 +7,7 @@ import {
   eltOrgs,
   statusChanges,
   teams,
+  useCaseAuthors,
   useCases,
   users,
 } from "@/db/schema";
@@ -20,7 +21,9 @@ import {
   type Department,
   type UcStatus,
 } from "@/lib/domain";
+import { teamCoverageCount, type CoverageRecord } from "@/lib/team-coverage";
 import { COMMUNITY_ALIVE, IN_PROGRAM_ALIVE } from "@/db/scopes";
+import { identitiesForLeads } from "./identity";
 import { getStaleDays } from "./reference";
 
 export interface ProgramCounts {
@@ -154,30 +157,74 @@ export async function getTeamCoverage(): Promise<TeamCoverageRow[]> {
   const links = await db
     .select({
       teamId: aiLeadTeams.teamId,
+      leadId: aiLeads.id,
       leadName: aiLeads.name,
       leadPersonId: aiLeads.personId,
+      leadUserId: aiLeads.userId,
       state: aiLeads.state,
     })
     .from(aiLeadTeams)
     .innerJoin(aiLeads, eq(aiLeadTeams.leadId, aiLeads.id));
+  const assigned = links.filter((l) => l.state === "assigned");
+  const identities = await identitiesForLeads(
+    assigned.map((l) => ({
+      id: l.leadId,
+      name: l.leadName,
+      personId: l.leadPersonId,
+      userId: l.leadUserId,
+    })),
+  );
+  const teamsOfLead = (leadId: string) =>
+    assigned.filter((l) => l.leadId === leadId).map((l) => l.teamId);
+
+  // Program records only, but every status — this is the one table that asks
+  // "did they start", not "did they finish". Membership is stamped from the
+  // owner, so a lead's own records are program records; the filter keeps out
+  // community records a lead only co-authored.
   const cases = await programUseCases();
+  const ids = cases.map((c) => c.id);
+  const authors = ids.length
+    ? await db
+        .select({
+          useCaseId: useCaseAuthors.useCaseId,
+          personId: useCaseAuthors.personId,
+          userId: useCaseAuthors.userId,
+          displayName: useCaseAuthors.displayName,
+        })
+        .from(useCaseAuthors)
+        .where(inArray(useCaseAuthors.useCaseId, ids))
+    : [];
+  const records: CoverageRecord[] = cases.map((c) => ({
+    id: c.id,
+    teamId: c.teamId,
+    ownerPersonId: c.ownerPersonId,
+    ownerUserId: c.ownerUserId,
+    ownerName: c.ownerName,
+    authors: authors.filter((a) => a.useCaseId === c.id),
+  }));
 
   return allTeams
     .map((t) => {
-      const leads = links
-        .filter((l) => l.teamId === t.id && l.state === "assigned")
-        .map((l) => ({ name: l.leadName, personId: l.leadPersonId }));
+      const teamLeads = assigned.filter((l) => l.teamId === t.id);
       return {
         teamId: t.id,
         teamName: t.name,
         department: t.department as Department,
-        leads,
-        // Program records only (programUseCases), but every status — this is
-        // the one table that asks "did they start", not "did they finish".
-        // Without the program filter a team where three employees logged
-        // something and the lead logged nothing would render as satisfied.
-        useCaseCount: cases.filter((c) => c.teamId === t.id).length,
-        target: leads.length * WORKFLOWS_PER_LEAD,
+        leads: teamLeads.map((l) => ({
+          name: l.leadName,
+          personId: l.leadPersonId,
+        })),
+        // What the row's leads logged, not what is filed under the team —
+        // see teamCoverageCount for why the Team field can't be the test.
+        useCaseCount: teamCoverageCount(
+          t.id,
+          teamLeads.map((l) => ({
+            teamIds: teamsOfLead(l.leadId),
+            identity: identities.get(l.leadId)!,
+          })),
+          records,
+        ),
+        target: teamLeads.length * WORKFLOWS_PER_LEAD,
       };
     })
     .sort(

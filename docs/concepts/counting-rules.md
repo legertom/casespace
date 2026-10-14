@@ -1,12 +1,13 @@
 ---
 title: Counting rules
 audience: everyone
-updated: 2026-08-25
+updated: 2026-10-14
 code:
   - src/lib/domain.ts
   - src/server/progress-report.ts
   - src/db/scopes.ts
   - src/lib/program-scope.ts
+  - src/lib/team-coverage.ts
 ---
 
 # Counting rules
@@ -111,11 +112,13 @@ after a flip will produce different prose than the post people already read.
 This is the right default — the flag answers "does this count?" — but it does
 mean the flag is retroactive for those two surfaces.
 
-**Coverage by team counts program records at every status.** It is the one
-table that asks "did they start", not "did they finish", so it has no status
-filter. It does have the program filter, and it needs it: without it, a team
-whose lead logged nothing but whose colleagues logged three things would
-render as having met its target.
+**Coverage by team counts the leads' program records at every status.** It
+is the one table that asks "did they start", not "did they finish", so it has
+no status filter. A row counts records its assigned AI Leads own or authored
+(`teamCoverageCount`), matched the way their own page matches them — not
+records whose Team field names the team, a field the Coach often leaves
+blank. Colleagues' records filed under the team don't count, and neither do
+community records a lead only co-authored.
 
 **There is no audit trail for membership changes.** `status_changes` is for
 statuses, and a `from === to` row there would poison Movement and the What's
