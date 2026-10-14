@@ -1,5 +1,5 @@
 import "server-only";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { people, users } from "@/db/schema";
 import { isUuid } from "@/lib/ids";
@@ -66,4 +66,66 @@ export async function identityForPerson(
       names: [person.name, user?.name],
     }),
   };
+}
+
+/**
+ * Roster rows as people: everything each AI Lead answers to, keyed by lead
+ * id. A superset of what their own page matches — the directory name and
+ * the login linked to that directory row (identityForPerson), plus the
+ * roster spelling and a login linked to the roster row directly — so a
+ * record on a lead's page is never missing from a count of their work.
+ */
+export async function identitiesForLeads(
+  leads: readonly {
+    id: string;
+    name: string;
+    personId: string | null;
+    userId: string | null;
+  }[],
+): Promise<Map<string, Identity>> {
+  const personIds = leads.flatMap((l) => (l.personId ? [l.personId] : []));
+  const userIds = leads.flatMap((l) => (l.userId ? [l.userId] : []));
+  const db = getDb();
+  const [directory, loginsByPerson, loginsById] = await Promise.all([
+    personIds.length
+      ? db
+          .select({ id: people.id, name: people.name })
+          .from(people)
+          .where(inArray(people.id, personIds))
+      : [],
+    personIds.length
+      ? db
+          .select({ id: users.id, name: users.name, personId: users.personId })
+          .from(users)
+          .where(inArray(users.personId, personIds))
+      : [],
+    userIds.length
+      ? db
+          .select({ id: users.id, name: users.name })
+          .from(users)
+          .where(inArray(users.id, userIds))
+      : [],
+  ]);
+  const directoryName = new Map(directory.map((p) => [p.id, p.name]));
+  const personLogin = new Map(loginsByPerson.map((u) => [u.personId, u]));
+  const loginName = new Map(loginsById.map((u) => [u.id, u.name]));
+
+  return new Map(
+    leads.map((l) => {
+      const login = l.personId ? personLogin.get(l.personId) : undefined;
+      return [
+        l.id,
+        makeIdentity({
+          personId: l.personId,
+          userId: login?.id ?? l.userId,
+          names: [
+            l.name,
+            l.personId ? directoryName.get(l.personId) : null,
+            login?.name,
+            l.userId ? loginName.get(l.userId) : null,
+          ],
+        }),
+      ];
+    }),
+  );
 }

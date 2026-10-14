@@ -42,6 +42,19 @@ in-app report it came from.
 
 ---
 
+## 2026-10-14
+
+### Coverage dots count what each AI Lead has logged
+Requested by: Tom Leger
+
+The dots in "Coverage by team" on the dashboard now fill for every use case a
+team's AI Lead owns or helped write — the same records listed on their own
+page. Before, a dot only filled when the record's Team field named that team,
+so leads whose records were saved without a team (the Coach often leaves it
+blank) showed zero despite having work logged. Records from colleagues who
+aren't the team's AI Lead no longer fill its dots, since the target is two
+workflows per lead.
+
 ## 2026-10-02
 
 ### A backup of the whole casebook

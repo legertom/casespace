@@ -2,7 +2,7 @@
 title: The dashboard
 surface: /dashboard
 audience: everyone
-updated: 2026-08-25
+updated: 2026-10-14
 code:
   - src/app/(app)/dashboard/page.tsx
   - src/server/dashboard-queries.ts
@@ -14,6 +14,8 @@ code:
   - src/lib/platform-queue.ts
   - src/server/actions-preferences.ts
   - src/server/dashboard-queries.ts
+  - src/lib/team-coverage.ts
+  - src/server/identity.ts
 ---
 
 # The dashboard
@@ -68,9 +70,11 @@ summing to 15 a warning appears; it never blocks.
 
 ### Coverage by team
 
-Which teams have records and which have none. This is the "who hasn't
-started" view. It counts program records at **every** status — the one place
-the program asks "did they start", not "did they finish".
+Which teams' AI Leads have logged work and which haven't. This is the "who
+hasn't started" view. A row counts the program records its leads own or
+authored — the same records their own page lists — at **every** status: the
+one place the program asks "did they start", not "did they finish". Each dot
+is one of the two workflows per lead.
 
 ### Movement this week
 
@@ -102,11 +106,19 @@ casebook.
 
 ## Rules that surprise people
 
-**Coverage by team got harsher when the tool opened up.** Community records
-do not fill a team's dots. A team whose lead logged nothing but whose
-colleagues logged three things reads as zero, in flag red — which is the
-point: the target is two workflows per *assigned AI Lead*, and work nobody
-committed to should not discharge a commitment.
+**Coverage by team counts the leads' records, not the Team field.** A
+lead's record fills a dot on their row whatever its Team field says — blank
+included, which is how the Coach often leaves it. The other way round, a
+record filed under a team that credits none of its leads fills nothing:
+a team whose lead logged nothing but whose colleagues logged three things
+reads as zero, in flag red — which is the point: the target is two workflows
+per *assigned AI Lead*, and work nobody committed to should not discharge a
+commitment. Community records a lead only co-authored don't count either.
+
+**A lead on two teams can fill a dot on both rows with one record.** The
+Team field decides only between a lead's own rows: filed under one of them,
+it counts there alone. Filed nowhere, it counts on each — the dots can't
+guess which function it was for, so set the Team field to place it.
 
 **Movement and the weekly post filter on the record's current flag, not the
 flag it had at the time.** Taking a record out of the program erases its
