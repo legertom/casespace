@@ -3,12 +3,11 @@
 Status: **built 2026-10-21, on branch `roi-method`** (six commits, Parts 1–6
 below), after Tom's direction: hours are the unit, with flexibility coming
 from the baseline's period and from "not sure yet" keeping the free-text
-fields. Decisions 1–5 were taken as recommended. Still open: decision 6,
-the `roi-wksp` update (its "Copy for CaseSpace" text still prints dollar
-amounts — Casespace now drops them on paste, but the module should stop
-emitting them and name the real field labels), the optional "Ask Kate to
-confirm" button (the @mention copy shipped), and the question for Kate at
-the end. Drafted 2026-10-21 from the async ROI training module,
+fields. Decisions 1–5 were taken as recommended. Decision 6, the
+`roi-wksp` update, is **deferred at Tom's direction (2026-10-21)** —
+Casespace drops the module's dollar lines on paste, so nothing here waits
+on it. Still open on this side: the optional "Ask Kate to confirm" button
+(the @mention copy shipped), and the question for Kate at the end. Drafted 2026-10-21 from the async ROI training module,
 [`legertom/roi-wksp`](https://github.com/legertom/roi-wksp) at `7d06eb3` (live
 at https://roi-wksp.vercel.app — Kate Schaff's ROI workshop as a 30-minute
 self-paced module), read in full against Casespace `main` at `8a9d53a`.
