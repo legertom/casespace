@@ -17,6 +17,7 @@ import { recordAiUsage } from "@/lib/ai/usage";
 import { requireUser } from "@/lib/current-user";
 import { computeGapFlags } from "@/lib/gap-flags";
 import { canCreateUseCase } from "@/lib/permissions";
+import { parseRoiWorksheet } from "@/lib/roi-worksheet";
 import type { Department } from "@/lib/domain";
 import type { UseCaseCreateInput, UseCaseUpdateInput } from "@/lib/use-case-input";
 import type { ActionResult } from "./actions";
@@ -51,6 +52,12 @@ export async function parseNotesAction(notes: string): Promise<ParseNotesResult>
     return { error: "Paste a bit more — a sentence or two at minimum." };
   }
 
+  // The ROI training module's "Copy for CaseSpace" text is a fixed format,
+  // and a fixed format deserves a parser, not a model: its fields are read
+  // exactly, in hours, with the module's dollar amounts dropped — and they
+  // win over whatever the model makes of the same lines. See lib/roi-worksheet.
+  const worksheet = parseRoiWorksheet(trimmed);
+
   try {
     const result = await generateText({
       model: MODELS.extract,
@@ -59,6 +66,7 @@ export async function parseNotesAction(notes: string): Promise<ParseNotesResult>
 Rules:
 - Only fill fields the notes actually support. Leave everything else null/empty.
 - NEVER invent numbers, names, or dates. If ROI numbers aren't in the notes, leave them null and set roiStatus to "not_yet_measurable".
+- ROI is in hours and counts, never money: no dollar amount goes in any field. "10 hours a month" is baselineValue 10 per baselinePeriod month with baselineUnit "hours"; a rate is a percentage.
 - People fields take full names exactly as written in the notes.
 - Departments: business_operations, product_design, engineering, people, css (customer support & services), mss (marketing, sales & school success), finance_legal. Only set one if the notes make it clear.
 - "currentSteps" is the existing workflow as an ordered list, only if the notes describe it.
@@ -75,7 +83,7 @@ Rules:
       outputTokens: result.totalUsage.outputTokens,
     });
 
-    const proposal = result.output;
+    const proposal: Proposal = { ...result.output, ...worksheet };
     const gaps = computeGapFlags(proposalToCreateInput(proposal));
     // The notes door has no accept-as-is button — every draft goes through the
     // review form — so the extraction is logged here and judged by the diff.

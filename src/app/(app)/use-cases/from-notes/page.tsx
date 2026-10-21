@@ -15,7 +15,8 @@ export default async function FromNotesPage() {
     <div className="max-w-2xl">
       <h1 className="font-serif text-4xl">Start from notes</h1>
       <p className="mt-2 text-ink-muted">
-        Paste whatever exists — meeting notes, a doc excerpt, a Slack thread.
+        Paste whatever exists — meeting notes, a doc excerpt, a Slack thread,
+        or the ROI training&rsquo;s &ldquo;Copy for CaseSpace&rdquo; text.
         The parser pre-fills every field it can defend and flags the gaps.
         You review everything before anything saves.
       </p>

@@ -18,6 +18,8 @@ code:
   - src/components/use-case-url-rows.tsx
   - src/components/record/roi-readout.tsx
   - src/lib/roi.ts
+  - src/lib/roi-worksheet.ts
+  - src/server/actions-ai.ts
   - src/lib/ai/coach-prompt.ts
 ---
 
@@ -62,6 +64,16 @@ than not.
 notes. The parser (Haiku) pre-fills **only what it can defend** and flags the
 gaps rather than guessing. Good when the thinking already happened somewhere
 else.
+
+That includes the [ROI training module](https://roi-wksp.vercel.app)'s
+*Copy for CaseSpace* text. Its worksheet emits a fixed, labelled format, and
+a fixed format deserves a parser, not a model: `src/lib/roi-worksheet.ts`
+reads those lines exactly — value type, the baseline with its period, the
+expected after-value, build and maintenance hours, the revisit date, the
+measurement method — keeps the hours, and drops the dollar amounts the
+module prints, before the model sees anything. What it finds wins over what
+the model guesses; the prose lines are left to the model. The module's own
+computed ROI line is ignored: Casespace recomputes from the inputs.
 
 ### 3. Just the form
 
