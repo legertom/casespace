@@ -22,6 +22,7 @@ import {
   users,
 } from "../src/db/schema";
 import type { Department, UcStatus, UrlKind } from "../src/lib/domain";
+import type { BaselinePeriod, ValueType } from "../src/lib/roi";
 
 const db = getDb();
 
@@ -61,6 +62,11 @@ interface DemoUc {
   };
   roi?: Partial<{
     buildHours: number;
+    valueType: ValueType;
+    baselinePeriod: BaselinePeriod;
+    baselineEstimated: boolean;
+    expectedValue: number;
+    maintenanceHoursPerYear: number;
     baselineMetric: string;
     baselineValue: number;
     baselineUnit: string;
@@ -379,6 +385,50 @@ const DEMO: DemoUc[] = [
     moves: [["under_construction", 3]],
     gates: { gateNamed: true, gateTool: true, gateAdoption: false, gateOwner: true },
   },
+  // The ROI workshop's worked example, filled in the way the method asks:
+  // a plan at launch (expected 35%), then the measurement on the revisit
+  // date (actual 20% — below expected and still positive, which the
+  // workshop says is the most common outcome). The revisit date is behind
+  // us so the "revisit due" flag has something to show.
+  {
+    title: "Monthly metrics pull for the business review",
+    description:
+      "Pulls the recurring metrics for the monthly business review from the warehouse and drops them into the deck, instead of an analyst copying them by hand.",
+    department: "business_operations",
+    team: "Business Analytics",
+    authors: ["Lotte Petersen-Buckley"],
+    owner: "Lotte Petersen-Buckley",
+    aiTools: ["Claude Code", "Hex"],
+    approaches: ["automation"],
+    status: "launched",
+    daysAgoLogged: 120,
+    moves: [
+      ["under_construction", 110],
+      ["launched", 95],
+    ],
+    gates: { gateNamed: true, gateTool: true, gateAdoption: true, gateOwner: true, adoptionEvidence: "Both BizOps analysts run it for every monthly review." },
+    success: {
+      criterion: "90% of the review's metrics pulled automatically and in the deck each month",
+      met: "not_yet",
+    },
+    roi: {
+      valueType: "time_saved",
+      baselineMetric: "Hours BizOps spends pulling metrics for the monthly review",
+      baselineValue: 10,
+      baselineUnit: "hours",
+      baselinePeriod: "month",
+      baselineEstimated: true,
+      measurementMethod:
+        "Hours the analyst blocks on the calendar for the pull, same analyst, three monthly runs",
+      buildHours: 80,
+      expectedValue: 1,
+      maintenanceHoursPerYear: 20,
+      postValue: 2,
+      roiStatus: "in_progress",
+      revisitOn: "2026-10-01",
+    },
+    ratings: { frequency: 3, pain: 4, data: 5, risk: 1, ownership: 5, evaluation: 4, maintenance: 2 },
+  },
   {
     title: "Renewal-risk digest",
     description:
@@ -529,6 +579,11 @@ async function main() {
         successCriterion: d.success?.criterion ?? null,
         successCriterionMet: d.success?.met ?? "not_yet",
         buildHours: d.roi?.buildHours ?? null,
+        valueType: d.roi?.valueType ?? null,
+        baselinePeriod: d.roi?.baselinePeriod ?? null,
+        baselineEstimated: d.roi?.baselineEstimated ?? null,
+        expectedValue: d.roi?.expectedValue ?? null,
+        maintenanceHoursPerYear: d.roi?.maintenanceHoursPerYear ?? null,
         baselineMetric: d.roi?.baselineMetric ?? null,
         baselineValue: d.roi?.baselineValue ?? null,
         baselineUnit: d.roi?.baselineUnit ?? null,

@@ -27,6 +27,7 @@ import {
   URL_KINDS,
 } from "../lib/domain";
 import { DEFAULT_PIPELINE_CHART, PIPELINE_CHARTS } from "../lib/pipeline-chart";
+import { BASELINE_PERIODS, VALUE_TYPES } from "../lib/roi";
 
 // ---------------------------------------------------------------------------
 // Enums — value lists live in lib/domain (single source; the two cannot
@@ -49,6 +50,10 @@ export const ucStatusEnum = pgEnum("uc_status", STATUSES);
 export const pipelineChartEnum = pgEnum("pipeline_chart", PIPELINE_CHARTS);
 
 export const approachEnum = pgEnum("approach", APPROACHES);
+
+/** Kate's two sources of value — see lib/roi. Null means "not sure yet". */
+export const valueTypeEnum = pgEnum("value_type", VALUE_TYPES);
+export const baselinePeriodEnum = pgEnum("baseline_period", BASELINE_PERIODS);
 
 export const ucSourceEnum = pgEnum("uc_source", [
   "form",
@@ -349,6 +354,22 @@ export const useCases = pgTable("use_cases", {
   // ROI (the bar for the 15) — counts and rates, never dollars.
   /** Self-reported estimate of hours spent building; context for ROI, never gates anything. */
   buildHours: doublePrecision("build_hours"),
+  /**
+   * Kate's method, the half the panel never held: what kind of value, the
+   * baseline's period, whether it was measured or estimated, the expected
+   * after-value entered at launch, and the recurring cost. All nullable, all
+   * planning information — none of it is on the ROI checklist (roiComplete),
+   * and a record with no value type renders exactly as it did before these
+   * columns existed. See lib/roi and docs/concepts/gates-and-roi.md.
+   */
+  valueType: valueTypeEnum("value_type"),
+  baselinePeriod: baselinePeriodEnum("baseline_period"),
+  /** Measured, or a calendar-heuristic estimate. Kate sees which. */
+  baselineEstimated: boolean("baseline_estimated"),
+  /** The expected after-value, same unit and period as the baseline. With it, expected ROI. */
+  expectedValue: doublePrecision("expected_value"),
+  /** Recurring cost from year two on. Counted only when it is more than a few hours. */
+  maintenanceHoursPerYear: doublePrecision("maintenance_hours_per_year"),
   baselineMetric: text("baseline_metric"),
   baselineValue: doublePrecision("baseline_value"),
   baselineUnit: text("baseline_unit"),

@@ -50,6 +50,7 @@ import {
   type CoachIntent,
 } from "@/lib/domain";
 import { canUseChat, visibleHistoryNote } from "@/lib/permissions";
+import { actualRoi, expectedRoi, roiReadoutLine, ROI_MISSING_TEXT } from "@/lib/roi";
 import { recordCoachFailure } from "@/server/coach-failures";
 import { getCoachLearnings } from "@/server/coach-learnings-queries";
 import { errorRef } from "@/server/guards";
@@ -78,6 +79,14 @@ interface TurnContext {
 
 /** Failure rows still being written — see `reportFailure`. */
 type Saves = Promise<void>[];
+
+/** A record's computed ROI as one line the model can quote, or why there is none. */
+function roiLine(
+  r: ReturnType<typeof expectedRoi>,
+  label: "Expected" | "Actual",
+): string {
+  return r.ok ? roiReadoutLine(r.figures, label) : `Not computed: ${ROI_MISSING_TEXT[r.reason]}`;
+}
 
 /**
  * One failure, reported once, under a reference the person can quote: a log
@@ -292,14 +301,24 @@ async function respond(req: Request, ctx: TurnContext, saves: Saves) {
           successCriterionMet: uc.successCriterionMet,
           roi: {
             status: uc.roiStatus,
+            buildHours: uc.buildHours,
+            valueType: uc.valueType,
             baselineMetric: uc.baselineMetric,
             baselineValue: uc.baselineValue,
             baselineUnit: uc.baselineUnit,
+            baselinePeriod: uc.baselinePeriod,
+            baselineEstimated: uc.baselineEstimated,
+            expectedValue: uc.expectedValue,
+            maintenanceHoursPerYear: uc.maintenanceHoursPerYear,
             postValue: uc.postValue,
             measurementMethod: uc.measurementMethod,
             netImpactStatement: uc.netImpactStatement,
             isPositive: uc.isPositive,
             revisitOn: uc.revisitOn,
+            // Computed here, in hours, so the Coach quotes the record's own
+            // number rather than working one out in its head.
+            expected: roiLine(expectedRoi(uc), "Expected"),
+            actual: roiLine(actualRoi(uc), "Actual"),
             gapsToConfirmation: roiGaps(uc),
           },
           rejectionReason: uc.rejectionReason,

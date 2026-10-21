@@ -22,6 +22,11 @@ import {
   STATUS_LABELS,
   SUCCESS_MET_LABELS,
 } from "@/lib/domain";
+import {
+  expectedRoi,
+  roiReadoutLine,
+  VALUE_TYPE_LABELS,
+} from "@/lib/roi";
 import { urlDisplayLabel } from "@/lib/use-case-urls";
 import {
   acceptProposalAction,
@@ -45,6 +50,19 @@ interface BaseProps {
    * afresh, as though nobody had ever answered it.
    */
   settled?: string;
+}
+
+function expectedReadout(p: Proposal): string | null {
+  const r = expectedRoi({
+    valueType: p.valueType ?? null,
+    baselineValue: p.baselineValue ?? null,
+    baselinePeriod: p.baselinePeriod ?? null,
+    expectedValue: p.expectedValue ?? null,
+    postValue: p.postValue ?? null,
+    buildHours: p.buildHours ?? null,
+    maintenanceHoursPerYear: p.maintenanceHoursPerYear ?? null,
+  });
+  return r.ok ? roiReadoutLine(r.figures, "Expected") : null;
 }
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
@@ -242,12 +260,53 @@ export function ProposalCard({
           }
         />
         <Row
-          label="ROI"
+          label="Value"
+          value={proposal.valueType ? VALUE_TYPE_LABELS[proposal.valueType] : null}
+        />
+        <Row
+          label="Baseline"
           value={
-            proposal.baselineMetric
-              ? `${proposal.baselineMetric}: ${proposal.baselineValue ?? "?"} ${proposal.baselineUnit ?? ""}${proposal.postValue != null ? ` → ${proposal.postValue}` : ""}`
-              : proposal.roiStatus === "not_yet_measurable"
-                ? `Not yet measurable${proposal.revisitOn ? `, revisit ${proposal.revisitOn}` : ""}`
+            proposal.baselineValue != null
+              ? [
+                  proposal.baselineMetric,
+                  `${proposal.baselineValue} ${proposal.baselineUnit ?? ""}${proposal.baselinePeriod ? ` per ${proposal.baselinePeriod}` : ""}`.trim(),
+                  proposal.baselineEstimated === true
+                    ? "(estimated)"
+                    : proposal.baselineEstimated === false
+                      ? "(measured)"
+                      : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+              : proposal.baselineMetric ?? null
+          }
+        />
+        <Row
+          label="Expected"
+          value={
+            proposal.expectedValue != null
+              ? `${proposal.expectedValue} ${proposal.baselineUnit ?? ""}${proposal.baselinePeriod ? ` per ${proposal.baselinePeriod}` : ""}`.trim()
+              : null
+          }
+        />
+        <Row
+          label="Actual"
+          value={
+            proposal.postValue != null
+              ? `${proposal.postValue} ${proposal.baselineUnit ?? ""}${proposal.baselinePeriod ? ` per ${proposal.baselinePeriod}` : ""}`.trim()
+              : null
+          }
+        />
+        {/* Worked out here from the numbers on the card, never typed by the
+            model — the same function the record page will use once it saves. */}
+        <Row label="ROI" value={expectedReadout(proposal)} />
+        <Row
+          label="Revisit"
+          value={
+            proposal.revisitOn
+              ? proposal.revisitOn
+              : proposal.roiStatus === "not_yet_measurable" && proposal.baselineValue == null
+                ? "Not yet measurable"
                 : null
           }
         />
