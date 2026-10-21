@@ -44,6 +44,26 @@ in-app report it came from.
 
 ## 2026-10-21
 
+### The training's "Copy for CaseSpace" pastes straight in
+Requested by: Tom Leger
+
+Finished the worksheet at the end of the [ROI training](https://roi-wksp.vercel.app)?
+Its *Copy for CaseSpace* button has always produced a block of text with
+nowhere to put it. Paste it into *Start from notes* and the record's ROI
+plan fills itself in — kind of value, the baseline per month, what you
+expect it to take afterwards, build and maintenance hours, the revisit
+date, how you'll measure — read exactly, in hours, with the module's
+priced-time lines left out. Then review and save as usual.
+
+### Revisit dates that have come due are on the dashboard
+Requested by: Tom Leger
+
+Kate's step 6: before year-end, follow up on every workflow whose revisit
+date has passed without a measurement. The dashboard's *Needs attention*
+now lists them, and the Coach can work the same list when you ask it to.
+A measured number, a new revisit date, or a decision to decommission —
+never a blank.
+
 ### The Coach works ROI out the way Kate teaches it
 Requested by: Tom Leger
 

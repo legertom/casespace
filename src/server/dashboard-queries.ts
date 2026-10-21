@@ -20,7 +20,9 @@ import {
   WORKFLOWS_PER_LEAD,
   type Department,
   type UcStatus,
+  etDateString,
 } from "@/lib/domain";
+import { isRevisitDue } from "@/lib/roi";
 import { teamCoverageCount, type CoverageRecord } from "@/lib/team-coverage";
 import { COMMUNITY_ALIVE, IN_PROGRAM_ALIVE } from "@/db/scopes";
 import { identitiesForLeads } from "./identity";
@@ -285,6 +287,8 @@ export interface AttentionFlags {
     daysInStatus: number;
   }[];
   launchedUnscored: { id: string; title: string; roiStatus: string }[];
+  /** Kate's step 6: the revisit date has passed and nothing was measured. */
+  revisitDue: { id: string; title: string; revisitOn: string }[];
 }
 
 export async function getAttentionFlags(): Promise<AttentionFlags> {
@@ -324,7 +328,13 @@ export async function getAttentionFlags(): Promise<AttentionFlags> {
     .filter((c) => c.status === "launched" && c.roiStatus !== "complete")
     .map((c) => ({ id: c.id, title: c.title, roiStatus: c.roiStatus }));
 
-  return { staleDays, stale, launchedUnscored };
+  const today = etDateString(new Date());
+  const revisitDue = cases
+    .filter((c) => isRevisitDue(c, today))
+    .sort((a, b) => (a.revisitOn! < b.revisitOn! ? -1 : 1))
+    .map((c) => ({ id: c.id, title: c.title, revisitOn: c.revisitOn! }));
+
+  return { staleDays, stale, launchedUnscored, revisitDue };
 }
 
 export interface CommunitySubmissions {

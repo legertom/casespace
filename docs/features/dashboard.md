@@ -2,7 +2,7 @@
 title: The dashboard
 surface: /dashboard
 audience: everyone
-updated: 2026-10-14
+updated: 2026-10-21
 code:
   - src/app/(app)/dashboard/page.tsx
   - src/server/dashboard-queries.ts
@@ -84,12 +84,18 @@ who moved what, from where to where. The same history the
 
 ### Needs attention
 
-Two flags:
+Four flags:
 
 - **Stale** — a record that has sat in its current status for ≥ 21 days
   (`app_settings.stale_days`, `isStale()`).
 - **Ready but not qualified** — all four gates met, still waiting on an
   admin.
+- **Launched, ROI not yet scored** — the pipeline of future confirmed wins.
+- **Revisit date passed** — Kate's step 6: the date set for measuring
+  actual ROI has passed and no actual number is on the record
+  (`isRevisitDue()` in `src/lib/roi.ts`; a confirmed record never shows
+  here). The same list reaches the Coach through `get_progress`, so "work
+  the overdue revisits" is a question it can answer.
 
 ### Community submissions
 

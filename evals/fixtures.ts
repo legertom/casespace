@@ -67,6 +67,7 @@ function scoreboard(overrides: Partial<Scoreboard> = {}): Scoreboard {
           roiStatus: "in_progress",
         },
       ],
+      revisitDue: [],
     },
     community: { logged: 0 },
     ...overrides,
