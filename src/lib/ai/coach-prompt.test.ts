@@ -165,6 +165,49 @@ describe("a discovery conversation anchored to a record", () => {
 });
 
 
+describe("Kate's ROI method", () => {
+  const METHOD_MARKER = "## Kate's ROI method";
+
+  it("is taught in the wizard, ROI review, and QA — the modes that have the calculator", () => {
+    for (const intent of ["wizard", "roi_review", "qa"] as const) {
+      const p = coachInstructions({ ...ctx, intent });
+      expect(p, intent).toContain(METHOD_MARKER);
+      expect(p, intent).toContain("calculate_roi");
+    }
+  });
+
+  // Discovery has no calculate_roi, and must not end a fuzzy conversation
+  // with a percentage; a mode told about a tool it lacks would try to.
+  it("is kept out of discovery", () => {
+    const p = coachInstructions({ ...ctx, intent: "discovery" });
+    expect(p).not.toContain(METHOD_MARKER);
+    expect(p).not.toContain("calculate_roi");
+  });
+
+  it("makes the human the only source of numbers, and the tool the only arithmetic", () => {
+    const p = coachInstructions({ ...ctx, intent: "wizard" });
+    expect(p).toContain("You never supply a number yourself");
+    expect(p).toContain("calculate_roi's job, never yours");
+    expect(p).toContain("calendar question");
+    expect(p).toContain("Hours, never dollars");
+  });
+
+  it("carries the workshop's judgment calls", () => {
+    const p = coachInstructions({ ...ctx, intent: "qa" });
+    expect(p).toContain("A negative first year is a result, not a failure");
+    expect(p).toContain("Coverage is valued in hours of support recovered");
+    expect(p).toContain("separate record with its own revisit date");
+    expect(p).toContain("Decommission when tokens exceed value");
+  });
+
+  it("turns ROI review into working it out when the record is thin", () => {
+    const p = coachInstructions({ ...ctx, intent: "roi_review" });
+    expect(p).toContain("don't review a thin record");
+    expect(p).toContain("propose_update with what you established");
+    expect(p).toContain("you cannot move status and you do not try");
+  });
+});
+
 describe("course suggestions", () => {
   it("are offered in the wizard and nowhere else", () => {
     expect(coachInstructions({ ...ctx, intent: "wizard" })).toContain(COURSES_MARKER);

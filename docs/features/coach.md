@@ -4,12 +4,13 @@ surface:
   - /coach
   - /api/coach
 audience: everyone
-updated: 2026-10-02
+updated: 2026-10-21
 code:
   - src/app/(app)/coach/page.tsx
   - src/app/api/coach/route.ts
   - src/components/coach/coach-chat.tsx
   - src/components/coach/proposal-card.tsx
+  - src/lib/ai/roi-tool.ts
   - src/components/coach/coach-launcher.tsx
   - src/components/coach/ask-coach-selection.tsx
   - src/components/coach/notes-door.tsx
@@ -92,8 +93,13 @@ never a wall of questions**, in a fixed order:
    one can.
 5. The seven worksheet ratings, 1–5, conversationally. Optional; skipped freely.
 6. The success criterion, pushed politely toward something measurable.
-7. ROI if it's knowable — baseline, post, method. Otherwise marked not-yet-
-   measurable with a revisit date.
+7. ROI by [Kate's method](../concepts/gates-and-roi.md#kates-method-in-hours):
+   what kind of value, the baseline per period (the calendar question when
+   there's no data, and whether that's measured or estimated), how it'll be
+   measured, the expected after-value, maintenance, a revisit date, and —
+   only if it has really been measured — the actual number. The arithmetic
+   goes to `calculate_roi`; the Coach quotes the readout. Otherwise the
+   record is marked not-yet-measurable with the revisit date.
 8. Adoption evidence — who uses it beyond the authors?
 
 Then it assembles everything into **one** proposal card. If you want to stop
@@ -104,13 +110,22 @@ Once that card is settled it may offer one to three free
 **[course suggestions](course-suggestions.md)** — never before, and often
 none at all.
 
-### Review a record's ROI
+### Work out, then review, a record's ROI
 
-Ask it to review a use case, or work the "launched but unscored" list. It
-fetches the record, checks the evidence against the confirmation bar, and
-produces a **Kate-ready packet** — a one-page markdown summary with a verdict,
-the evidence, the success criterion, adoption, and (when not ready) the
-specific gaps with who could close each one.
+*Run ROI review* on any record (`/coach?review=<id>`), or ask it to work the
+"launched but unscored" list. It fetches the record, which now carries both
+halves of Kate's method and two computed lines — expected and actual, in
+hours.
+
+If the plan or the measurement is **incomplete**, it doesn't review a thin
+record: it works the ROI out with you, one question at a time from wherever
+the record already is, hands the arithmetic to `calculate_roi`, and ends in a
+`propose_update` card. If it is **complete**, it checks the evidence against
+the confirmation bar and produces a **Kate-ready packet** — a one-page
+markdown summary with a verdict, the evidence (expected vs actual, payback
+beside each), the success criterion, adoption, and (when not ready) the
+specific gaps with who could close each one. For an admin it also offers a
+draft annual-ROI sentence, in hours, to edit in the status dialog.
 
 It is instructed to be strict about methodology: *a number without a method is
 not evidence*, and never to pad a weak case.
@@ -155,16 +170,17 @@ click attendance live; the Coach does not require obstacles beforehand.
 
 ## The rule that shapes everything: it never writes
 
-The Coach has six tools, plus two for admins,
+The Coach has seven tools, plus two for admins,
 one in wizard mode, and two more in Discovery mode.
-Some read; the rest propose. The difference is structural, not a policy
-someone remembers to follow:
+Some read or compute; the rest propose. The difference is structural, not a
+policy someone remembers to follow:
 
 | Tool | Does |
 |---|---|
 | `search_use_cases` | Search the casebook |
-| `get_use_case` | One record in full, including ROI gaps and history |
+| `get_use_case` | One record in full, including build hours, the ROI plan, the computed expected and actual lines, ROI gaps and history |
 | `get_progress` | The scoreboard |
+| `calculate_roi` | Kate's arithmetic, in hours — the same function as the form and the record page. Pure; reads and writes nothing. Every mode but Discovery |
 | `get_coach_learnings` | How its own proposals landed. Admin-only, gated at the tool table |
 | `open_live_groups` | Opens the admin-only roster picker and case review. A client tool with no execute path |
 | `get_discovery_history` | Your own prior Discovery checkpoints. Discovery mode only, scoped to your session |
@@ -215,12 +231,25 @@ be conflated, and that it must not tell someone their community record counts
 toward the 45. See
 [counting rules](../concepts/counting-rules.md#program-and-community).
 
-**It will not invent a number.** The instructions are explicit: never invent
-or estimate an ROI figure the human didn't give. If ROI isn't knowable, the
+**It will not supply a number — but it will ask you to.** The precise rule,
+and it matters: the Coach never invents a figure, and it never does ROI
+arithmetic in its head. It *may* ask you to estimate a baseline (the
+workshop's calendar question — "how much time would you block to do this by
+hand?") and records that as an estimate, flagged as one. And when the
+numbers are there, it calls `calculate_roi` and quotes what comes back, so
+its percentage is the record page's percentage. If ROI isn't knowable, the
 record gets marked not-yet-measurable with a revisit date rather than a guess.
 
-**No dollar figures, ever.** ROI is counts, rates, and hours. This holds for
-the Coach exactly as it does for the rest of the product.
+**Discovery has no calculator.** `calculate_roi` is in every mode but that
+one, on purpose: a Discovery conversation must not steer toward building,
+and a percentage is the fastest way to end the thinking early.
+
+**No dollar figures, ever.** ROI is counts, rates, and hours. The Coach
+computes the percentage in hours — at one rate it is the same percentage as
+in dollars — and, handed a dollar figure, asks for the hours behind it. A
+revenue case is reported as counts and rates ("about two and a half more
+deals a year"); its percentage belongs in Kate's confirmation note. This
+holds for the Coach exactly as it does for the rest of the product.
 
 **AI-built counts.** The Coach is told not to tell someone their case doesn't
 qualify just because no AI runs at runtime — a tool built with Claude Code

@@ -228,6 +228,8 @@ export function CoachChat({
                       return <ReadToolChip key={i} label="Read the record" />;
                     case "tool-get_progress":
                       return <ReadToolChip key={i} label="Checked the scoreboard" />;
+                    case "tool-calculate_roi":
+                      return <ReadToolChip key={i} label="Worked out the ROI" />;
                     case "tool-open_live_groups":
                       if (part.state === "input-streaming")
                         return <ReadToolChip key={i} label="Opening live groups…" />;

@@ -73,11 +73,33 @@ When someone wants to log a use case conversationally, walk them through it one 
 6. Roughly how many hours went into building it? A rough number is fine — "about a day" is 8. Ask plainly, accept "no idea", and never estimate on their behalf.
 7. Rate the worksheet dimensions conversationally, 1–5: frequency, pain, data availability, risk, ownership clarity, evaluation clarity, maintenance burden. Optional — skip freely if they don't know.
 8. Define the success criterion — push (politely) for something measurable. Ask whether it's been met yet. Also ask what the functional leader would call success.
-9. ROI if possible: baseline metric, value, and unit now; post-value if it exists; the measurement method. If both numbers exist, ask them to state the net impact in one plain sentence, and whether the outcome is positive and primarily attributable to the AI workflow. If ROI isn't knowable yet, mark it not-yet-measurable with a revisit date. NEVER invent or estimate a number the human didn't give you.
+9. ROI, by Kate's method (the section below), one question at a time and skipped freely: (a) what kind of value — time saved or revenue; (b) the baseline per period — "how many hours a month does this take today, by hand?" — and when there is no data, the calendar question, then whether that number is measured or estimated; (c) how they'll measure it, the same way on the revisit date; (d) if it has launched or is about to, what it should take once the workflow is in place — the expected after-value; (e) maintenance hours a year, only if it will need real upkeep; (f) call calculate_roi with those numbers and give the one-line readout it returns — ROI, payback, year two; (g) a revisit date — suggest about three runs of the process after launch and let them pick; (h) only if it has really been measured: the actual after-value, calculate_roi again, a net-impact sentence drafted from the numbers (the tool gives you one), and whether the outcome is positive and primarily attributable to the AI workflow. If ROI isn't knowable yet, mark it not-yet-measurable with the revisit date. You never supply a number yourself: you may ask them to estimate one and record it as an estimate, and calculate_roi does the arithmetic.
 10. Adoption evidence — who beyond the authors actually uses it?
 11. Where does it stand today — in discovery, approved, under construction, in testing, or launched? Their answer sets the starting status; leave it in discovery if they're unsure. Qualified and Confirmed Positive ROI are admin decisions and never a starting point.
 12. Last, the four documented gates. Read back which ones you believe the record now meets and what each is based on — (a) a named workflow with a clear description, (b) the AI tool and approach identified, (c) adoption beyond the authors, (d) a named owner — and ask them plainly whether to tick them. Set ONLY the gates they confirm. Never tick one on your own judgement, never tick one they didn't answer, and if they'd rather skip the question leave all four unticked — an owner can set them on the record later. These four decide whether the record counts toward the ${TARGET_DOCUMENTED}, and an admin reading it months later cannot tell a confirmed tick from a guessed one, so a missing tick is far cheaper than a wrong one.
 Then assemble everything into ONE propose_use_case call and let them review. Don't re-ask what they already told you. If they want to stop early, propose with what you have — a half-filled record that exists beats a perfect one that doesn't.`;
+
+/**
+ * Kate's method, as the workshop teaches it and as the Success & ROI section
+ * is laid out. Present wherever calculate_roi is — every mode but Discovery,
+ * which must not end a fuzzy conversation with a percentage.
+ */
+const ROI_METHOD_SECTION = `## Kate's ROI method
+The method the ROI training teaches, and the one every record's Success & ROI section is laid out as — 1 · before you build, 2 · at launch, 3 · on the revisit date. Use it whenever ROI comes up.
+- The formula: ROI = (value created − project cost) ÷ project cost × 100. Payback — build hours ÷ hours saved a month — always goes beside it: 35% with a nine-month payback is a different story from 35% with a three-year one.
+- Two kinds of value. **Time saved**: the workflow gives hours back, or covers work nobody had hours for. Coverage (a legal agent answering routine questions during PTO) counts, and so does a process nobody ever formalised — the baseline is what the work would cost done by hand. **Revenue**: a rate moves — win rate, renewals.
+- Expected vs actual. Expected ROI is worked out before or at launch, from the baseline and what the workflow should take; it says whether the build was worth it. Actual ROI is measured on the revisit date, about three runs of the process after launch, the same way as the baseline. Only the actual, confirmed by Kate, counts toward the ${TARGET_ROI}.
+- Costs: build hours, always. Maintenance when it is substantial — count 20 hours a year, don't split hairs over three. Small one-time token costs are ignored. A recurring, material token cost goes into the net-impact sentence in words; there is no field for it, because it is dollars.
+- Hours, never dollars. Casespace computes the percentage in hours, which at one hourly rate is the same percentage as in dollars. If someone gives you a dollar figure, ask for the hours behind it; if they can't say, leave it off the record and tell them it belongs in Kate's confirmation note. A revenue case is reported as counts and rates — "about two and a half more deals a year" — never as a percentage here.
+- No baseline? Ask the calendar question: "how much time would you block on your calendar to do this by hand?" Record the answer as the baseline, flag it as estimated, and put the assumption in the measurement method. A stated estimate beats a missing baseline — without one, a workflow that works still reads as "no measurable impact".
+- The judgment calls:
+  1. A negative first year is a result, not a failure. Report it as negative, with the payback and the year-two figure. Never invent a year-end number.
+  2. Coverage is valued in hours of support recovered; quality is stated beside the number as a condition, not folded into it.
+  3. Several apps with one measurable saving now: claim the saving that is measurable now as its own record, and give the longer-horizon revenue effect a separate record with its own revisit date. Linked workflows can tie the two.
+  4. A material recurring token cost is included, in words. Decommission when tokens exceed value.
+  5. No reliable baseline: estimate it, state the assumption, measure from launch. Don't skip it, and don't wait for perfect data.
+- Arithmetic is calculate_roi's job, never yours. Call it with the numbers the human gave and quote what it returns, in hours. It writes nothing.
+- You may ask someone to estimate a number and record it as an estimate. You never supply a number yourself.`;
 
 const FEEDBACK_SECTION = `## Product feedback mode
 When someone hits a problem with Casespace itself, or says the tool should work differently, offer to file it — don't wait to be asked. This is about the tool, not about a use-case record; a wrong owner on a record is propose_update.
@@ -93,8 +115,12 @@ Write \`whatHappened\` in their terms, not yours: report what they told you, and
 You never file it yourself; the card does, on their click. Don't promise it's fixed, don't estimate when it will be, and don't speculate about the cause in the report.`;
 
 const ROI_SECTION = `## ROI review mode
-When asked to review a use case's ROI (or work the "Launched but unscored" list from get_progress), fetch the record and check the evidence against the confirmation bar:
-- Is there a real baseline (metric, value, unit)?
+When asked to review a use case's ROI (or work the "Launched but unscored" list from get_progress), fetch the record. Its roi block carries the plan half — value type, the baseline with its period and whether it was estimated, the expected after-value, maintenance — and the measurement half, plus two computed lines, expected and actual, in hours.
+
+If the plan or the measurement is incomplete, don't review a thin record — work it out with them, by Kate's method, from wherever the record already is: one question at a time for what's missing, calculate_roi for the arithmetic, and propose_update with what you established. Never a number they didn't give.
+
+Once it is complete, check the evidence against the confirmation bar:
+- Is there a real baseline (metric, value, unit, period)? Measured or estimated — an estimate is fine when the record says so and the method states the assumption.
 - Is the post-measurement taken with the same methodology? Same method, same window, same population — name any mismatch.
 - Is the net-impact statement supported by those numbers?
 - Is the success criterion defined, and met?
@@ -103,10 +129,12 @@ Then produce a **Kate-ready packet** in markdown — a one-page summary Tom can 
 # ROI confirmation review: {title}
 **Verdict:** Ready / Not ready
 **The workflow.** 1–2 sentences.
-**The evidence.** Baseline → post, method, and what it shows.
+**The evidence.** Baseline → post, method, and what it shows. Expected vs actual in hours — the record's own computed lines, payback beside each.
 **Success criterion.** What it was, whether it's met.
 **Adoption.** Who uses it beyond the authors.
 **Gaps.** (only if not ready) The specific missing pieces, each with who could close it.
+
+For an admin, offer one draft sentence for the annual-ROI note, in hours and counts, from the record's actual figures. Kate edits it in the status dialog; you cannot move status and you do not try.
 
 Be strict on methodology. A number without a method is not evidence. If the record is thin, say exactly what's missing — never pad a weak case.`;
 
@@ -256,6 +284,8 @@ export function coachInstructions(ctx: Ctx): string {
           sharedHead(ctx),
           ...meetingBreakouts,
           WIZARD_SECTION,
+          // These three modes all have calculate_roi; Discovery does not.
+          ROI_METHOD_SECTION,
           // Only the wizard gets it, because only the wizard has the tool.
           ...(ctx.intent === "wizard" ? [COURSES_SECTION] : []),
           FEEDBACK_SECTION,
