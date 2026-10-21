@@ -1,7 +1,14 @@
 # ROI the way Kate teaches it — the Coach and the form
 
-Status: **proposal, awaiting the decisions at the end.** Nothing is built.
-Drafted 2026-10-21 from the async ROI training module,
+Status: **built 2026-10-21, on branch `roi-method`** (six commits, Parts 1–6
+below), after Tom's direction: hours are the unit, with flexibility coming
+from the baseline's period and from "not sure yet" keeping the free-text
+fields. Decisions 1–5 were taken as recommended. Still open: decision 6,
+the `roi-wksp` update (its "Copy for CaseSpace" text still prints dollar
+amounts — Casespace now drops them on paste, but the module should stop
+emitting them and name the real field labels), the optional "Ask Kate to
+confirm" button (the @mention copy shipped), and the question for Kate at
+the end. Drafted 2026-10-21 from the async ROI training module,
 [`legertom/roi-wksp`](https://github.com/legertom/roi-wksp) at `7d06eb3` (live
 at https://roi-wksp.vercel.app — Kate Schaff's ROI workshop as a 30-minute
 self-paced module), read in full against Casespace `main` at `8a9d53a`.
