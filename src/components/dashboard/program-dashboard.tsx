@@ -740,6 +740,36 @@ export async function ProgramDashboard() {
                 </ul>
               )}
             </div>
+            <div>
+              <h3 className="text-sm font-semibold">Revisit date passed</h3>
+              <p className="mt-0.5 text-xs text-ink-faint">
+                Kate&rsquo;s step 6: the date set for measuring actual ROI has
+                come and gone with nothing measured. A number, a new date, or
+                a decision to decommission &mdash; never a blank.
+              </p>
+              {attention.revisitDue.length === 0 ? (
+                <p className="mt-1.5 text-sm text-ink-muted">
+                  Nothing overdue. Every revisit date is still ahead, or
+                  already measured.
+                </p>
+              ) : (
+                <ul className="mt-1.5 space-y-1.5">
+                  {attention.revisitDue.map((s) => (
+                    <li key={s.id} className="text-sm">
+                      <Link
+                        href={`/use-cases/${s.id}`}
+                        className="hover:text-accent"
+                      >
+                        {s.title}
+                      </Link>{" "}
+                      <span className="text-ink-muted">
+                        &mdash; due {fmtDateShort(s.revisitOn)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </section>
       </div>

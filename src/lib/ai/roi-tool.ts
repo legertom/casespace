@@ -62,6 +62,7 @@ export type RoiToolInput = z.infer<typeof roiToolInputSchema>;
 export const ROI_TOOL_DESCRIPTION =
   "Kate's ROI arithmetic, in hours: (hours saved a year − build hours) ÷ build hours × 100, with payback in months and the year-two figure. " +
   "Call it as soon as you have a baseline, an after-value and build hours from the human — never do this arithmetic yourself, and never call it with a number the human did not give. " +
+  "A plain 'saves 4 hours a month' is a baseline of 4 per month with an after-value of 0; 'took 10 hours, now takes 1' is baseline 10, after 1. " +
   "Quote what it returns. It writes nothing to any record. For a revenue case it returns why there is no percentage.";
 
 /** What the model reads back: the figures, one quotable line, and a draft sentence. */

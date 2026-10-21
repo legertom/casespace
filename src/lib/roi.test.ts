@@ -7,6 +7,7 @@ import {
   fmtHours,
   fmtPayback,
   fmtPct,
+  isRevisitDue,
   netImpactDraft,
   pctRemoved,
   roiReadoutLine,
@@ -294,5 +295,30 @@ describe("roiStepFor — which step opens first", () => {
   it("opens actual ROI for Kate's two stages", () => {
     expect(roiStepFor({ status: "qualified", revisitOn: null, today })).toBe(3);
     expect(roiStepFor({ status: "confirmed_positive_roi", revisitOn: null, today })).toBe(3);
+  });
+});
+
+describe("isRevisitDue — Kate's step 6", () => {
+  const today = "2026-10-21";
+  const launched = { status: "launched" as const, revisitOn: "2026-10-01", postValue: null };
+
+  it("is due once the date has passed with nothing measured", () => {
+    expect(isRevisitDue(launched, today)).toBe(true);
+    expect(isRevisitDue({ ...launched, revisitOn: today }, today)).toBe(true);
+  });
+
+  it("is not due before the date, without a date, or once measured", () => {
+    expect(isRevisitDue({ ...launched, revisitOn: "2026-12-01" }, today)).toBe(false);
+    expect(isRevisitDue({ ...launched, revisitOn: null }, today)).toBe(false);
+    expect(isRevisitDue({ ...launched, postValue: 2 }, today)).toBe(false);
+  });
+
+  it("is never due on a confirmed record", () => {
+    expect(isRevisitDue({ ...launched, status: "confirmed_positive_roi" }, today)).toBe(false);
+  });
+
+  it("is due at any other stage — a plan with a date is a plan", () => {
+    expect(isRevisitDue({ ...launched, status: "in_discovery" }, today)).toBe(true);
+    expect(isRevisitDue({ ...launched, status: "qualified" }, today)).toBe(true);
   });
 });

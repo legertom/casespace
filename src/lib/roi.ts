@@ -292,3 +292,21 @@ export function roiStepFor(args: {
   if (status === "in_testing" || status === "launched") return 2;
   return 1;
 }
+
+/**
+ * Kate's step 6: the revisit date has passed and nothing was measured. A
+ * confirmed record is done, whatever its dates say. The answer is a measured
+ * number, a new revisit date, or a decision to decommission — never a blank.
+ */
+export function isRevisitDue(
+  uc: {
+    status: UcStatus;
+    revisitOn: string | null;
+    postValue: number | null;
+  },
+  today: string,
+): boolean {
+  if (uc.status === "confirmed_positive_roi") return false;
+  if (!uc.revisitOn || uc.revisitOn > today) return false;
+  return uc.postValue === null;
+}

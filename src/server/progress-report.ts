@@ -54,6 +54,8 @@ export async function buildProgressReport() {
       staleDays: attention.staleDays,
       sittingStill: attention.stale,
       launchedUnscored: attention.launchedUnscored,
+      /** Kate's step 6: revisit date passed, nothing measured. */
+      revisitDue: attention.revisitDue,
     },
     /**
      * Records logged outside the program — counted here and nowhere else in
