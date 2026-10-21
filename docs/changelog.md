@@ -44,6 +44,22 @@ in-app report it came from.
 
 ## 2026-10-21
 
+### The ROI section follows Kate's three steps, and does the arithmetic
+Requested by: Tom Leger
+
+Success & ROI on the form and on every record now reads the way Kate's
+workshop teaches it: **1 · Before you build** — what kind of value, how
+you'll know, the baseline per week or month and whether you measured it or
+estimated it; **2 · At launch** — hours spent building, what you expect it
+to take afterwards, any maintenance, the revisit date; **3 · On the revisit
+date** — the actual number and the net impact. The step that matches where
+the workflow stands opens first, and the other two are a click away. For a
+time-saved workflow the ROI, payback and year-two figure are worked out as
+you type, in hours — the workshop's unit — and a button drafts the
+net-impact sentence from them. The form also asks where the workflow stands *first*,
+since that decides how much of the rest applies yet. The
+[training module](https://roi-wksp.vercel.app) is linked from the section.
+
 ### A record can now hold the ROI plan, not just the measurement
 Requested by: Tom Leger
 
