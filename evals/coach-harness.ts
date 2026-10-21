@@ -25,6 +25,7 @@ import {
   discoveryProposalTools,
   proposalTools,
 } from "@/lib/ai/proposal-tools";
+import { roiTools } from "@/lib/ai/roi-tool";
 import type { CoachIntent } from "@/lib/domain";
 import type { Finding, Rubric } from "./harness";
 
@@ -88,7 +89,10 @@ const DISCOVERY_TOOL_NAMES = [
   "propose_discovery_checkpoint",
 ] as const;
 
-const WIZARD_TOOL_NAMES = [...SHARED_TOOL_NAMES, "suggest_courses"] as const;
+/** QA and ROI review: the shared set plus Kate's calculator, as in the route. */
+const METHOD_TOOL_NAMES = [...SHARED_TOOL_NAMES, "calculate_roi"] as const;
+
+const WIZARD_TOOL_NAMES = [...METHOD_TOOL_NAMES, "suggest_courses"] as const;
 
 export interface CoachTurn {
   role: "user" | "assistant";
@@ -133,6 +137,13 @@ export async function runCoach(
      * situation directly and asks what it does there.
      */
     courses?: "real" | "empty";
+    /**
+     * Let the turn run on after a tool result, as the route does. The wizard
+     * always does (its course tool runs); the other modes run a single step
+     * unless the eval is about a tool that returns something — calculate_roi
+     * — and needs to see what the Coach says with the result in hand.
+     */
+    multiStep?: boolean;
   } = {},
 ): Promise<CoachRun> {
   const intent = opts.intent ?? "qa";
@@ -171,23 +182,26 @@ export async function runCoach(
       ...discoveryProposalTools,
       ...proposalTools,
       ...wizardTools,
+      // The real calculator, as in the route — pure, so there is nothing to stub.
+      ...roiTools(),
     },
     // Mirrors the route's gate: discovery's two tools exist only in discovery
-    // mode. An eval that offered the checkpoint everywhere would grade a Coach
-    // the application never runs. (The route omits them from the table
-    // outright; `activeTools` is the equivalent here and keeps one tool table
-    // for both modes, so the SDK can still type the calls that come back.)
+    // mode, and the calculator everywhere else. An eval that offered the
+    // checkpoint everywhere would grade a Coach the application never runs.
+    // (The route omits them from the table outright; `activeTools` is the
+    // equivalent here and keeps one tool table for every mode, so the SDK can
+    // still type the calls that come back.)
     activeTools:
       intent === "discovery"
         ? DISCOVERY_TOOL_NAMES
         : intent === "wizard"
           ? WIZARD_TOOL_NAMES
-          : SHARED_TOOL_NAMES,
-    // The wizard's course tool is the only one here that runs, so it is the
-    // only mode where a turn has a second step to take: the Coach calls it and
-    // then has to say something about what came back. Left off elsewhere so
-    // every other eval runs exactly the single turn it has always run.
-    ...(intent === "wizard" ? { stopWhen: isStepCount(6) } : {}),
+          : METHOD_TOOL_NAMES,
+    // The wizard's course tool runs, so the wizard always has a second step
+    // to take: the Coach calls it and then has to say something about what
+    // came back. Elsewhere a turn is the single step it has always been,
+    // unless the eval opts in — see `multiStep`.
+    ...(intent === "wizard" || opts.multiStep ? { stopWhen: isStepCount(6) } : {}),
     providerOptions: EVAL_ATTRIBUTION,
   });
 
@@ -210,6 +224,19 @@ export function courseCall(run: CoachRun): Record<string, unknown> | null {
 /** The `propose_feedback` call from a run, or null if it did not propose one. */
 export function feedbackProposal(run: CoachRun): Record<string, unknown> | null {
   const call = run.toolCalls.find((c) => c.toolName === "propose_feedback");
+  return call ? (call.input as Record<string, unknown>) : null;
+}
+
+/** The `calculate_roi` calls from a run, in order — empty if it never calculated. */
+export function roiCalls(run: CoachRun): Record<string, unknown>[] {
+  return run.toolCalls
+    .filter((c) => c.toolName === "calculate_roi")
+    .map((c) => c.input as Record<string, unknown>);
+}
+
+/** The `propose_use_case` call from a run, or null if it did not propose one. */
+export function useCaseProposal(run: CoachRun): Record<string, unknown> | null {
+  const call = run.toolCalls.find((c) => c.toolName === "propose_use_case");
   return call ? (call.input as Record<string, unknown>) : null;
 }
 

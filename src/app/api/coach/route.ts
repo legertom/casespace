@@ -30,6 +30,7 @@ import {
 } from "@/lib/ai/coach-error";
 import { coachInstructions } from "@/lib/ai/coach-prompt";
 import { courseTools } from "@/lib/ai/course-tools";
+import { roiTools } from "@/lib/ai/roi-tool";
 import {
   discoveryProposalTools,
   proposalTools,
@@ -382,6 +383,12 @@ async function respond(req: Request, ctx: TurnContext, saves: Saves) {
     // Declared in lib/ai/course-tools so the evals grade this exact
     // description and this exact matcher rather than a second copy of them.
     ...(chatIntent === "wizard" ? courseTools() : {}),
+
+    // Kate's arithmetic, in every mode but Discovery: a calculator in a
+    // conversation that must not steer toward building is an invitation to
+    // end the thinking with a percentage. Pure, reads nothing, writes
+    // nothing — declared in lib/ai/roi-tool so the evals run the real one.
+    ...(chatIntent !== "discovery" ? roiTools() : {}),
 
     // Discovery's two tools, gated at the tool table the same way the admin
     // one above is. A wizard chat has no business producing checkpoints, and

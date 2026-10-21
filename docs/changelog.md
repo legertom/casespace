@@ -44,6 +44,22 @@ in-app report it came from.
 
 ## 2026-10-21
 
+### The Coach works ROI out the way Kate teaches it
+Requested by: Tom Leger
+
+Ask the Coach what a workflow is worth and it now follows the workshop: what
+kind of value, the baseline per month (and the calendar question when nobody
+ever timed it), what you expect it to take afterwards, build hours,
+maintenance, a revisit date. It hands the arithmetic to a calculator — the
+same one the form and the record page use, in hours — and quotes the
+result, so its percentage is the record's percentage. It knows the
+workshop's judgment calls too: a negative first year is a result, coverage
+counts in hours, a suite with one measurable saving gets two records.
+*Run ROI review* on a record now works the ROI out with you when the record
+is thin, and produces the Kate-ready packet when it's complete. The Coach
+still never supplies a number of its own, and nothing priced in money
+reaches a record.
+
 ### The ROI section follows Kate's three steps, and does the arithmetic
 Requested by: Tom Leger
 
