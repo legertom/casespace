@@ -55,7 +55,8 @@ export default async function EditUseCasePage({
     <div>
       <h1 className="font-serif text-4xl">Edit: {uc.title}</h1>
       <p className="mt-2 text-ink-muted">
-        Status changes happen on the record page so the history stays complete.
+        The same record, evolving — fill in what you know now and come back
+        for the rest.
       </p>
       <div className="mt-10">
         <UseCaseForm
@@ -68,6 +69,7 @@ export default async function EditUseCasePage({
           }))}
           initial={initial}
           mode="edit"
+          current={{ id: uc.id, status: uc.status }}
           submitLabel="Save changes"
           onSubmit={submit}
         />

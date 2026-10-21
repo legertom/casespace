@@ -4,7 +4,7 @@ surface:
   - /use-cases/[id]
   - /use-cases/[id]/edit
 audience: everyone
-updated: 2026-09-02
+updated: 2026-10-21
 code:
   - src/app/(app)/use-cases/[id]/page.tsx
   - src/app/(app)/use-cases/[id]/edit/page.tsx
@@ -13,6 +13,7 @@ code:
   - src/components/record/record-about.tsx
   - src/components/record/record-worksheet.tsx
   - src/components/record/record-roi.tsx
+  - src/components/record/roi-readout.tsx
   - src/components/record/record-activity.tsx
   - src/lib/activity.ts
   - src/components/record/record-credit.tsx
@@ -39,10 +40,19 @@ whoever owns it.
   AI-built.
 - **Status** with its controls.
 - **The four documented gates**, as toggles.
-- **The ROI panel** — success criterion, baseline and post with a stated
-  methodology, net-impact statement, positive/negative, and **build effort**:
-  a [self-reported estimate](../concepts/gates-and-roi.md#build-hours) of the
-  hours spent building, shown whether or not ROI is measurable yet.
+- **The ROI panel**, as
+  [Kate's three steps](../concepts/gates-and-roi.md#kates-method-in-hours):
+  the plan (kind of value, success criterion, the baseline with its period
+  and whether it was measured or estimated, the method), expected ROI at
+  launch (**build effort** — a
+  [self-reported estimate](../concepts/gates-and-roi.md#build-hours) —
+  the expected after-value, maintenance, the revisit date), and actual ROI
+  on the revisit date (the post-value, net impact, criterion met,
+  positive/negative). All three steps are always shown and every field is
+  inline-editable; the step matching the record's stage opens first. For a
+  time-saved case the expected and actual figures are worked out in hours
+  beside the inputs; *Run ROI review* in the header opens the Coach on the
+  record to work them through.
 - **Where to find it** — links to the thing itself: the live tool, the
   GitHub repo, a Claude artifact/project/skill, or anything else with a label
   you write. As many as the workflow has. Not to be confused with

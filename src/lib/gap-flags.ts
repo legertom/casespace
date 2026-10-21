@@ -17,8 +17,18 @@ export function computeGapFlags(input: Partial<UseCaseCreateInput>): string[] {
     (input.baselineValue === null || input.baselineValue === undefined)
   )
     gaps.push("ROI baseline missing");
-  if (input.roiStatus === "not_yet_measurable" && !input.revisitOn)
+  // The revisit date is set at launch whatever the ROI status, and is only
+  // moot once the actual number is in.
+  if (!input.revisitOn && input.postValue == null)
     gaps.push("No revisit date for ROI");
+  // Kate's step 2: a launched time-saved workflow should say what it expects
+  // to save. A prompt, never a block — nothing here is on the ROI checklist.
+  if (
+    input.valueType === "time_saved" &&
+    input.status === "launched" &&
+    input.expectedValue == null
+  )
+    gaps.push("No expected ROI at launch");
   if (!input.gateAdoption && !input.adoptionEvidence?.trim())
     gaps.push("No adoption evidence beyond the authors");
   return gaps;

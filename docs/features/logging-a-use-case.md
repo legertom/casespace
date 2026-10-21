@@ -6,7 +6,7 @@ surface:
   - /use-cases/new/review
   - /use-cases/from-notes
 audience: everyone
-updated: 2026-09-02
+updated: 2026-10-21
 code:
   - src/app/(app)/use-cases/new/page.tsx
   - src/app/(app)/use-cases/new/form/page.tsx
@@ -16,6 +16,8 @@ code:
   - src/components/use-case-prefill.tsx
   - src/components/use-case-form.tsx
   - src/components/use-case-url-rows.tsx
+  - src/components/record/roi-readout.tsx
+  - src/lib/roi.ts
   - src/lib/ai/coach-prompt.ts
 ---
 
@@ -80,10 +82,33 @@ app).
 emptiest honest value and can be filled in later, on the record page. A
 half-filled record that exists beats a perfect record that doesn't.
 
-That includes the Success & ROI section's intake question, *"Roughly how
-many hours went into building this?"* — a rough estimate is fine, it's
-optional, and it [never gates anything](../concepts/gates-and-roi.md#build-hours).
-It can also be added later, inline on the record's ROI panel.
+## The form asks where it stands first
+
+*Where does it stand?* is the first question on the form, because the
+answer decides how much of the rest applies right now: an idea in discovery
+has no ROI to measure yet, and a launched workflow is exactly the point.
+Qualified and Confirmed Positive ROI are never offered — they are Kate's
+decisions, made later on the record page. On the edit form the status is a
+read-only line pointing at the record page, where every change is logged.
+
+## Success & ROI follows Kate's three steps
+
+The section is laid out as
+[Kate's method](../concepts/gates-and-roi.md#kates-method-in-hours):
+**1 · Before you build** (what kind of value, how you'll know, the baseline
+with its period and whether you measured or estimated it, how you'll
+measure), **2 · At launch** (hours spent building, the expected after-value,
+maintenance, the revisit date), **3 · On the revisit date** (the actual
+after-value, the net-impact sentence, whether the criterion was met and the
+outcome is positive). The step that matches the status opens first; the
+other two are a click away, and every field is optional.
+
+For a time-saved case the form works the ROI out as you type — year one,
+payback, year two — in hours, never dollars, and *Use the numbers* drafts a
+net-impact sentence from them for you to edit. The *hours spent building*
+question is a rough estimate and
+[never gates anything](../concepts/gates-and-roi.md#build-hours). Everything
+here can also be added later, inline on the record's ROI panel.
 
 The same goes for **Where to find it** — links to the live tool, the repo, or
 a Claude artifact/project/skill. Add as many as the workflow has, or none;
