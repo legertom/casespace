@@ -2,7 +2,7 @@
 title: MCP server
 surface: /api/mcp
 audience: everyone
-updated: 2026-08-25
+updated: 2026-10-21
 code:
   - src/app/api/mcp/route.ts
   - src/lib/ai/proposal.ts
@@ -43,6 +43,14 @@ display name rather than dropped.
 
 **Comments are not here.** No MCP tool reads or writes them. See
 [the Coach](../features/coach.md#what-the-coach-cannot-see).
+
+**ROI is in hours, and you give the inputs, not the percentage.**
+`log_use_case` and `update_use_case` take Kate's plan fields — `valueType`,
+`baselineValue` with `baselinePeriod` and `baselineEstimated`,
+`buildHours`, `expectedValue`, `maintenanceHoursPerYear`, `revisitOn` — and
+the measurement, `postValue`. The percentage is computed from those, in the
+app and on the REST shape; there is no field to write one into, and no field
+for dollars. See [the REST notes](rest-api.md#roi-fields).
 
 ## Auth
 

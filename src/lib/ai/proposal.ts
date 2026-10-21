@@ -5,6 +5,7 @@
  */
 import { z } from "zod";
 import { APPROACHES, DEPARTMENTS, SETTABLE_STATUSES } from "@/lib/domain";
+import { BASELINE_PERIODS, VALUE_TYPES } from "@/lib/roi";
 import {
   useCaseUrlSchema,
   type UseCaseCreateInput,
@@ -119,13 +120,54 @@ export const proposalSchema = z.object({
     .describe(
       "Rough hours spent building the workflow — 'took me about a day' is 8. Ask in a conversation; take it from the notes when parsing notes. A rough number is fine, an invented one is not.",
     ),
-  baselineMetric: z.string().nullish(),
+  // Kate's method, the plan half — see lib/roi. Every one optional, and
+  // every number only ever the human's: an estimate they gave is fine
+  // (flagged with baselineEstimated), a number the model worked out is not.
+  valueType: z
+    .enum(VALUE_TYPES)
+    .nullish()
+    .describe(
+      "time_saved: the workflow gives hours back or covers work nobody had hours for (coverage and never-formalised processes count). revenue: it moves a business rate — win rate, renewals. Empty if unsure.",
+    ),
+  baselineMetric: z
+    .string()
+    .nullish()
+    .describe("What is being measured, e.g. 'hours BizOps spends pulling MPR metrics'"),
   baselineValue: z
     .number()
     .nullish()
-    .describe("Only a number the human actually gave — never invented"),
-  baselineUnit: z.string().nullish(),
-  postValue: z.number().nullish(),
+    .describe(
+      "The before-number, only one the human actually gave — never invented. For time_saved: hours per baselinePeriod. For revenue: the rate, in %.",
+    ),
+  baselinePeriod: z
+    .enum(BASELINE_PERIODS)
+    .nullish()
+    .describe("The period the baseline is per. 'ten hours a month' is 10 per month."),
+  baselineEstimated: z
+    .boolean()
+    .nullish()
+    .describe(
+      "true when the baseline is the human's estimate (the calendar heuristic) rather than a measurement. Only if they said which.",
+    ),
+  baselineUnit: z
+    .string()
+    .nullish()
+    .describe("'hours' for time_saved, '%' for revenue; free text only when the value type is unknown"),
+  expectedValue: z
+    .number()
+    .nullish()
+    .describe(
+      "The expected after-number, same unit and period as the baseline — the plan, entered at launch. '90% automated' on 10 hours a month is 1. Only from what the human said.",
+    ),
+  maintenanceHoursPerYear: z
+    .number()
+    .min(0)
+    .nullish()
+    .describe("Recurring upkeep in hours a year, when it is more than a few. Never estimated on their behalf."),
+  postValue: z
+    .number()
+    .nullish()
+    .describe("The actual after-number, measured on the revisit date. Only if it has really been measured."),
   measurementMethod: z
     .string()
     .nullish()
@@ -201,6 +243,13 @@ export function proposalPatchToUpdateInput(
   if ("successCriterionMet" in c && c.successCriterionMet)
     patch.successCriterionMet = c.successCriterionMet;
   if ("buildHours" in c) patch.buildHours = c.buildHours ?? null;
+  if ("valueType" in c) patch.valueType = c.valueType ?? null;
+  if ("baselinePeriod" in c) patch.baselinePeriod = c.baselinePeriod ?? null;
+  if ("baselineEstimated" in c)
+    patch.baselineEstimated = c.baselineEstimated ?? null;
+  if ("expectedValue" in c) patch.expectedValue = c.expectedValue ?? null;
+  if ("maintenanceHoursPerYear" in c)
+    patch.maintenanceHoursPerYear = c.maintenanceHoursPerYear ?? null;
   if ("baselineMetric" in c) patch.baselineMetric = c.baselineMetric ?? null;
   if ("baselineValue" in c) patch.baselineValue = c.baselineValue ?? null;
   if ("baselineUnit" in c) patch.baselineUnit = c.baselineUnit ?? null;
@@ -253,6 +302,11 @@ export function proposalToCreateInput(p: Proposal): UseCaseCreateInput {
     successCriterion: p.successCriterion ?? null,
     successCriterionMet: p.successCriterionMet ?? "not_yet",
     buildHours: p.buildHours ?? null,
+    valueType: p.valueType ?? null,
+    baselinePeriod: p.baselinePeriod ?? null,
+    baselineEstimated: p.baselineEstimated ?? null,
+    expectedValue: p.expectedValue ?? null,
+    maintenanceHoursPerYear: p.maintenanceHoursPerYear ?? null,
     baselineMetric: p.baselineMetric ?? null,
     baselineValue: p.baselineValue ?? null,
     baselineUnit: p.baselineUnit ?? null,

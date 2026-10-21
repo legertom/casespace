@@ -6,7 +6,7 @@ surface:
   - /api/v1/progress
   - /api/v1/roster
 audience: engineering
-updated: 2026-08-25
+updated: 2026-10-21
 code:
   - src/app/api/v1/use-cases/route.ts
   - src/app/api/v1/use-cases/[id]/route.ts
@@ -79,6 +79,24 @@ response and is accepted on POST and PATCH. A PATCH replaces the whole list;
 Only `http://` and `https://` are accepted; anything else is a `422`, as are
 single-label hosts like `http://localhost:3000`. This is a security rule —
 these render as clickable links inside the app.
+
+## ROI fields
+
+The `roi` block carries Kate's method in two halves. The plan:
+`valueType` (`time_saved` | `revenue` | null for "not sure yet"),
+`baselineMetric`, `baselineValue`, `baselineUnit`, `baselinePeriod`
+(`week` | `month` | `quarter` | `year`), `baselineEstimated`,
+`measurementMethod`, `buildHours`, `expectedValue`,
+`maintenanceHoursPerYear`, and `revisitOn`. The measurement: `postValue`,
+`netImpactStatement`, `isPositive`, and `status`. All accepted on POST and
+PATCH, all optional.
+
+Two computed objects come back with every record, `expected` and `actual`:
+`{ computed: true, hoursSavedPerYear, yearOneRoiPct, paybackMonths,
+yearTwoRoiPct, twoYearRoiPct }`, or `{ computed: false, missing }` naming
+the first input that isn't there. They compute only for `time_saved` cases,
+in hours — the API never carries a dollar figure. See
+[gates and ROI](../concepts/gates-and-roi.md#kates-method-in-hours).
 
 ## Status is not settable here
 

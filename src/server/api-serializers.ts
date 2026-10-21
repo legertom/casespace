@@ -4,7 +4,26 @@ import {
   documentedGatesComplete,
   roiGaps,
 } from "@/lib/domain";
+import { actualRoi, expectedRoi, type RoiResult } from "@/lib/roi";
 import type { UseCaseRow } from "./use-case-queries";
+
+/**
+ * The computed figures, or why there are none. Hours and percentages only —
+ * the whole point of computing in hours is that this can go on a public
+ * shape.
+ */
+export function toApiRoiFigures(r: RoiResult) {
+  if (!r.ok) return { computed: false as const, missing: r.reason };
+  const f = r.figures;
+  return {
+    computed: true as const,
+    hoursSavedPerYear: f.hoursSavedPerYear,
+    yearOneRoiPct: f.yearOneRoiPct,
+    paybackMonths: f.paybackMonths,
+    yearTwoRoiPct: f.yearTwoRoiPct,
+    twoYearRoiPct: f.twoYearRoiPct,
+  };
+}
 
 /** Public API shape for a use case — counts and rates only, never dollars. */
 export function toApiUseCase(uc: UseCaseRow) {
@@ -60,10 +79,19 @@ export function toApiUseCase(uc: UseCaseRow) {
       status: uc.roiStatus,
       /** Self-reported estimate of hours spent building; never gates anything. */
       buildHours: uc.buildHours,
+      /** Kate's method, the plan half. See docs/concepts/gates-and-roi.md. */
+      valueType: uc.valueType,
       baselineMetric: uc.baselineMetric,
       baselineValue: uc.baselineValue,
       baselineUnit: uc.baselineUnit,
+      baselinePeriod: uc.baselinePeriod,
+      baselineEstimated: uc.baselineEstimated,
+      expectedValue: uc.expectedValue,
+      maintenanceHoursPerYear: uc.maintenanceHoursPerYear,
       postValue: uc.postValue,
+      /** In hours, time-saved cases only; `missing` says why otherwise. */
+      expected: toApiRoiFigures(expectedRoi(uc)),
+      actual: toApiRoiFigures(actualRoi(uc)),
       measurementMethod: uc.measurementMethod,
       netImpactStatement: uc.netImpactStatement,
       isPositive: uc.isPositive,

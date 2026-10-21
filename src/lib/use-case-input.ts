@@ -15,6 +15,7 @@ import {
   SETTABLE_STATUSES,
   URL_KINDS,
 } from "./domain";
+import { BASELINE_PERIODS, VALUE_TYPES } from "./roi";
 
 const rating = z.number().int().min(1).max(5);
 
@@ -91,6 +92,12 @@ export const useCaseCreateSchema = z.object({
   successCriterionMet: z.enum(["yes", "no", "not_yet"]).optional(),
 
   buildHours: z.number().finite().min(0).nullish(),
+  // Kate's method — the plan half. Optional like everything else; see lib/roi.
+  valueType: z.enum(VALUE_TYPES).nullish(),
+  baselinePeriod: z.enum(BASELINE_PERIODS).nullish(),
+  baselineEstimated: z.boolean().nullish(),
+  expectedValue: z.number().finite().nullish(),
+  maintenanceHoursPerYear: z.number().finite().min(0).nullish(),
   baselineMetric: z.string().trim().nullish(),
   baselineValue: z.number().finite().nullish(),
   baselineUnit: z.string().trim().nullish(),
@@ -253,6 +260,11 @@ export function useCaseToFormInput(
     successCriterion: uc.successCriterion,
     successCriterionMet: uc.successCriterionMet,
     buildHours: uc.buildHours,
+    valueType: uc.valueType,
+    baselinePeriod: uc.baselinePeriod,
+    baselineEstimated: uc.baselineEstimated,
+    expectedValue: uc.expectedValue,
+    maintenanceHoursPerYear: uc.maintenanceHoursPerYear,
     baselineMetric: uc.baselineMetric,
     baselineValue: uc.baselineValue,
     baselineUnit: uc.baselineUnit,
@@ -309,6 +321,11 @@ export function applyCreateDefaults(
     successCriterion: input.successCriterion ?? null,
     successCriterionMet: input.successCriterionMet ?? ("not_yet" as const),
     buildHours: input.buildHours ?? null,
+    valueType: input.valueType ?? null,
+    baselinePeriod: input.baselinePeriod ?? null,
+    baselineEstimated: input.baselineEstimated ?? null,
+    expectedValue: input.expectedValue ?? null,
+    maintenanceHoursPerYear: input.maintenanceHoursPerYear ?? null,
     baselineMetric: input.baselineMetric ?? null,
     baselineValue: input.baselineValue ?? null,
     baselineUnit: input.baselineUnit ?? null,

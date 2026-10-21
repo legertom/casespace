@@ -42,6 +42,21 @@ in-app report it came from.
 
 ---
 
+## 2026-10-21
+
+### A record can now hold the ROI plan, not just the measurement
+Requested by: Tom Leger
+
+Kate's ROI workshop asks for a plan before you build — what kind of value,
+the baseline per week or month and whether you measured it or estimated
+it, the hours you expect it to take once the workflow is in place, and any
+maintenance it will need — and then the actual number on the revisit date.
+Records now have a place for all of that, and the ROI percentage and
+payback are worked out from those inputs, in hours, the way the workshop
+does it. Over REST and MCP the new fields are accepted and the computed
+figures come back on every record; the form, the record page and the Coach
+pick them up in the changes that follow.
+
 ## 2026-10-14
 
 ### Coverage dots count what each AI Lead has logged
