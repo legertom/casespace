@@ -39,6 +39,19 @@ export function canEditUseCase(
 ): boolean {
   if (user.role === "admin") return true;
   if (user.role === "viewer") return false;
+  return isOwnUseCase(user, uc);
+}
+
+/**
+ * The record is this person's — they own it, authored it, or logged it.
+ * Narrower than canEditUseCase, which admins pass on every record: this is
+ * the test for things addressed to the record's own people, like the nudge
+ * to score its ROI.
+ */
+export function isOwnUseCase(
+  user: Pick<SessionUser, "id">,
+  uc: UseCaseOwnership,
+): boolean {
   return (
     uc.createdById === user.id ||
     uc.ownerUserId === user.id ||

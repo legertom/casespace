@@ -22,7 +22,7 @@
  * examples in `roi.test.ts` are the training module's own, and they are the
  * contract: 35% / 440% / 900% / −20% must reproduce exactly.
  */
-import type { UcStatus } from "./domain";
+import { roiComplete, type RoiFields, type UcStatus } from "./domain";
 
 export const VALUE_TYPES = ["time_saved", "revenue"] as const;
 export type ValueType = (typeof VALUE_TYPES)[number];
@@ -291,6 +291,28 @@ export function roiStepFor(args: {
   if (revisitOn && revisitOn <= today) return 3;
   if (status === "in_testing" || status === "launched") return 2;
   return 1;
+}
+
+/**
+ * Which Coach door the record page offers on ROI, if any.
+ *
+ * - `score`: the ROI checklist is incomplete, so the Coach walks the owner
+ *   through Kate's method from wherever the record stands and proposes the
+ *   update. Any status — a plan can be scored before the build.
+ * - `review`: the checklist is complete, so the Coach checks it against the
+ *   confirmation bar and writes the Kate-ready packet.
+ * - null: nothing to do (confirmed), or the viewer cannot edit the record —
+ *   the Coach's proposal would land on a click they are not allowed to make.
+ */
+export type RoiCoachAction = "score" | "review";
+
+export function roiCoachAction(
+  uc: RoiFields & { status: UcStatus },
+  editable: boolean,
+): RoiCoachAction | null {
+  if (!editable) return null;
+  if (uc.status === "confirmed_positive_roi") return null;
+  return roiComplete(uc) ? "review" : "score";
 }
 
 /**

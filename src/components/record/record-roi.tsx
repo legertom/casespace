@@ -71,8 +71,8 @@ export function RecordRoi({
         >
           The training
         </a>{" "}
-        walks through the same three; <em>Run ROI review</em> above works
-        them through with the Coach.
+        walks through the same three, and the Coach button above walks
+        through them with you.
       </p>
 
       <div className="mt-4 max-w-prose space-y-3">

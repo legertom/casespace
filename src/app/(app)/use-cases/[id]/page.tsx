@@ -11,6 +11,7 @@ import {
   canLinkUseCases,
   canManageProgram,
   canMoveUseCaseStatus,
+  isOwnUseCase,
   visibleHistoryNote,
 } from "@/lib/permissions";
 import { listComments, listMentionableUsers } from "@/server/comment-queries";
@@ -101,7 +102,7 @@ export default async function UseCaseDetailPage({
           uc={uc}
           record={record}
           editable={editable}
-          isAdmin={user.role === "admin"}
+          mine={isOwnUseCase(sessionUser, ownership)}
         />
 
         <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-[1fr_20rem]">
