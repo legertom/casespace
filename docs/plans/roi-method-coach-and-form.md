@@ -7,7 +7,10 @@ fields. Decisions 1–5 were taken as recommended. Decision 6, the
 `roi-wksp` update, is **deferred at Tom's direction (2026-10-21)** —
 Casespace drops the module's dollar lines on paste, so nothing here waits
 on it. Still open on this side: the optional "Ask Kate to confirm" button
-(the @mention copy shipped), and the question for Kate at the end. Drafted 2026-10-21 from the async ROI training module,
+(the @mention copy shipped). The question for Kate at the end was answered
+by Tom on 2026-10-23: use expected ROI, and estimates are fine — so the
+review packet keeps both figures, and an estimated baseline is a flagged
+baseline, not a gap. Drafted 2026-10-21 from the async ROI training module,
 [`legertom/roi-wksp`](https://github.com/legertom/roi-wksp) at `7d06eb3` (live
 at https://roi-wksp.vercel.app — Kate Schaff's ROI workshop as a 30-minute
 self-paced module), read in full against Casespace `main` at `8a9d53a`.
