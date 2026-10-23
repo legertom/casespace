@@ -4,7 +4,7 @@ surface:
   - /use-cases/[id]
   - /use-cases/[id]/edit
 audience: everyone
-updated: 2026-10-21
+updated: 2026-10-23
 code:
   - src/app/(app)/use-cases/[id]/page.tsx
   - src/app/(app)/use-cases/[id]/edit/page.tsx
@@ -51,8 +51,13 @@ whoever owns it.
   positive/negative). All three steps are always shown and every field is
   inline-editable; the step matching the record's stage opens first. For a
   time-saved case the expected and actual figures are worked out in hours
-  beside the inputs; *Run ROI review* in the header opens the Coach on the
-  record to work them through.
+  beside the inputs. The header offers one Coach door for ROI, labelled by
+  what the record still needs (`roiCoachAction()` in `src/lib/roi.ts`):
+  **Score the ROI with the Coach** while the checklist is incomplete — the
+  Coach walks you through Kate's method from wherever the record stands and
+  proposes the update — and **Review the ROI for confirmation** once it is
+  complete, which produces the Kate-ready packet. Editors only; a confirmed
+  record offers neither.
 - **Where to find it** — links to the thing itself: the live tool, the
   GitHub repo, a Claude artifact/project/skill, or anything else with a label
   you write. As many as the workflow has. Not to be confused with
@@ -82,6 +87,14 @@ The vocabulary here is program jargon; the record page explains it rather
 than assuming.
 
 ## Rules that surprise people
+
+**Your own unscored record nudges you, once per record.** When you own,
+authored, or logged a record whose ROI checklist is incomplete, *Score the
+ROI with the Coach* carries a coachmark — *Not scored yet. The Coach walks
+you through Kate's three steps…* — until you dismiss it or take it. It is
+per record, so each of your records asks once, and it is only for your own:
+an admin can edit every record and would otherwise meet it on all of them.
+While it shows, the Discovery hint below steps aside.
 
 **The hint under "Work this problem with Coach" only appears once.** People
 were walking past that button, so it carries a coachmark — *Feeling stuck? Try

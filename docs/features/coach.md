@@ -4,7 +4,7 @@ surface:
   - /coach
   - /api/coach
 audience: everyone
-updated: 2026-10-21
+updated: 2026-10-23
 code:
   - src/app/(app)/coach/page.tsx
   - src/app/api/coach/route.ts
@@ -112,10 +112,12 @@ none at all.
 
 ### Work out, then review, a record's ROI
 
-*Run ROI review* on any record (`/coach?review=<id>`), or ask it to work the
-"launched but unscored" list. It fetches the record, which now carries both
-halves of Kate's method and two computed lines — expected and actual, in
-hours.
+*Score the ROI with the Coach* on your own record — or *Review the ROI for
+confirmation* once its checklist is complete; both open `/coach?review=<id>`
+— or ask it to work the "launched but unscored" or "revisit due" lists. The
+kickoff asks for whichever the record needs, and the Coach decides from the
+record itself, which now carries both halves of Kate's method and two
+computed lines — expected and actual, in hours.
 
 If the plan or the measurement is **incomplete**, it doesn't review a thin
 record: it works the ROI out with you, one question at a time from wherever

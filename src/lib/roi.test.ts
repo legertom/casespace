@@ -10,6 +10,7 @@ import {
   isRevisitDue,
   netImpactDraft,
   pctRemoved,
+  roiCoachAction,
   roiReadoutLine,
   roiStepFor,
 } from "./roi";
@@ -295,6 +296,46 @@ describe("roiStepFor — which step opens first", () => {
   it("opens actual ROI for Kate's two stages", () => {
     expect(roiStepFor({ status: "qualified", revisitOn: null, today })).toBe(3);
     expect(roiStepFor({ status: "confirmed_positive_roi", revisitOn: null, today })).toBe(3);
+  });
+});
+
+describe("roiCoachAction — which Coach door the record offers", () => {
+  const incomplete = {
+    status: "launched" as const,
+    successCriterion: "90% pulled automatically",
+    successCriterionMet: "not_yet" as const,
+    baselineMetric: "Hours on the pull",
+    baselineValue: 10,
+    postValue: null,
+    measurementMethod: "Calendar blocks",
+    netImpactStatement: null,
+    isPositive: null,
+    roiStatus: "in_progress" as const,
+  };
+  const complete = {
+    ...incomplete,
+    successCriterionMet: "yes" as const,
+    postValue: 2,
+    netImpactStatement: "Saves about 8 hours a month.",
+    isPositive: true,
+    roiStatus: "complete" as const,
+  };
+
+  it("offers scoring on an incomplete record, at any stage", () => {
+    expect(roiCoachAction(incomplete, true)).toBe("score");
+    expect(roiCoachAction({ ...incomplete, status: "in_discovery" }, true)).toBe("score");
+    expect(roiCoachAction({ ...incomplete, status: "qualified" }, true)).toBe("score");
+  });
+
+  it("offers the review packet once the checklist is complete", () => {
+    expect(roiCoachAction(complete, true)).toBe("review");
+    expect(roiCoachAction({ ...complete, status: "qualified" }, true)).toBe("review");
+  });
+
+  it("offers nothing to someone who cannot edit, or on a confirmed record", () => {
+    expect(roiCoachAction(incomplete, false)).toBeNull();
+    expect(roiCoachAction(complete, false)).toBeNull();
+    expect(roiCoachAction({ ...complete, status: "confirmed_positive_roi" }, true)).toBeNull();
   });
 });
 

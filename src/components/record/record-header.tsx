@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DEPARTMENT_LABELS } from "@/lib/domain";
+import { roiCoachAction } from "@/lib/roi";
 import type { UseCaseDetail } from "@/server/use-case-queries";
 import { InlineField } from "@/components/record/inline-field";
 import { CommunityBadge, ConfirmedRoiBadge, StatusBadge } from "@/components/status-badge";
@@ -13,14 +14,31 @@ export function RecordHeader({
   uc,
   record,
   editable,
-  isAdmin,
+  mine,
 }: {
   uc: UseCaseDetail;
   record: { id: string; title: string };
   editable: boolean;
-  isAdmin: boolean;
+  /** The viewer owns, authored, or logged this record — not merely an admin who can edit it. */
+  mine: boolean;
 }) {
   const confirmed = uc.status === "confirmed_positive_roi";
+  // Score the ROI with the Coach, or have it reviewed for confirmation —
+  // one door, labelled by what the record still needs. See lib/roi.
+  const roiAction = roiCoachAction(uc, editable);
+  // The ROI nudge is for the person whose record it is: an admin who can edit
+  // everything would otherwise meet it on every unscored record they open.
+  const nudgeRoi = roiAction === "score" && mine;
+
+  const discovery = (
+    <Link
+      href={`/coach?intent=discovery&useCase=${uc.id}`}
+      className="block rounded-md border border-hairline-strong px-3.5 py-1.5 text-sm hover:bg-surface"
+    >
+      Work this problem with Coach
+    </Link>
+  );
+
   return (
     <>
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -58,24 +76,37 @@ export function RecordHeader({
         <div className="flex flex-wrap justify-end gap-2">
           {/* Open to anyone who can see the record, unlike the two beside it:
               thinking about somebody else's problem with them is not an edit,
-              and the checkpoint it produces is the thinker's own note. */}
-          <Coachmark id="work-this-problem" note="Feeling stuck? Try this button">
-            <Link
-              href={`/coach?intent=discovery&useCase=${uc.id}`}
-              className="block rounded-md border border-hairline-strong px-3.5 py-1.5 text-sm hover:bg-surface"
+              and the checkpoint it produces is the thinker's own note. Its
+              hint steps aside while the ROI one is showing — two marks on one
+              row point at nothing. */}
+          {nudgeRoi ? (
+            discovery
+          ) : (
+            <Coachmark id="work-this-problem" note="Feeling stuck? Try this button">
+              {discovery}
+            </Coachmark>
+          )}
+          {roiAction === "score" && (
+            <Coachmark
+              id={`score-roi-${uc.id}`}
+              note="Not scored yet. The Coach walks you through Kate's three steps and drafts the record for you to confirm."
             >
-              Work this problem with Coach
-            </Link>
-          </Coachmark>
-          {(editable || isAdmin) &&
-            (uc.status === "launched" || uc.status === "qualified") && (
               <Link
                 href={`/coach?review=${uc.id}`}
-                className="rounded-md border border-hairline-strong px-3.5 py-1.5 text-sm hover:bg-surface"
+                className="block rounded-md bg-accent px-3.5 py-1.5 text-sm text-white hover:bg-accent-deep"
               >
-                Run ROI review
+                Score the ROI with the Coach
               </Link>
-            )}
+            </Coachmark>
+          )}
+          {roiAction === "review" && (
+            <Link
+              href={`/coach?review=${uc.id}`}
+              className="rounded-md border border-hairline-strong px-3.5 py-1.5 text-sm hover:bg-surface"
+            >
+              Review the ROI for confirmation
+            </Link>
+          )}
           {editable && (
             <Link
               href={`/use-cases/${uc.id}/edit`}

@@ -42,6 +42,20 @@ in-app report it came from.
 
 ---
 
+## 2026-10-23
+
+### Your unscored record now offers to score its ROI with the Coach
+Requested by: Tom Leger
+
+Open a record you own whose ROI isn't scored yet and a hint points at a new
+button, *Score the ROI with the Coach*: the Coach reads the record, walks
+you through Kate's three steps from wherever it stands, and drafts the
+update for you to confirm. The hint appears once per record and only on
+your own. The old *Run ROI review* button is gone — it asked the Coach for
+the admin's confirmation packet even on a record with nothing to review.
+Once a record's checklist is complete the same place offers *Review the
+ROI for confirmation*, which is that packet.
+
 ## 2026-10-21
 
 ### The training's "Copy for CaseSpace" pastes straight in

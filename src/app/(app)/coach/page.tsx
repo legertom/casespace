@@ -87,7 +87,7 @@ export default async function CoachPage({
   const kickoff = initialMessages?.length
     ? undefined
     : review
-      ? `Run an ROI review for use case ${review}. Check the evidence against the ROI confirmation bar and produce the Kate-ready packet.`
+      ? `Work through the ROI for use case ${review} with me. Read the record first. If its plan or its measurement is incomplete, walk me through Kate's method from wherever it stands — one question at a time — and propose the update when we're done. If it's complete, check it against the confirmation bar and produce the Kate-ready packet.`
       : chatIntent === "discovery"
         ? useCaseId
           ? `Help me work through the problem behind use case ${useCaseId}. Start with what I'm trying to get out of it. Don't assume the answer is to build more AI.`
