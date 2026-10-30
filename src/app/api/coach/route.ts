@@ -50,6 +50,7 @@ import {
   roiGaps,
   type CoachIntent,
 } from "@/lib/domain";
+import { membershipTrail } from "@/lib/membership-trail";
 import { canUseChat, visibleHistoryNote } from "@/lib/permissions";
 import { actualRoi, expectedRoi, roiReadoutLine, ROI_MISSING_TEXT } from "@/lib/roi";
 import { recordCoachFailure } from "@/server/coach-failures";
@@ -259,7 +260,8 @@ async function respond(req: Request, ctx: TurnContext, saves: Saves) {
     }),
 
     get_use_case: tool({
-      description: "Fetch one use case in full, including ROI gaps and history.",
+      description:
+        "Fetch one use case in full, including ROI gaps, history, and why it is or isn't in the program.",
       inputSchema: z.object({ id: z.string() }),
       execute: async ({ id }) => {
         const uc = await getUseCase(id).catch(() => null);
@@ -271,6 +273,10 @@ async function respond(req: Request, ctx: TurnContext, saves: Saves) {
           status: uc.status,
           confirmedPositiveRoi: countsTowardRoi(uc.status),
           inProgram: uc.inProgram,
+          // Whose the record was when it was logged — the owner the stamp
+          // read — and every owner and membership change since. Without it
+          // the Coach applies the rule to today's owner.
+          membership: membershipTrail(uc),
           department: uc.department,
           team: uc.teamName,
           eltOrg: uc.eltOrgName,

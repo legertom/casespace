@@ -4,7 +4,7 @@ surface:
   - /coach
   - /api/coach
 audience: everyone
-updated: 2026-10-23
+updated: 2026-10-30
 code:
   - src/app/(app)/coach/page.tsx
   - src/app/api/coach/route.ts
@@ -34,6 +34,7 @@ code:
   - src/server/discovery-queries.ts
   - src/server/actions-discovery.ts
   - src/lib/coach-bus.ts
+  - src/lib/membership-trail.ts
   - src/server/actions-ai.ts
 ---
 
@@ -180,7 +181,7 @@ policy someone remembers to follow:
 | Tool | Does |
 |---|---|
 | `search_use_cases` | Search the casebook |
-| `get_use_case` | One record in full, including build hours, the ROI plan, the computed expected and actual lines, ROI gaps and history |
+| `get_use_case` | One record in full, including build hours, the ROI plan, the computed expected and actual lines, ROI gaps, history, and why it is or isn't in the program |
 | `get_progress` | The scoreboard |
 | `calculate_roi` | Kate's arithmetic, in hours — the same function as the form and the record page. Pure; reads and writes nothing. Every mode but Discovery |
 | `get_coach_learnings` | How its own proposals landed. Admin-only, gated at the tool table |
@@ -232,6 +233,18 @@ only program records. The instructions are explicit that the two must never
 be conflated, and that it must not tell someone their community record counts
 toward the 45. See
 [counting rules](../concepts/counting-rules.md#program-and-community).
+
+**It reads membership off the record's trail, not its current owner.**
+Membership is stamped from the owner a record had when it was logged, and
+never re-derived. So `get_use_case` carries a `membership` block: when the
+record was logged, by whom, whose it was at that moment, and every owner and
+membership change since (from the same audit rows as the Activity stream,
+built by `membershipTrail` in `src/lib/membership-trail.ts`). Without it the
+Coach applied the rule to whoever owns the record today, and on 2026-10-30 it
+filed a record working exactly as designed as a bug: logged with a non-lead
+owner, handed to the AI Lead a month later, still community. For records
+logged before owner changes were audited (2026-08-25), the block says the
+owner at logging is not on record rather than guessing.
 
 **It will not supply a number — but it will ask you to.** The precise rule,
 and it matters: the Coach never invents a figure, and it never does ROI

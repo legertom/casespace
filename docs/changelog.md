@@ -42,6 +42,20 @@ in-app report it came from.
 
 ---
 
+## 2026-10-30
+
+### Ask the Coach why a record is or isn't in the program
+Requested by: Tom Leger
+Feedback: 3f42fb92-973f-4fdc-bc2e-ebd3c434b841
+
+Ask the Coach why a use case counts as AI Lead work, or why it sits in
+community, and it now answers from the record's own history: who logged
+it, whose it was at that moment, and every owner or program change since.
+Membership is set by the owner a record had when it was logged, so handing
+a record to an AI Lead later moves the credit but not the record — an admin
+brings it into the program with one tick. The Coach used to judge by
+today's owner and could mistake that for a bug.
+
 ## 2026-10-23
 
 ### Your unscored record now offers to score its ROI with the Coach
