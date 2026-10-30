@@ -1,9 +1,15 @@
 import Link from "next/link";
 import { DEPARTMENT_LABELS } from "@/lib/domain";
 import { roiCoachAction } from "@/lib/roi";
+import { isReadyToConfirm } from "@/lib/ready-to-confirm";
 import type { UseCaseDetail } from "@/server/use-case-queries";
 import { InlineField } from "@/components/record/inline-field";
-import { CommunityBadge, ConfirmedRoiBadge, StatusBadge } from "@/components/status-badge";
+import {
+  CommunityBadge,
+  ConfirmedRoiBadge,
+  ReadyToConfirmBadge,
+  StatusBadge,
+} from "@/components/status-badge";
 import { Coachmark } from "@/components/coachmark";
 
 /**
@@ -64,6 +70,10 @@ export function RecordHeader({
           </InlineField>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <StatusBadge status={uc.status} />
+            {/* Shown to everyone: it is derived from the status and checklist
+                the page already shows everyone, and it tells the record's own
+                people that the ball is in Kate's court. */}
+            {isReadyToConfirm(uc) && <ReadyToConfirmBadge />}
             {confirmed && <ConfirmedRoiBadge />}
             {!uc.inProgram && <CommunityBadge />}
             {uc.rejectionReason && editable && (

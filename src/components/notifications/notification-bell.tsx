@@ -20,7 +20,7 @@ export async function NotificationBell({
   isAdmin = false,
 }: {
   userId: string;
-  /** Only admins hear about newly logged records, so only they are promised it. */
+  /** Only admins hear about new and ready records, so only they are promised them. */
   isAdmin?: boolean;
 }) {
   const [items, unread] = await Promise.all([
@@ -80,7 +80,8 @@ export async function NotificationBell({
         {items.length === 0 ? (
           <p className="mt-3 text-sm text-ink-muted">
             Nothing yet. Comments and links on your records land here.
-            {isAdmin && " So does every use case as it's logged."}
+            {isAdmin &&
+              " So does every use case as it's logged, and every one ready for Confirmed Positive ROI."}
           </p>
         ) : (
           <ul className="mt-2 max-h-96 divide-y divide-hairline overflow-y-auto">
@@ -129,6 +130,8 @@ function line(n: NotificationRow): string {
       return `${actor} linked ${n.linkedTitle ?? "another workflow"} to ${n.useCaseTitle}`;
     case "new_use_case":
       return `${actor} logged ${n.useCaseTitle}`;
+    case "ready_to_confirm":
+      return `${actor} made ${n.useCaseTitle} ready for Confirmed Positive ROI`;
     default:
       return `${actor} commented on ${n.useCaseTitle}`;
   }

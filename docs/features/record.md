@@ -4,7 +4,7 @@ surface:
   - /use-cases/[id]
   - /use-cases/[id]/edit
 audience: everyone
-updated: 2026-10-23
+updated: 2026-10-30
 code:
   - src/app/(app)/use-cases/[id]/page.tsx
   - src/app/(app)/use-cases/[id]/edit/page.tsx
@@ -26,6 +26,8 @@ code:
   - src/components/record/gate-toggle.tsx
   - src/components/status-controls.tsx
   - src/components/use-case-form.tsx
+  - src/components/status-badge.tsx
+  - src/lib/ready-to-confirm.ts
 ---
 
 # The record page
@@ -38,7 +40,9 @@ whoever owns it.
 - **Title, description, owner, authors, team, department, AI tools,
   approaches** — approaches are a set, so a record can be both Agentic and
   AI-built.
-- **Status** with its controls.
+- **Status** with its controls, and a **Ready to confirm** badge beside it
+  once a Qualified program record's ROI checklist is complete — the next
+  move is Kate's ([Statuses](../concepts/statuses.md#ready-to-confirm)).
 - **The four documented gates**, as toggles.
 - **The ROI panel**, as
   [Kate's three steps](../concepts/gates-and-roi.md#kates-method-in-hours):
@@ -87,6 +91,21 @@ The vocabulary here is program jargon; the record page explains it rather
 than assuming.
 
 ## Rules that surprise people
+
+**Ready to confirm shows to everyone, not just admins.** It is the next
+decision of Kate's, but it is read from the status and ROI checklist this
+page already shows everyone, so hiding it would hide nothing — and it tells
+the people on the record that their part is done and the ball is in Kate's
+court. It is a statement of whose turn it is, not a prize. It appears
+exactly when *Review the ROI for confirmation* replaces *Score the ROI with
+the Coach* on a Qualified record, and a test holds the two together. On a
+ready record the ROI panel stops saying *Tell Kate: @mention her* — she
+already has it on her bell and her dashboard.
+
+**Ready to confirm is not a precondition.** Kate can confirm a record
+without the badge — the checklist warns, never blocks. And a Qualified
+record an admin took out of the program never shows it: the 15 counts only
+program records, so it isn't waiting on anyone.
 
 **Your own unscored record nudges you, once per record.** When you own,
 authored, or logged a record whose ROI checklist is incomplete, *Score the

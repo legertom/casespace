@@ -1,9 +1,10 @@
 ---
 title: Statuses
 audience: everyone
-updated: 2026-08-16
+updated: 2026-10-30
 code:
   - src/lib/domain.ts
+  - src/lib/ready-to-confirm.ts
   - src/components/status-controls.tsx
   - src/components/status-badge.tsx
 ---
@@ -63,6 +64,17 @@ admin-only. The [ROI evidence checklist](gates-and-roi.md) warns about gaps
 at confirmation time but never blocks — the call is Kate's, from whatever
 status the record stands at. Confirming also clears any standing rejection
 reason: it is promotion past the gate, wherever the record stood.
+
+### Ready to confirm
+
+A **Qualified program record whose ROI checklist is complete** — every item
+in `roiGaps()` satisfied — wears a **Ready to confirm** badge on the record
+page, on its casebook row, and in the dashboard's *Needs attention* list,
+and every admin gets [a bell notification](../features/notifications.md#who-hears-that-a-record-is-ready-to-confirm)
+when it gets there. Nothing is left for the record's people to do; the next
+move is Kate's. It is not a status — nothing stores it, it is read live from
+the record (`isReadyToConfirm()` in `src/lib/ready-to-confirm.ts`) — and it
+doesn't gate anything: Kate can still confirm a record without it.
 
 ## Every change is logged
 

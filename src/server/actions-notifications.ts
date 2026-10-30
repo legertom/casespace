@@ -9,9 +9,9 @@ import { requireUser } from "@/lib/current-user";
 
 /**
  * Open a notification: mark it read and land on what it is about — the
- * comment itself, the record's Related workflows, or for a newly logged
- * record, the record itself. Reading and navigating are one act, so they're
- * one action.
+ * comment itself, the record's Related workflows, or for a newly logged or
+ * ready-to-confirm record, the record itself. Reading and navigating are one
+ * act, so they're one action.
  */
 export async function openNotificationAction(id: string): Promise<void> {
   const user = await requireUser();
@@ -30,7 +30,8 @@ export async function openNotificationAction(id: string): Promise<void> {
 
   const record = `/use-cases/${row.useCaseId}`;
   if (row.commentId) redirect(`${record}#comment-${row.commentId}`);
-  // A new record is its own news — the top of the page, not a section of it.
+  // A new or ready record is its own news — the top of the page, where the
+  // badge and the status control are, not a section of it.
   redirect(row.kind === "link" ? `${record}#related` : record);
 }
 

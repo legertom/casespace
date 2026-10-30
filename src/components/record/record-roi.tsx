@@ -13,6 +13,7 @@ import {
   VALUE_TYPES,
   type RoiStep,
 } from "@/lib/roi";
+import { isReadyToConfirm } from "@/lib/ready-to-confirm";
 import type { UseCaseDetail } from "@/server/use-case-queries";
 import { Empty } from "@/components/record/empty";
 import { InlineField } from "@/components/record/inline-field";
@@ -426,6 +427,14 @@ export function RecordRoi({
               {uc.roiConfirmedAt ? ` ${fmtDate(uc.roiConfirmedAt)}` : ""}.
               The annual-ROI note is in the activity below and rolls up
               into the end-of-year wins report.
+            </p>
+          ) : isReadyToConfirm(uc) ? (
+            // It is already on the admins' bell and dashboard — asking for an
+            // @mention here would have people chase a decision already queued.
+            <p className="border-t border-hairline pt-3 text-xs text-ink-faint">
+              Ready to confirm &mdash; nothing left to do here. It&rsquo;s
+              waiting on Kate, whose confirmation is what counts toward the
+              15.
             </p>
           ) : (
             uc.postValue !== null && (

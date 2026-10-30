@@ -104,6 +104,7 @@ export const notificationKindEnum = pgEnum("notification_kind", [
   "mention",
   "link",
   "new_use_case",
+  "ready_to_confirm",
 ]);
 
 /** How one workflow relates to another — see LINK_KINDS in lib/domain. */
@@ -869,9 +870,13 @@ export const useCaseComments = pgTable(
  * Rows are written inline by the action that causes them.
  *
  * At most one of commentId / linkId is set, and it says what the row is
- * about: a comment on the record, or a link made to it. A "new_use_case" row
- * has neither — the record itself is the whole news. useCaseId is always the
- * record the recipient is credited on — the one they land on.
+ * about: a comment on the record, or a link made to it. A "new_use_case" or
+ * "ready_to_confirm" row has neither — the record itself is the whole news.
+ * useCaseId is always the record the recipient lands on.
+ *
+ * "ready_to_confirm" keeps at most one row per admin per record: becoming
+ * ready again replaces it, and leaving ready marks it read — see
+ * readyToConfirmBell in lib/ready-to-confirm.
  */
 export const notifications = pgTable(
   "notifications",

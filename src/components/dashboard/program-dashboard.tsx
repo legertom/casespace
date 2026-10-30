@@ -681,6 +681,38 @@ export async function ProgramDashboard() {
         <section aria-label="Needs attention">
           <h2 className="font-serif text-2xl">Needs attention</h2>
           <div className="mt-4 space-y-6">
+            {/* Only when there is something: unlike the lists below, an
+                empty one here is the normal state, not reassurance. */}
+            {attention.readyToConfirm.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold">
+                  Ready for Confirmed Positive ROI
+                </h3>
+                <p className="mt-0.5 text-xs text-ink-faint">
+                  Qualified, with the ROI checklist complete. Nothing is left
+                  for the people on them to do &mdash; the decision about the
+                  15 is Kate&rsquo;s.
+                </p>
+                <ul className="mt-1.5 space-y-1.5">
+                  {attention.readyToConfirm.map((s) => (
+                    <li key={s.id} className="text-sm">
+                      <Link
+                        href={`/use-cases/${s.id}`}
+                        className="hover:text-accent"
+                      >
+                        {s.title}
+                      </Link>
+                      {s.qualifiedAt && (
+                        <span className="text-ink-muted">
+                          {" "}
+                          &mdash; qualified {fmtDateShort(s.qualifiedAt)}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <div>
               <h3 className="text-sm font-semibold">
                 Sitting still {attention.staleDays}+ days

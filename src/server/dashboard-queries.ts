@@ -23,6 +23,7 @@ import {
   etDateString,
 } from "@/lib/domain";
 import { isRevisitDue } from "@/lib/roi";
+import { isReadyToConfirm } from "@/lib/ready-to-confirm";
 import { teamCoverageCount, type CoverageRecord } from "@/lib/team-coverage";
 import { COMMUNITY_ALIVE, IN_PROGRAM_ALIVE } from "@/db/scopes";
 import { identitiesForLeads } from "./identity";
@@ -279,6 +280,11 @@ export async function getMovement(days = 7): Promise<MovementItem[]> {
 }
 
 export interface AttentionFlags {
+  /**
+   * Qualified with the ROI checklist complete — waiting on Kate's decision
+   * about the 15. Longest-waiting first.
+   */
+  readyToConfirm: { id: string; title: string; qualifiedAt: Date | null }[];
   staleDays: number;
   stale: {
     id: string;
@@ -334,7 +340,15 @@ export async function getAttentionFlags(): Promise<AttentionFlags> {
     .sort((a, b) => (a.revisitOn! < b.revisitOn! ? -1 : 1))
     .map((c) => ({ id: c.id, title: c.title, revisitOn: c.revisitOn! }));
 
-  return { staleDays, stale, launchedUnscored, revisitDue };
+  const readyToConfirm = cases
+    .filter(isReadyToConfirm)
+    .sort(
+      (a, b) =>
+        (a.qualifiedAt?.getTime() ?? 0) - (b.qualifiedAt?.getTime() ?? 0),
+    )
+    .map((c) => ({ id: c.id, title: c.title, qualifiedAt: c.qualifiedAt }));
+
+  return { readyToConfirm, staleDays, stale, launchedUnscored, revisitDue };
 }
 
 export interface CommunitySubmissions {

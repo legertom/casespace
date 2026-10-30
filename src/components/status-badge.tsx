@@ -36,6 +36,23 @@ export function ConfirmedRoiBadge() {
 }
 
 /**
+ * A Qualified record whose ROI checklist is complete — the next move is
+ * Kate's. See isReadyToConfirm. The outline of the Confirmed ROI chip, because
+ * that is the decision it is waiting on; a statement of whose turn it is, not
+ * a prize.
+ */
+export function ReadyToConfirmBadge() {
+  return (
+    <span
+      title="Qualified, and its ROI checklist is complete. Nothing is left for the people on it to do — Kate decides whether it moves to Confirmed Positive ROI and counts toward the 15."
+      className="inline-flex items-center whitespace-nowrap rounded-sm border border-st-confirmed px-1.5 py-0.5 text-xs font-medium text-st-confirmed"
+    >
+      Ready to confirm
+    </span>
+  );
+}
+
+/**
  * Marks a record logged outside the AI Leads roster.
  *
  * Only the exception is badged: in-program is the norm, and a chip on every

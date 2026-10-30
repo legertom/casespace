@@ -2,7 +2,7 @@
 title: The casebook
 surface: /use-cases
 audience: everyone
-updated: 2026-08-26
+updated: 2026-10-30
 code:
   - src/app/(app)/use-cases/page.tsx
   - src/server/use-case-queries.ts
@@ -11,6 +11,8 @@ code:
   - src/lib/search-parse.ts
   - src/server/actions-search.ts
   - src/server/search-events.ts
+  - src/components/status-badge.tsx
+  - src/lib/ready-to-confirm.ts
 ---
 
 # The casebook
@@ -64,8 +66,13 @@ Two places deliberately ignore this default: your own records on the home
 page, and `GET /api/v1/use-cases`. You always see your own work, and an API
 collection that silently shrank would break every script already reading it.
 
-**Only community records are badged.** In-program is the norm, and a chip on
-every other row would be noise. No badge means it counts.
+**Only the exceptions are badged.** In-program is the norm, and a chip on
+every other row would be noise: no badge means it counts. Two exceptions get
+one — **Community**, and **Ready to confirm** on a Qualified program record
+whose ROI checklist is complete, which is waiting on Kate's decision about
+the 15 (see [Statuses](../concepts/statuses.md#ready-to-confirm)). Everyone
+sees both: they are read from the status and checklist the record already
+shows everyone.
 
 **An empty result never reads as an empty casebook.** When filters are
 active and match nothing, the page says so and offers to clear them — a

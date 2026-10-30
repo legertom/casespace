@@ -1,6 +1,6 @@
 import "server-only";
-import { and, eq, inArray, or, sql } from "drizzle-orm";
-import { getDb } from "@/db/client";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { getDb, type DbTx } from "@/db/client";
 import {
   aiLeads,
   eltOrgs,
@@ -15,6 +15,10 @@ import {
   users,
 } from "@/db/schema";
 import { newUseCaseNotifications } from "@/lib/new-use-case-notifications";
+import {
+  readyToConfirmBell,
+  type ReadinessFields,
+} from "@/lib/ready-to-confirm";
 import {
   canSetStatus,
   suggestEltOrg,
@@ -145,6 +149,76 @@ async function suggestedEltOrgId(
       orgs.map((o) => ({ ...o, departments: o.departments as Department[] })),
     )?.id ?? null
   );
+}
+
+/**
+ * What readiness to confirm reads: status, membership, and the ROI
+ * checklist. Every write that can move one of them reads them back through
+ * this and hands both sides to syncReadyBell.
+ */
+const READINESS_COLUMNS = {
+  status: useCases.status,
+  inProgram: useCases.inProgram,
+  successCriterion: useCases.successCriterion,
+  successCriterionMet: useCases.successCriterionMet,
+  baselineMetric: useCases.baselineMetric,
+  baselineValue: useCases.baselineValue,
+  postValue: useCases.postValue,
+  measurementMethod: useCases.measurementMethod,
+  netImpactStatement: useCases.netImpactStatement,
+  isPositive: useCases.isPositive,
+  roiStatus: useCases.roiStatus,
+};
+
+/**
+ * Ring or settle the ready-to-confirm bell after a write that may have moved
+ * a record into or out of ready — the rule is readyToConfirmBell's. Runs in
+ * the write's transaction so the bell and the change land together. Admins
+ * come from the table, as for a new record: an admin previewing as someone
+ * else is still an admin.
+ */
+async function syncReadyBell(
+  tx: DbTx,
+  useCaseId: string,
+  actorId: string,
+  before: ReadinessFields,
+  after: ReadinessFields,
+): Promise<void> {
+  const admins = await tx
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.role, "admin"));
+  const plan = readyToConfirmBell({
+    before,
+    after,
+    actorId,
+    adminUserIds: admins.map((a) => a.id),
+  });
+  if (!plan) return;
+  const thisRecord = and(
+    eq(notifications.useCaseId, useCaseId),
+    eq(notifications.kind, "ready_to_confirm"),
+  );
+  if (plan.kind === "settle") {
+    await tx
+      .update(notifications)
+      .set({ readAt: new Date() })
+      .where(and(thisRecord, isNull(notifications.readAt)));
+    return;
+  }
+  // Replace, not add: one ready row per admin per record, however many times
+  // it comes back.
+  await tx.delete(notifications).where(thisRecord);
+  if (plan.recipients.length > 0) {
+    await tx.insert(notifications).values(
+      plan.recipients.map((userId) => ({
+        userId,
+        kind: "ready_to_confirm" as const,
+        useCaseId,
+        actorId,
+      })),
+    );
+  }
 }
 
 /** Validated URL input, positioned. Blank labels collapse to null. */
@@ -413,7 +487,21 @@ export async function updateUseCase(
   // from the record.
   await db.transaction(async (tx) => {
     if (Object.keys(patch).length > 0) {
-      await tx.update(useCases).set(patch).where(eq(useCases.id, id));
+      // Read-and-lock before the write: two saves racing to finish the ROI
+      // checklist must not both see "not ready" and both ring the bell.
+      const [before] = await tx
+        .select(READINESS_COLUMNS)
+        .from(useCases)
+        .where(eq(useCases.id, id))
+        .for("update");
+      const [after] = await tx
+        .update(useCases)
+        .set(patch)
+        .where(eq(useCases.id, id))
+        .returning(READINESS_COLUMNS);
+      if (before && after) {
+        await syncReadyBell(tx, id, actor.id, before, after);
+      }
     }
 
     if (audit.length > 0) {
@@ -516,16 +604,25 @@ export async function setStatus(
     // request last saw it. Without the status condition, two concurrent
     // transitions would both land and the log would record a move that never
     // happened.
-    const moved = await tx
+    const [moved] = await tx
       .update(useCases)
       .set(patch)
       .where(and(eq(useCases.id, id), eq(useCases.status, from)))
-      .returning({ id: useCases.id });
-    if (moved.length === 0) {
+      .returning(READINESS_COLUMNS);
+    if (!moved) {
       throw new ValidationError(
         "This record's status changed while you were looking at it — reload the page and try again.",
       );
     }
+    // A move changes status and perhaps membership; the ROI checklist is the
+    // same on both sides of it.
+    await syncReadyBell(
+      tx,
+      id,
+      actor.id,
+      { ...moved, status: from, inProgram: ownership.inProgram },
+      moved,
+    );
     await tx.insert(statusChanges).values({
       useCaseId: id,
       fromStatus: from,
@@ -565,10 +662,14 @@ export async function rejectAtQualifiedGate(
   const from = ownership.status as UcStatus;
   const db = getDb();
   await db.transaction(async (tx) => {
-    await tx
+    const [after] = await tx
       .update(useCases)
       .set({ status: "launched", rejectionReason: reason, qualifiedAt: null })
-      .where(eq(useCases.id, id));
+      .where(eq(useCases.id, id))
+      .returning(READINESS_COLUMNS);
+    if (after) {
+      await syncReadyBell(tx, id, actor.id, { ...after, status: from }, after);
+    }
     await tx.insert(statusChanges).values({
       useCaseId: id,
       fromStatus: from,
@@ -607,7 +708,20 @@ export async function setProgramMembership(
   if (ownership.inProgram === inProgram) return;
   const db = getDb();
   await db.transaction(async (tx) => {
-    await tx.update(useCases).set({ inProgram }).where(eq(useCases.id, id));
+    const [after] = await tx
+      .update(useCases)
+      .set({ inProgram })
+      .where(eq(useCases.id, id))
+      .returning(READINESS_COLUMNS);
+    if (after) {
+      await syncReadyBell(
+        tx,
+        id,
+        actor.id,
+        { ...after, inProgram: !inProgram },
+        after,
+      );
+    }
     await tx.insert(fieldChanges).values({
       useCaseId: id,
       field: "in_program",

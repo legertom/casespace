@@ -44,6 +44,18 @@ in-app report it came from.
 
 ## 2026-10-30
 
+### See which records are ready for Kate to confirm their ROI
+Requested by: Tom Leger
+
+Once a Qualified record's ROI checklist is complete, it now says so: a
+*Ready to confirm* badge appears beside its status on the record page and on
+its row in the casebook, and the dashboard's *Needs attention* lists every
+record waiting on that call. For the people on the record, it means your
+part is done and the next move is Kate's. Admins also get a notification
+the moment a record gets there, and it clears itself once the record is
+confirmed or stops being ready, so the bell never nags about a decision
+already made.
+
 ### Ask the Coach why a record is or isn't in the program
 Requested by: Tom Leger
 Feedback: 3f42fb92-973f-4fdc-bc2e-ebd3c434b841

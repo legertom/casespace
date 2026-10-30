@@ -1,7 +1,7 @@
 ---
 title: Taxonomy — departments, approaches, ratings, links, URLs
 audience: everyone
-updated: 2026-08-20
+updated: 2026-10-30
 code:
   - src/lib/domain.ts
   - src/db/schema.ts
@@ -92,8 +92,9 @@ that is a security rule rather than a formatting preference.
 
 ## Notification kinds
 
-`comment` · `reply` · `mention` · `link` · `new_use_case` — most specific
-wins among the comment kinds. `new_use_case` goes to admins only. See
+`comment` · `reply` · `mention` · `link` · `new_use_case` ·
+`ready_to_confirm` — most specific wins among the comment kinds.
+`new_use_case` and `ready_to_confirm` go to admins only. See
 [notifications](../features/notifications.md).
 
 ## Related

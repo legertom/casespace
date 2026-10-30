@@ -14,12 +14,17 @@ import {
   scopeToFilter,
 } from "@/lib/program-scope";
 import { listNames } from "@/lib/format";
+import { isReadyToConfirm } from "@/lib/ready-to-confirm";
 import { canCreateUseCase } from "@/lib/permissions";
 import { aiConfigured } from "@/lib/ai/config";
 import { identityForPerson, identityForUser } from "@/server/identity";
 import { listEltOrgs, listPeopleLite } from "@/server/reference";
 import { listUseCases } from "@/server/use-case-queries";
-import { CommunityBadge, StatusBadge } from "@/components/status-badge";
+import {
+  CommunityBadge,
+  ReadyToConfirmBadge,
+  StatusBadge,
+} from "@/components/status-badge";
 import {
   UseCaseFilters,
   type CasebookFilterState,
@@ -249,6 +254,7 @@ export default async function UseCasesPage({
                   </div>
                   <div className="flex items-center gap-2">
                     {!uc.inProgram && <CommunityBadge />}
+                    {isReadyToConfirm(uc) && <ReadyToConfirmBadge />}
                     <StatusBadge status={uc.status} />
                   </div>
                 </div>

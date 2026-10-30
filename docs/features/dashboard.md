@@ -2,7 +2,7 @@
 title: The dashboard
 surface: /dashboard
 audience: everyone
-updated: 2026-10-21
+updated: 2026-10-30
 code:
   - src/app/(app)/dashboard/page.tsx
   - src/server/dashboard-queries.ts
@@ -16,6 +16,7 @@ code:
   - src/server/dashboard-queries.ts
   - src/lib/team-coverage.ts
   - src/server/identity.ts
+  - src/lib/ready-to-confirm.ts
 ---
 
 # The dashboard
@@ -84,12 +85,14 @@ who moved what, from where to where. The same history the
 
 ### Needs attention
 
-Four flags:
-
+- **Ready for Confirmed Positive ROI** — Qualified, with the ROI
+  checklist complete, longest-qualified first: Kate's decisions about the
+  15 (`isReadyToConfirm()` in `src/lib/ready-to-confirm.ts`, the same rule
+  as the **Ready to confirm** badge and
+  [its notification](notifications.md#who-hears-that-a-record-is-ready-to-confirm)).
+  Shown only when something is on it — an empty queue is the normal state.
 - **Stale** — a record that has sat in its current status for ≥ 21 days
   (`app_settings.stale_days`, `isStale()`).
-- **Ready but not qualified** — all four gates met, still waiting on an
-  admin.
 - **Launched, ROI not yet scored** — the pipeline of future confirmed wins.
 - **Revisit date passed** — Kate's step 6: the date set for measuring
   actual ROI has passed and no actual number is on the record
