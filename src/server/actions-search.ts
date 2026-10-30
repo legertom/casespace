@@ -32,10 +32,10 @@ import { recordSearchEvent, type SearchVia } from "./search-events";
 
 const searchParseSchema = z.object({
   status: z
-    .enum([...STATUSES, "documented"])
+    .enum([...STATUSES, "documented", "ready"])
     .nullish()
     .describe(
-      'Pipeline stage the query asks for; "documented" means qualified or better (the 45). Null unless the query clearly names one.',
+      'Pipeline stage the query asks for; "documented" means qualified or better (the 45); "ready" means ready to confirm (Qualified with the ROI checklist complete). Null unless the query clearly names one.',
     ),
   department: z
     .enum(DEPARTMENTS)
@@ -108,7 +108,7 @@ export async function aiParseSearchAction(q: string): Promise<AiParseResult> {
       output: Output.object({ schema: searchParseSchema }),
       instructions: `Map a search-box query from Clever's AI use-case casebook onto its filters.
 The query is a search, not a command — extract only what it plainly asks for and leave every other field null.
-Status words: discovery, approved, building/construction, testing, launched/live/shipped, qualified, ROI/confirmed. "Qualified or better" or "documented" means status "documented".
+Status words: discovery, approved, building/construction, testing, launched/live/shipped, qualified, ROI/confirmed. "Qualified or better" or "documented" means status "documented". "Ready to confirm" or "ready for ROI confirmation" means status "ready".
 Do not treat a use case's subject matter (e.g. "testing tools for teachers") as a status unless the query is clearly about pipeline stage.`,
       prompt: trimmed,
       providerOptions: gatewayOptions(user.id, "search_parser"),

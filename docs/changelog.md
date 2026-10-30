@@ -51,10 +51,11 @@ Once a Qualified record's ROI checklist is complete, it now says so: a
 *Ready to confirm* badge appears beside its status on the record page and on
 its row in the casebook, and the dashboard's *Needs attention* lists every
 record waiting on that call. For the people on the record, it means your
-part is done and the next move is Kate's. Admins also get a notification
-the moment a record gets there, and it clears itself once the record is
-confirmed or stops being ready, so the bell never nags about a decision
-already made.
+part is done and the next move is Kate's. To see them all at once, pick
+*Ready to confirm* in the casebook's status filters, or start typing
+"ready" in its search box. Admins also get a notification the moment a
+record gets there, and it clears itself once the record is confirmed or
+stops being ready, so the bell never nags about a decision already made.
 
 ### Ask the Coach why a record is or isn't in the program
 Requested by: Tom Leger

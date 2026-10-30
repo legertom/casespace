@@ -47,7 +47,10 @@ import {
 
 export interface CasebookFilterState {
   q: string;
-  /** "" | UcStatus | "documented" (qualified or better — the 45). */
+  /**
+   * "" | UcStatus | "documented" (qualified or better — the 45) | "ready"
+   * (Qualified with the ROI checklist complete — waiting on Kate).
+   */
   status: string;
   department: "" | Department;
   program: ProgramScope;
@@ -62,7 +65,7 @@ interface Props {
   state: CasebookFilterState;
   /** Whole-casebook totals per scope — stable, so a tab never disagrees with itself. */
   scopeTotals: Record<ProgramScope, number>;
-  /** Counts per status (plus "documented") within the other active filters. */
+  /** Counts per status (plus "documented" and "ready") within the other active filters. */
   stageCounts: Record<string, number>;
   people: PersonName[];
   titles: { id: string; title: string }[];
@@ -113,7 +116,9 @@ function parseChipLabels(p: SearchParse | AiSearchParse): string[] {
     chips.push(
       p.status === "documented"
         ? "Qualified or better"
-        : `status: ${STATUS_LABELS[p.status]}`,
+        : p.status === "ready"
+          ? "Ready to confirm"
+          : `status: ${STATUS_LABELS[p.status]}`,
     );
   if (p.department) chips.push(`department: ${DEPARTMENT_LABELS[p.department]}`);
   if (p.person) chips.push(`by ${p.person.name}`);
@@ -313,6 +318,16 @@ export function UseCaseFilters({
         });
       }
     }
+    // Not one of the seven, but a slice people ask for by name — and a single
+    // word is too little for the rule parser to turn into a filter on its own.
+    if (items.length < 9 && "ready to confirm".includes(q)) {
+      items.push({
+        key: "s-ready",
+        kind: "Status",
+        node: <span>{hi("Ready to confirm", q)}</span>,
+        run: () => apply({ q: "", status: "ready" }),
+      });
+    }
     return items;
     // apply/router are stable enough for suggestion identity; state rides along via closures.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -383,7 +398,9 @@ export function UseCaseFilters({
       label:
         state.status === "documented"
           ? "Qualified or better — the 45"
-          : STATUS_LABELS[state.status as UcStatus] ?? state.status,
+          : state.status === "ready"
+            ? "Ready to confirm"
+            : STATUS_LABELS[state.status as UcStatus] ?? state.status,
       undo: { status: "" },
     });
   if (state.department)
@@ -588,6 +605,25 @@ export function UseCaseFilters({
           The 45
           <span className="text-xs tabular-nums opacity-70">
             {stageCounts.documented ?? 0}
+          </span>
+        </button>
+        <button
+          type="button"
+          aria-pressed={state.status === "ready"}
+          disabled={(stageCounts.ready ?? 0) === 0 && state.status !== "ready"}
+          title="Qualified, with the ROI checklist complete — waiting on Kate's decision about the 15."
+          onClick={() =>
+            apply({ status: state.status === "ready" ? "" : "ready" })
+          }
+          className={`inline-flex items-center gap-1.5 whitespace-nowrap border-b-2 pb-1 pt-0.5 text-[13.5px] disabled:cursor-default disabled:opacity-40 ${
+            state.status === "ready"
+              ? "border-st-confirmed text-st-confirmed"
+              : "border-transparent text-st-qualified hover:text-st-confirmed"
+          }`}
+        >
+          Ready to confirm
+          <span className="text-xs tabular-nums opacity-70">
+            {stageCounts.ready ?? 0}
           </span>
         </button>
       </div>

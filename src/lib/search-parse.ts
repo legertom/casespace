@@ -16,11 +16,12 @@ export interface PersonName {
 }
 
 /**
- * "documented" rides along with the seven statuses because the search box
- * speaks the program's vocabulary — "qualified or better" is a slice people
- * ask for by name, and the URL already knows it as `status=documented`.
+ * "documented" and "ready" ride along with the seven statuses because the
+ * search box speaks the program's vocabulary — "qualified or better" and
+ * "ready to confirm" are slices people ask for by name, and the URL already
+ * knows them as `status=documented` and `status=ready`.
  */
-export type ParsedStatus = UcStatus | "documented";
+export type ParsedStatus = UcStatus | "documented" | "ready";
 
 export interface SearchParse {
   status?: ParsedStatus;
@@ -43,6 +44,7 @@ const STATUS_WORDS: Record<string, ParsedStatus> = {
   roi: "confirmed_positive_roi",
   confirmed: "confirmed_positive_roi",
   documented: "documented",
+  ready: "ready",
 };
 
 const DEPARTMENT_WORDS: Record<string, Department> = {

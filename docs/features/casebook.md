@@ -25,12 +25,13 @@ All filters are URL parameters, so a filtered view is a shareable link.
 There is no Filter button: every control applies the moment it changes,
 program scope is the page's tabs, and the seven statuses sit in pipeline
 order as a clickable rail with live counts (plus **The 45** — qualified or
-better). Active filters read back as chips, each removable on its own.
+better — and **Ready to confirm**). Active filters read back as chips, each
+removable on its own.
 
 | Filter | Param | Notes |
 |---|---|---|
 | Search | `q` | Matches title, description, and owner |
-| Status | `status` | One of the seven, or `documented` for the 45's slice |
+| Status | `status` | One of the seven, `documented` for the 45's slice, or `ready` for records ready to confirm |
 | Department | `department` | One of the seven |
 | Mine | `mine=1` | Records that credit you — created, owned, or authored |
 | Person | `person` | Set by clicking a name, or from a search suggestion |
@@ -44,7 +45,9 @@ People match by name-part the way credit does — accents folded — plus the
 abbreviations people actually type: "pati" finds Patricia even though
 Patricia doesn't start with "pati". A phrase the rules understand, like
 `launched in css by lotte`, offers to become filters in one click; the
-filters it applies are ordinary chips you can see and remove.
+filters it applies are ordinary chips you can see and remove. "Documented"
+and "ready to confirm" are understood too, as the 45's slice and the
+ready-to-confirm one, and typing "ready" suggests the latter.
 
 When the rules can't read a query, an **Ask AI** row appears (only when AI
 is configured). Clicking it — and only clicking it — sends the query to the
@@ -72,7 +75,9 @@ one — **Community**, and **Ready to confirm** on a Qualified program record
 whose ROI checklist is complete, which is waiting on Kate's decision about
 the 15 (see [Statuses](../concepts/statuses.md#ready-to-confirm)). Everyone
 sees both: they are read from the status and checklist the record already
-shows everyone.
+shows everyone. The **Ready to confirm** filter (`status=ready`) lists just
+these, by the same rule — so its count, the badges, and the dashboard's
+list can't disagree.
 
 **An empty result never reads as an empty casebook.** When filters are
 active and match nothing, the page says so and offers to clear them — a

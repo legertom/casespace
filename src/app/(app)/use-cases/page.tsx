@@ -51,12 +51,14 @@ export default async function UseCasesPage({
   const sp = await searchParams;
   // "qualified_plus" is the old derived filter — old links land on the status
   // that replaced it. "documented" is the 45's slice: Qualified or better.
+  // "ready" is the badge's slice: Qualified with the ROI checklist complete.
   const rawStatus =
     sp.status === "qualified_plus" ? "confirmed_positive_roi" : sp.status;
   const status = STATUSES.includes(rawStatus as UcStatus)
     ? (rawStatus as UcStatus)
     : undefined;
   const documentedOnly = rawStatus === "documented";
+  const readyOnly = rawStatus === "ready";
   const department = DEPARTMENTS.includes(sp.department as Department)
     ? (sp.department as Department)
     : undefined;
@@ -106,18 +108,21 @@ export default async function UseCasesPage({
     listPeopleLite(),
   ]);
 
-  const stageCounts: Record<string, number> = { documented: 0 };
+  const stageCounts: Record<string, number> = { documented: 0, ready: 0 };
   for (const s of STATUSES) stageCounts[s] = 0;
   for (const r of rows) {
     stageCounts[r.status] += 1;
     if (countsTowardDocumented(r.status)) stageCounts.documented += 1;
+    if (isReadyToConfirm(r)) stageCounts.ready += 1;
   }
 
   const visible = status
     ? rows.filter((r) => r.status === status)
     : documentedOnly
       ? rows.filter((r) => countsTowardDocumented(r.status))
-      : rows;
+      : readyOnly
+        ? rows.filter(isReadyToConfirm)
+        : rows;
 
   const inProgramTotal = everything.filter((r) => r.inProgram).length;
   const scopeTotals = {
@@ -132,6 +137,7 @@ export default async function UseCasesPage({
     department ||
     mine ||
     documentedOnly ||
+    readyOnly ||
     personId ||
     eltLabel ||
     programScope !== DEFAULT_PROGRAM_SCOPE,
@@ -144,7 +150,7 @@ export default async function UseCasesPage({
 
   const filterState: CasebookFilterState = {
     q: q ?? "",
-    status: documentedOnly ? "documented" : (status ?? ""),
+    status: documentedOnly ? "documented" : readyOnly ? "ready" : (status ?? ""),
     department: department ?? "",
     program: programScope,
     mine,

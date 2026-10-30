@@ -70,6 +70,13 @@ describe("parseSearch", () => {
     });
   });
 
+  it('knows "ready" as the slice waiting on Kate\'s confirmation', () => {
+    expect(parseSearch("ready to confirm in engineering", PEOPLE)).toEqual({
+      status: "ready",
+      department: "engineering",
+    });
+  });
+
   it("reads mine and program scope", () => {
     expect(parseSearch("my launched things", PEOPLE)).toEqual({
       status: "launched",
