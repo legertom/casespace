@@ -155,6 +155,13 @@
       "when": 1793400091154,
       "tag": "0021_ready_to_confirm",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1795212664404,
+      "tag": "0022_chloe_hunter_name",
+      "breakpoints": true
     }
   ]
 }
